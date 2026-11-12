@@ -1,6 +1,8 @@
 //! The game screens: the Christmas Cracker Quiz and Guess the Guest. The
 //! questions and rounds are made in `quiz` and `guess`; this is the playing.
 
+use std::collections::BTreeMap;
+
 use ratatui::Frame;
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::layout::Rect;
@@ -129,6 +131,17 @@ impl QuizResult {
             .filter(|(q, a)| **a == Some(q.answer))
             .count();
         (right, given)
+    }
+
+    /// Correct answers per creature id, for the stocking.
+    pub fn correct_by(&self) -> BTreeMap<String, u32> {
+        let mut out = BTreeMap::new();
+        for (q, a) in self.questions.iter().zip(&self.answers) {
+            if *a == Some(q.answer) {
+                *out.entry(q.creature_id.clone()).or_default() += 1;
+            }
+        }
+        out
     }
 
     /// The score as a percentage of the questions answered.
@@ -324,6 +337,20 @@ impl GuessResult<'_> {
     /// The most points the rounds could have scored.
     pub fn best(&self) -> usize {
         self.rounds.len() * guess::POINTS[0]
+    }
+
+    /// Correct guesses per creature id, for the stocking.
+    pub fn correct_by(&self) -> BTreeMap<String, u32> {
+        let mut out = BTreeMap::new();
+        for r in self.rounds.iter().filter(|r| r.correct()) {
+            *out.entry(r.creature.id.clone()).or_default() += 1;
+        }
+        out
+    }
+
+    /// Whether any guest was named through the thickest frost.
+    pub fn frost_reader(&self) -> bool {
+        self.rounds.iter().any(|r| r.correct() && r.stage == 0)
     }
 
     /// How many rounds were guessed at, right or wrong.
@@ -627,6 +654,7 @@ mod tests {
         let result = app.into_result();
         assert!(result.completed);
         assert_eq!(result.score(), (5, 5));
+        assert_eq!(result.correct_by().values().sum::<u32>(), 5);
     }
 
     #[test]
@@ -724,6 +752,8 @@ mod tests {
         let result = app.into_result();
         assert!(result.completed);
         assert_eq!((result.score(), result.played()), (100, 1));
+        assert!(result.frost_reader());
+        assert_eq!(result.correct_by().len(), 1);
         assert_eq!(result.rounds[0].stage, 0);
     }
 

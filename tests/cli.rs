@@ -1,12 +1,27 @@
 //! End-to-end tests: run the real binary the way a player or a script would.
 
+use std::path::{Path, PathBuf};
+
 use assert_cmd::Command;
 use predicates::prelude::*;
 use serde_json::Value;
 
+/// A scratch config directory, so the tests never touch real progress.
+/// Each test that cares about what's saved makes its own with `home`.
+fn scratch(name: &str) -> PathBuf {
+    let dir = std::env::temp_dir().join(format!("tinsel-cli-{name}-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    dir
+}
+
 fn tinsel() -> Command {
+    tinsel_at(&scratch("shared"))
+}
+
+fn tinsel_at(home: &Path) -> Command {
     let mut cmd = Command::cargo_bin("terminal-of-tinsel").unwrap();
     cmd.env("TERMINAL_OF_TINSEL_SEED", "25")
+        .env("TERMINAL_OF_TINSEL_HOME", home)
         .env_remove("NO_COLOR");
     cmd
 }
@@ -42,6 +57,9 @@ fn every_command_runs() {
         vec!["mash"],
         vec!["mash", "krampus", "yule cat", "--fast"],
         vec!["mash", "gryla", "--json"],
+        vec!["stocking"],
+        vec!["stocking", "--json"],
+        vec!["stocking", "reset", "-y"],
         vec!["random"],
         vec!["random", "--daily"],
         vec!["countdown"],
@@ -233,6 +251,108 @@ fn a_bad_seed_warns_and_is_ignored() {
         .stderr(predicate::str::contains(
             "warning: ignoring TERMINAL_OF_TINSEL_SEED",
         ));
+}
+
+#[test]
+fn a_showdown_goes_in_the_stocking_and_reset_empties_it() {
+    let home = scratch("stocking");
+    let stocking = || -> Value {
+        let out = tinsel_at(&home)
+            .args(["stocking", "--json"])
+            .output()
+            .unwrap();
+        serde_json::from_slice(&out.stdout).unwrap()
+    };
+    assert_eq!(stocking()["mashesPlayed"], 0);
+    assert!(!home.exists(), "looking in the stocking creates nothing");
+
+    tinsel_at(&home)
+        .args(["mash", "krampus", "gryla"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("BADGE: Snowball Referee"))
+        .stdout(predicate::str::contains("terminal-of-tinsel stocking"));
+    let saved = stocking();
+    assert_eq!(saved["mashesPlayed"], 1);
+    assert_eq!(saved["version"], 1);
+    assert!(saved["badges"]["snowball-referee"].is_string());
+
+    // The badge is announced once, and --pack doesn't hide it.
+    tinsel_at(&home)
+        .args(["mash", "--pack", "nordic"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("BADGE: Snowball Referee").not());
+    assert_eq!(stocking()["mashesPlayed"], 2);
+
+    // --json prints the showdown and records nothing, as in Terror.
+    tinsel_at(&home).args(["mash", "--json"]).assert().success();
+    assert_eq!(stocking()["mashesPlayed"], 2);
+
+    tinsel_at(&home)
+        .arg("stocking")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("THE STOCKING"))
+        .stdout(predicate::str::contains(
+            "0 of 14 creatures caught · 1 of 17 badges",
+        ))
+        .stdout(predicate::str::contains("Snowball Showdowns staged: 2"))
+        .stdout(predicate::str::contains("Progress is saved in"))
+        .stdout(predicate::str::contains("stocking.json"));
+
+    // Without a terminal to confirm on, reset needs -y.
+    let e = tinsel_at(&home)
+        .args(["stocking", "reset", "--json"])
+        .output()
+        .unwrap();
+    assert!(!e.status.success());
+    let e: Value = serde_json::from_slice(&e.stderr).unwrap();
+    assert_eq!(e["error"]["code"], "no-terminal");
+    assert_eq!(stocking()["mashesPlayed"], 2);
+
+    tinsel_at(&home)
+        .args(["stocking", "reset", "-y"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("has been reset"));
+    assert_eq!(stocking()["mashesPlayed"], 0);
+    let _ = std::fs::remove_dir_all(&home);
+}
+
+#[test]
+fn a_broken_save_file_stops_the_stocking_but_not_a_game() {
+    let home = scratch("broken");
+    std::fs::create_dir_all(&home).unwrap();
+    std::fs::write(home.join("stocking.json"), "{ not json").unwrap();
+    let out = tinsel_at(&home)
+        .args(["stocking", "--json"])
+        .output()
+        .unwrap();
+    assert!(!out.status.success());
+    let e: Value = serde_json::from_slice(&out.stderr).unwrap();
+    assert_eq!(e["error"]["code"], "store");
+    assert!(
+        e["error"]["hint"]
+            .as_str()
+            .unwrap()
+            .contains("stocking reset")
+    );
+
+    tinsel_at(&home)
+        .args(["mash", "--fast"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("WINNER:"))
+        .stderr(predicate::str::contains(
+            "warning: this session wasn't saved",
+        ));
+    // The broken file is left for its owner to mend.
+    assert_eq!(
+        std::fs::read_to_string(home.join("stocking.json")).unwrap(),
+        "{ not json"
+    );
+    let _ = std::fs::remove_dir_all(&home);
 }
 
 #[test]

@@ -13,6 +13,8 @@ mod quiz;
 mod render;
 mod rng;
 mod search;
+mod stocking;
+mod store;
 mod tui;
 
 use std::io::{self, IsTerminal, Write};
@@ -22,11 +24,12 @@ use clap::error::{ContextKind, ContextValue, ErrorKind};
 use clap::{CommandFactory, Parser};
 use serde::Serialize;
 
-use cli::{Cli, Command};
+use cli::{Cli, Command, StockingAction};
 use creatures::Vault;
 use error::{Code, Result, TinselError};
 use render::Painter;
 use rng::Rng;
+use stocking::{Kind, Outcome};
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
@@ -59,7 +62,9 @@ fn run(cli: Cli) -> Result<()> {
     let no_colour = cli.no_color || std::env::var_os("NO_COLOR").is_some_and(|v| !v.is_empty());
     let plain = no_colour || !io::stdout().is_terminal();
     let painter = Painter::new(plain, terminal_width());
-    let vault = Vault::load().only_packs(&cli.pack)?;
+    // The stocking's badges count every creature, whatever --pack says.
+    let everything = Vault::load();
+    let vault = everything.clone().only_packs(&cli.pack)?;
     let json = cli.json;
 
     match cli.command {
@@ -133,14 +138,10 @@ fn run(cli: Cli) -> Result<()> {
                         let text = format!("{}{line}", painter.glyph("📺"));
                         print(&(painter.italic(&text, render::DIM) + "\n"));
                     }
-                    let met = visit.seen.len();
-                    if met > 0 {
-                        let guests = if met == 1 { "guest" } else { "guests" };
-                        let text = format!(
-                            "You met {met} of tonight's {} {guests}.",
-                            vault.creatures.len()
-                        );
-                        print(&(painter.paint(&text, render::DIM) + "\n"));
+                    if !visit.seen.is_empty() {
+                        let mut outcome = Outcome::new(Kind::Explore, calendar::now());
+                        outcome.seen = visit.seen;
+                        record(&painter, &everything, &outcome);
                     }
                 }
             }
@@ -221,8 +222,15 @@ fn run(cli: Cli) -> Result<()> {
             let mut app = games::QuizApp::new(quiz, rng, !no_colour);
             tui::run(&mut app, "the Christmas Cracker Quiz")?;
             let result = app.into_result();
-            // The stocking records what was won here, once it exists.
             print(&render::quiz_summary(&painter, &result));
+            if result.score().1 > 0 {
+                let mut outcome = Outcome::new(Kind::Quiz, calendar::now());
+                outcome.correct = result.correct_by();
+                outcome.score = result.percent() as u32;
+                outcome.total = result.questions.len() as u32;
+                outcome.completed = result.completed;
+                record(&painter, &everything, &outcome);
+            }
         }
 
         Some(Command::Guess { rounds }) => {
@@ -251,7 +259,17 @@ fn run(cli: Cli) -> Result<()> {
             )?;
             let mut app = games::GuessApp::new(game, rng, !no_colour);
             tui::run(&mut app, "Guess the Guest")?;
-            print(&render::guess_summary(&painter, &app.into_result()));
+            let result = app.into_result();
+            print(&render::guess_summary(&painter, &result));
+            if result.played() > 0 {
+                let mut outcome = Outcome::new(Kind::Guess, calendar::now());
+                outcome.correct = result.correct_by();
+                outcome.score = result.score() as u32;
+                outcome.total = result.rounds.len() as u32;
+                outcome.completed = result.completed;
+                outcome.frost_reader = result.frost_reader();
+                record(&painter, &everything, &outcome);
+            }
         }
 
         Some(Command::Mash { creatures, fast }) => {
@@ -308,6 +326,59 @@ fn run(cli: Cli) -> Result<()> {
                 pause(1500);
             }
             print(&render::mash_result(&painter, &bout));
+            record(
+                &painter,
+                &everything,
+                &Outcome::new(Kind::Mash, calendar::now()),
+            );
+        }
+
+        Some(Command::Stocking { action: None }) => {
+            let dir = store::dir()?;
+            let progress = store::load(&dir)?;
+            if json {
+                return print_json(&progress);
+            }
+            print(&render::stocking(&painter, &progress, &everything));
+            let path = store::tilde(&store::path_in(&dir));
+            print(&format!(
+                "\n{}\n",
+                painter.paint(&format!("Progress is saved in {path}"), render::DIM)
+            ));
+        }
+
+        Some(Command::Stocking {
+            action: Some(StockingAction::Reset { yes }),
+        }) => {
+            let dir = store::dir()?;
+            if !yes {
+                if !io::stdin().is_terminal() {
+                    return Err(TinselError::new(
+                        Code::NoTerminal,
+                        "refusing to empty the stocking without a terminal to confirm on",
+                    )
+                    .with_hint("pass -y to reset without asking"));
+                }
+                eprint!(
+                    "This tips out every creature and forgets all your badges. Type 'yes' to confirm: "
+                );
+                let mut answer = String::new();
+                let _ = io::stdin().read_line(&mut answer);
+                if answer.trim().to_lowercase() != "yes" {
+                    if json {
+                        return print_json(&serde_json::json!({ "reset": false }));
+                    }
+                    print("Phew. Your stocking is untouched.\n");
+                    return Ok(());
+                }
+            }
+            store::reset(&dir)?;
+            if json {
+                return print_json(&serde_json::json!({ "reset": true }));
+            }
+            print(
+                "The stocking is tipped out on the hearthrug, and every creature has scampered off. Your progress has been reset.\n",
+            );
         }
 
         Some(Command::Countdown { date }) => {
@@ -362,6 +433,21 @@ fn run(cli: Cli) -> Result<()> {
         }
     }
     Ok(())
+}
+
+/// Saves an outcome to the player's stocking and announces anything new.
+/// Trouble with the save file is reported but never stops the fun.
+fn record(painter: &Painter, everything: &Vault, outcome: &Outcome) {
+    let saved = store::dir().and_then(|dir| {
+        let mut progress = store::load(&dir)?;
+        let unlocks = stocking::apply(&mut progress, &everything.creatures, outcome);
+        store::save(&dir, &progress)?;
+        Ok(unlocks)
+    });
+    match saved {
+        Ok(unlocks) => print(&render::unlocks(painter, &unlocks)),
+        Err(e) => eprintln!("warning: this session wasn't saved: {}", e.message),
+    }
 }
 
 /// A showdown as `--json` prints it: who fought, round by round, and who won.

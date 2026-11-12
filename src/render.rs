@@ -14,6 +14,8 @@ use crate::games::{GuessResult, QuizResult};
 use crate::host;
 use crate::mash::{Bout, Round};
 use crate::quiz;
+use crate::stocking::{BADGES, CAPTURE_AT, Unlocks};
+use crate::store::Progress;
 
 /// The house colours of Channel 25.
 pub const RED: &str = "#E63946";
@@ -236,6 +238,7 @@ pub fn welcome(p: &Painter, vault: &Vault, today: Date, greeting: &str) -> Strin
         ("list", "meet tonight's guests"),
         ("creature krampus", "read a creature's page"),
         ("quiz", "pull a cracker: the Christmas Cracker Quiz"),
+        ("stocking", "what you've caught, and your badges"),
         ("random --daily", "the Fact of the Night"),
         ("countdown", "sleeps until Christmas"),
         ("advent", "open the advent calendar"),
@@ -598,6 +601,155 @@ pub fn mash_result(p: &Painter, bout: &Bout) -> String {
     );
     let mut out = vec![p.bold(&banner, GOLD)];
     out.extend(p.wrap(&bout.finale, p.text_width(), |l| p.italic(l, DIM)));
+    out.join("\n") + "\n"
+}
+
+// ── The Stocking ───────────────────────────────────────────────────────────
+
+/// A saved time ("2026-12-24T21:00:00") as "24 Dec 2026".
+fn short_date(saved: &str) -> String {
+    saved
+        .parse::<jiff::civil::DateTime>()
+        .map(|t| t.strftime("%-d %b %Y").to_string())
+        .unwrap_or_else(|_| saved.to_string())
+}
+
+/// The player's collection, badges and records.
+pub fn stocking(p: &Painter, progress: &Progress, vault: &Vault) -> String {
+    let w = p.text_width();
+    let held = vault
+        .creatures
+        .iter()
+        .filter(|c| progress.captured.contains_key(&c.id))
+        .count();
+    let earned = BADGES
+        .iter()
+        .filter(|b| progress.badges.contains_key(b.id))
+        .count();
+    let lock = p.glyph("🔒");
+    let (pip, gap) = if p.plain { ("#", ".") } else { ("●", "○") };
+    let mut out = vec![
+        p.bold(&format!("{}THE STOCKING", p.glyph("🧦")), GOLD),
+        String::new(),
+        p.bold(
+            &format!(
+                "{held} of {} creatures caught · {earned} of {} badges",
+                vault.creatures.len(),
+                BADGES.len()
+            ),
+            RED,
+        ),
+    ];
+    out.extend(p.wrap(
+        &format!(
+            "Answer {CAPTURE_AT} questions about a creature correctly, in the quiz or Guess the Guest, and it goes in your stocking."
+        ),
+        w,
+        |l| p.paint(l, DIM),
+    ));
+
+    for (pack, creatures) in vault.by_pack() {
+        out.push(String::new());
+        out.push(p.heading(&pack.name.to_uppercase(), GREEN));
+        for c in creatures {
+            match progress.captured.get(&c.id) {
+                Some(when) => out.push(format!(
+                    "  {}{}  {}",
+                    p.glyph(&c.emoji),
+                    p.bold(&c.name, &c.theme.primary),
+                    p.bold(&format!("caught {}", short_date(when)), GREEN)
+                )),
+                None => {
+                    let known = progress.knowledge.get(&c.id).copied().unwrap_or(0);
+                    let known = known.min(CAPTURE_AT) as usize;
+                    out.push(format!(
+                        "  {lock}{}  {}{}",
+                        p.paint(&c.name, DIM),
+                        p.paint(&pip.repeat(known), GREEN),
+                        p.paint(&gap.repeat(CAPTURE_AT as usize - known), DIM)
+                    ));
+                }
+            }
+        }
+    }
+
+    out.push(String::new());
+    out.push(p.heading("BADGES", GREEN));
+    for b in BADGES {
+        match progress.badges.get(b.id) {
+            Some(when) => {
+                let lead = format!("  {}{}  ", p.glyph(b.emoji), b.name);
+                let text = format!("{lead}{} · {}", b.description, short_date(when));
+                out.extend(p.wrap(&text, w, |l| match l.strip_prefix(lead.trim_end()) {
+                    Some(rest) => {
+                        format!("{}{}", p.bold(lead.trim_end(), GOLD), p.italic(rest, DIM))
+                    }
+                    None => p.italic(l, DIM),
+                }));
+            }
+            None => out.extend(
+                p.wrap(&format!("  {lock}{}  {}", b.name, b.description), w, |l| {
+                    p.paint(l, DIM)
+                }),
+            ),
+        }
+    }
+
+    let seen = vault
+        .creatures
+        .iter()
+        .filter(|c| progress.seen.contains_key(&c.id))
+        .count();
+    out.push(String::new());
+    out.push(p.heading("RECORDS", GREEN));
+    for line in [
+        format!(
+            "Quizzes played: {} · best score {}%",
+            progress.quizzes_played, progress.best_quiz_score
+        ),
+        format!(
+            "Guess the Guest games: {} · best score {} pts",
+            progress.guesses_played, progress.best_guess_score
+        ),
+        format!("Snowball Showdowns staged: {}", progress.mashes_played),
+        format!(
+            "Creature pages visited: {seen} of {}",
+            vault.creatures.len()
+        ),
+    ] {
+        out.push(format!("  {}", p.italic(&line, GREEN)));
+    }
+    out.join("\n") + "\n"
+}
+
+/// Announces newly caught creatures and badges. Nothing if there are none.
+pub fn unlocks(p: &Painter, u: &Unlocks) -> String {
+    if u.is_empty() {
+        return String::new();
+    }
+    let mut out = vec![String::new()];
+    for c in &u.captured {
+        out.push(format!(
+            "{} {}{}",
+            p.bold(&format!("{}IN THE STOCKING:", p.glyph("🧦")), GREEN),
+            p.bold(
+                &format!("{}{}", p.glyph(&c.emoji), c.name),
+                &c.theme.primary
+            ),
+            p.paint(" is yours", DIM)
+        ));
+    }
+    for b in &u.badges {
+        out.push(format!(
+            "{}{}",
+            p.bold(
+                &format!("{}BADGE: {}{}", p.glyph("🏅"), p.glyph(b.emoji), b.name),
+                GOLD
+            ),
+            p.paint(&format!(" · {}", b.description), DIM)
+        ));
+    }
+    out.push(p.paint("See your collection: terminal-of-tinsel stocking", DIM));
     out.join("\n") + "\n"
 }
 

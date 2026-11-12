@@ -15,6 +15,8 @@ pub enum Code {
     BadFlag,
     /// A screen that needs a terminal was run from a script, a pipe or CI.
     NoTerminal,
+    /// Saved progress couldn't be read or written.
+    Store,
     Usage,
 }
 
