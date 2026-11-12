@@ -1,9 +1,14 @@
 //! The creatures of Christmas folklore, their packs, and finding them by name.
 //!
-//! The data lives in `packs/` as JSON and is compiled into the binary, so the
-//! CLI needs nothing on disk to run.
+//! The built-in data lives in `packs/` as JSON and is compiled into the
+//! binary, so the CLI needs nothing on disk to run. Community packs are the
+//! same files in the player's config directory, read by the same code.
+//!
+//! Every field has a default, so a community creature can be three lines
+//! long. The data tests hold the built-in creatures to the full set.
 
 use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
 
 use include_dir::{Dir, include_dir};
 use serde::{Deserialize, Serialize};
@@ -16,8 +21,8 @@ static PACKS_DIR: Dir<'static> = include_dir!("$CARGO_MANIFEST_DIR/packs");
 pub const PACK_ORDER: &[&str] = &["companions", "nordic", "midwinter", "dickens"];
 
 /// A single creature and everything we know about it.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
 pub struct Creature {
     pub id: String,
     pub name: String,
@@ -65,7 +70,8 @@ impl Creature {
 }
 
 /// Where a creature first appeared.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Debut {
     pub medium: String,
     pub title: String,
@@ -124,7 +130,8 @@ pub struct Quote {
 }
 
 /// Each stat is 1-10 and purely for fun.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Stats {
     pub strength: u8,
     pub speed: u8,
@@ -145,19 +152,24 @@ impl Stats {
 }
 
 /// A creature's colours, as `#RRGGBB`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Theme {
     pub primary: String,
     pub accent: String,
 }
 
 /// A pack of creatures, such as the Nordic Yule.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Pack {
     pub id: String,
     pub name: String,
     pub description: String,
     pub order: Vec<String>,
+    /// Where the pack was loaded from: "built-in", or a directory.
+    #[serde(skip)]
+    pub source: String,
     /// How the explorer draws the pack's pages. "engraving" gives sepia ink
     /// and drifting snow, like the plates of a Victorian Christmas book.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -202,13 +214,9 @@ impl Vault {
             let dir = PACKS_DIR
                 .get_dir(pack_id)
                 .unwrap_or_else(|| panic!("missing pack directory {pack_id}"));
-            let pack: Pack = parse(dir, &format!("{pack_id}/pack.json"));
-            for id in &pack.order {
-                let mut c: Creature = parse(dir, &format!("{pack_id}/{id}.json"));
-                c.pack = pack.id.clone();
-                c.ascii = portrait(dir, &format!("{pack_id}/{id}.txt"));
-                creatures.push(c);
-            }
+            let (pack, members, problems) = read_pack(&Embedded(dir), pack_id, BUILT_IN);
+            assert!(problems.is_empty(), "packs/{pack_id}: {problems:?}");
+            creatures.extend(members);
             packs.push(pack);
         }
         let advent: AdventFile = serde_json::from_str(
@@ -225,17 +233,87 @@ impl Vault {
         }
     }
 
+    /// Adds the community packs in `dir`, where each subdirectory is a pack.
+    /// Anything broken, incomplete or already taken is skipped and reported;
+    /// a missing `dir` simply means no community packs.
+    pub fn add_community(&mut self, dir: &Path) -> Vec<String> {
+        let mut warnings = Vec::new();
+        let mut names: Vec<String> = match std::fs::read_dir(dir) {
+            Ok(entries) => entries
+                .flatten()
+                .filter(|e| e.path().is_dir())
+                .filter_map(|e| e.file_name().into_string().ok())
+                .collect(),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return warnings,
+            Err(e) => return vec![format!("couldn't read {}: {e}", dir.display())],
+        };
+        names.sort();
+        for name in names {
+            let path = dir.join(&name);
+            let source = path.display().to_string();
+            let (pack, members, problems) = read_pack(&OnDisk(path), &name, &source);
+            warnings.extend(problems.iter().map(|p| format!("pack {name:?}: {p}")));
+            if self.packs.iter().any(|p| p.id == pack.id) {
+                warnings.push(format!(
+                    "pack {:?}: a pack with that id already exists",
+                    pack.id
+                ));
+                continue;
+            }
+            let before = self.creatures.len();
+            for mut c in members {
+                let problems = validate(&c);
+                if !problems.is_empty() {
+                    warnings.push(format!(
+                        "pack {:?}: skipping {:?}: {}",
+                        pack.id,
+                        c.id,
+                        problems.join("; ")
+                    ));
+                } else if self.get(&c.id).is_some() {
+                    warnings.push(format!(
+                        "pack {:?}: skipping {:?}: a creature with that id already exists",
+                        pack.id, c.id
+                    ));
+                } else {
+                    if !is_plain_art(&c.ascii) {
+                        warnings.push(format!(
+                            "pack {:?}: {:?}: the portrait must be printable ASCII, so it's left out",
+                            pack.id, c.id
+                        ));
+                        c.ascii.clear();
+                    }
+                    apply_defaults(&mut c);
+                    self.creatures.push(c);
+                }
+            }
+            // A pack with nothing playable in it isn't listed.
+            if self.creatures.len() > before {
+                self.packs.push(pack);
+            }
+        }
+        warnings
+    }
+
     /// Keeps only the creatures in the given packs.
     pub fn only_packs(mut self, ids: &[String]) -> Result<Self> {
         if ids.is_empty() {
             return Ok(self);
         }
+        let known: Vec<&str> = self.packs.iter().map(|p| p.id.as_str()).collect();
         for id in ids {
-            if !self.packs.iter().any(|p| &p.id == id) {
-                return Err(
-                    TinselError::new(Code::BadPack, format!("no pack called {id:?}"))
-                        .with_hint(format!("choose from: {}", PACK_ORDER.join(", "))),
-                );
+            if !known.contains(&id.as_str()) {
+                let nearest = known
+                    .iter()
+                    .map(|k| (levenshtein(k, &id.to_lowercase()), *k))
+                    .filter(|(distance, _)| *distance <= 2)
+                    .min();
+                let message = match nearest {
+                    Some((_, k)) => format!("no pack called {id:?}. Did you mean {k}?"),
+                    None => format!("no pack called {id:?}"),
+                };
+                return Err(TinselError::new(Code::BadPack, message)
+                    .with_hint(format!("choose from: {}", known.join(", "))));
             }
         }
         self.packs.retain(|p| ids.contains(&p.id));
@@ -325,22 +403,186 @@ impl Vault {
     }
 }
 
-/// A creature's portrait, without the trailing newline and with Windows line
-/// endings normalised: a stray `\r` would garble the layout.
-fn portrait(dir: &Dir, path: &str) -> String {
-    dir.get_file(path)
-        .and_then(|f| f.contents_utf8())
-        .map(|art| art.replace("\r\n", "\n").replace('\r', ""))
-        .map(|art| art.trim_end_matches('\n').to_string())
-        .unwrap_or_default()
+/// What a pack's `source` says when it was compiled in.
+pub const BUILT_IN: &str = "built-in";
+
+/// Where a pack's files come from: compiled into the binary, or a directory
+/// on disk. Go has `fs.FS` for this; here it's a two-method trait.
+trait PackFiles {
+    /// The text of a file in the pack, if it's there and it's UTF-8.
+    fn read(&self, name: &str) -> Option<String>;
+    /// The names of the pack's `.json` files, without the extension, sorted.
+    fn json_stems(&self) -> Vec<String>;
 }
 
-fn parse<T: serde::de::DeserializeOwned>(dir: &Dir, path: &str) -> T {
-    let text = dir
-        .get_file(path)
-        .and_then(|f| f.contents_utf8())
-        .unwrap_or_else(|| panic!("missing packs/{path}"));
-    serde_json::from_str(text).unwrap_or_else(|e| panic!("invalid packs/{path}: {e}"))
+struct Embedded<'a>(&'a Dir<'a>);
+
+impl PackFiles for Embedded<'_> {
+    fn read(&self, name: &str) -> Option<String> {
+        let file = self.0.get_file(self.0.path().join(name))?;
+        file.contents_utf8().map(str::to_string)
+    }
+
+    fn json_stems(&self) -> Vec<String> {
+        let mut stems: Vec<String> = self.0.files().filter_map(|f| json_stem(f.path())).collect();
+        stems.sort();
+        stems
+    }
+}
+
+struct OnDisk(PathBuf);
+
+impl PackFiles for OnDisk {
+    fn read(&self, name: &str) -> Option<String> {
+        std::fs::read_to_string(self.0.join(name)).ok()
+    }
+
+    fn json_stems(&self) -> Vec<String> {
+        let mut stems: Vec<String> = std::fs::read_dir(&self.0)
+            .into_iter()
+            .flatten()
+            .flatten()
+            .filter_map(|e| json_stem(&e.path()))
+            .collect();
+        stems.sort();
+        stems
+    }
+}
+
+fn json_stem(path: &Path) -> Option<String> {
+    if path.extension()? != "json" {
+        return None;
+    }
+    path.file_stem()?.to_str().map(str::to_string)
+}
+
+/// Reads one pack: its `pack.json` (optional: a directory of creatures is
+/// pack enough), one `<id>.json` per creature and an optional `<id>.txt`
+/// portrait. Files that can't be read are skipped and reported, so one bad
+/// creature doesn't sink the pack. Creatures come back in the pack's `order`,
+/// then any others by id.
+fn read_pack(files: &dyn PackFiles, dir: &str, source: &str) -> (Pack, Vec<Creature>, Vec<String>) {
+    let mut problems = Vec::new();
+    let mut pack = match files.read("pack.json") {
+        None => Pack {
+            name: dir.to_string(),
+            ..Pack::default()
+        },
+        Some(text) => match serde_json::from_str::<Pack>(&text) {
+            Ok(pack) => pack,
+            Err(e) => return (Pack::default(), Vec::new(), vec![format!("pack.json: {e}")]),
+        },
+    };
+    if pack.id.is_empty() {
+        pack.id = dir.to_string();
+    }
+    if pack.name.is_empty() {
+        pack.name = pack.id.clone();
+    }
+    pack.source = source.to_string();
+
+    let mut found: BTreeMap<String, Creature> = BTreeMap::new();
+    for stem in files.json_stems().into_iter().filter(|s| s != "pack") {
+        let parsed = files
+            .read(&format!("{stem}.json"))
+            .ok_or_else(|| "isn't readable text".to_string())
+            .and_then(|text| serde_json::from_str::<Creature>(&text).map_err(|e| e.to_string()));
+        match parsed {
+            Ok(mut c) => {
+                if c.id.is_empty() {
+                    c.id = stem.clone();
+                }
+                c.pack = pack.id.clone();
+                c.ascii = files
+                    .read(&format!("{}.txt", c.id))
+                    .map(|art| tidy_art(&art))
+                    .unwrap_or_default();
+                found.insert(c.id.clone(), c);
+            }
+            Err(e) => problems.push(format!("{stem}.json: {e}")),
+        }
+    }
+    let mut creatures = Vec::new();
+    for id in &pack.order {
+        match found.remove(id) {
+            Some(c) => creatures.push(c),
+            None => problems.push(format!("pack.json lists {id:?}, but there's no {id}.json")),
+        }
+    }
+    creatures.extend(found.into_values());
+    (pack, creatures, problems)
+}
+
+/// A portrait without its trailing newline and with Windows line endings
+/// normalised: a stray `\r` would garble the layout.
+fn tidy_art(art: &str) -> String {
+    art.replace("\r\n", "\n")
+        .replace('\r', "")
+        .trim_end_matches('\n')
+        .to_string()
+}
+
+/// Whether a portrait is printable ASCII only. Anything else risks a
+/// double-width cell, which would misalign it.
+fn is_plain_art(art: &str) -> bool {
+    art.chars()
+        .all(|ch| ch == '\n' || (' '..='~').contains(&ch))
+}
+
+/// What a community creature is missing to be playable.
+fn validate(c: &Creature) -> Vec<&'static str> {
+    let mut problems = Vec::new();
+    if c.name.trim().is_empty() {
+        problems.push("needs a name");
+    }
+    if c.description.trim().is_empty() {
+        problems.push("needs a description");
+    }
+    if c.facts.is_empty() {
+        problems.push("needs at least one fact");
+    }
+    if c.stats.labelled().iter().any(|(_, v)| *v > 10) {
+        problems.push("stats must be between 0 and 10");
+    }
+    problems
+}
+
+/// Fills in the optional fields, so a community creature works everywhere.
+fn apply_defaults(c: &mut Creature) {
+    if c.emoji.is_empty() {
+        c.emoji = "🎁".to_string();
+    }
+    if c.origin.is_empty() {
+        c.origin = "Unknown".to_string();
+    }
+    if c.debut.title.is_empty() {
+        c.debut.title = c.name.clone();
+    }
+    if c.debut.year.is_none() && c.debut.era.is_none() {
+        c.debut.era = Some("date unknown".to_string());
+    }
+    for stat in [
+        &mut c.stats.strength,
+        &mut c.stats.speed,
+        &mut c.stats.cunning,
+        &mut c.stats.dread,
+    ] {
+        if *stat == 0 {
+            *stat = 5;
+        }
+    }
+    if c.powers.is_empty() {
+        c.powers = vec!["Sheer festive spirit".to_string()];
+    }
+    if c.weaknesses.is_empty() {
+        c.weaknesses = vec!["An early night".to_string()];
+    }
+    if crate::render::parse_hex(&c.theme.primary).is_none() {
+        c.theme.primary = crate::render::GOLD.to_string();
+    }
+    if crate::render::parse_hex(&c.theme.accent).is_none() {
+        c.theme.accent = crate::render::GREEN.to_string();
+    }
 }
 
 fn unknown(query: &str, suggestions: &[&str]) -> TinselError {
@@ -441,6 +683,18 @@ mod tests {
     fn every_creature_is_complete() {
         for c in vault().creatures {
             let id = &c.id;
+            // Every field has a default for community packs, so the built-in
+            // creatures are held to the full set here.
+            assert!(
+                !c.description.is_empty() && !c.origin.is_empty() && !c.host_intro.is_empty(),
+                "{id}: description, origin and hostIntro"
+            );
+            assert!(
+                !c.debut.medium.is_empty()
+                    && !c.debut.title.is_empty()
+                    && (c.debut.year.is_some() || c.debut.era.is_some()),
+                "{id}: debut needs a medium, a title and a year or an era"
+            );
             assert!(
                 !c.name.is_empty() && !c.emoji.is_empty(),
                 "{id}: name and emoji"
@@ -603,6 +857,167 @@ mod tests {
                 .count(),
             1
         );
+    }
+
+    #[test]
+    fn every_built_in_pack_is_described_and_marked() {
+        let v = vault();
+        for p in &v.packs {
+            assert!(!p.name.is_empty() && !p.description.is_empty(), "{}", p.id);
+            assert_eq!(p.source, BUILT_IN);
+            let members = v.creatures.iter().filter(|c| c.pack == p.id).count();
+            assert_eq!(members, p.order.len(), "{}: order and files agree", p.id);
+        }
+    }
+
+    /// A scratch directory of community packs, removed when the test ends.
+    struct Community(PathBuf);
+
+    impl Community {
+        fn new(name: &str) -> Self {
+            let dir =
+                std::env::temp_dir().join(format!("tinsel-packs-{name}-{}", std::process::id()));
+            let _ = std::fs::remove_dir_all(&dir);
+            Self(dir)
+        }
+
+        fn write(&self, file: &str, text: &str) {
+            let path = self.0.join(file);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, text).unwrap();
+        }
+    }
+
+    impl Drop for Community {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    const ELF: &str = r#"{"name": "The Shelf Inspector", "description": "Checks for dust", "facts": ["It never blinks"]}"#;
+
+    #[test]
+    fn no_community_directory_means_no_community_packs() {
+        let dir = Community::new("none");
+        let mut v = vault();
+        assert!(v.add_community(&dir.0).is_empty());
+        assert_eq!(v.packs.len(), PACK_ORDER.len());
+    }
+
+    #[test]
+    fn a_three_line_creature_is_enough_and_gets_defaults() {
+        let dir = Community::new("minimal");
+        dir.write("attic/shelf-inspector.json", ELF);
+        dir.write("attic/shelf-inspector.txt", "  o\r\n /|\\\r\n\r\n");
+        let mut v = vault();
+        let warnings = v.add_community(&dir.0);
+        assert!(warnings.is_empty(), "{warnings:?}");
+        let pack = v.packs.last().unwrap();
+        assert_eq!((pack.id.as_str(), pack.name.as_str()), ("attic", "attic"));
+        assert!(pack.source.ends_with("attic"), "{}", pack.source);
+        let c = v.get("shelf-inspector").unwrap();
+        assert_eq!(c.pack, "attic");
+        assert_eq!(c.emoji, "🎁");
+        assert_eq!(c.stats.labelled().map(|(_, v)| v), [5, 5, 5, 5]);
+        assert_eq!(c.first_appearance(), "date unknown");
+        assert!(!c.powers.is_empty() && !c.weaknesses.is_empty());
+        assert!(crate::render::parse_hex(&c.theme.primary).is_some());
+        assert_eq!(c.ascii, "  o\n /|\\");
+        // It joins everything: lookup, the pack filter, the games.
+        assert_eq!(v.find("shelf inspector").unwrap().id, "shelf-inspector");
+        let only = v.only_packs(&["attic".into()]).unwrap();
+        assert_eq!(only.creatures.len(), 1);
+    }
+
+    #[test]
+    fn pack_json_names_and_orders_a_community_pack() {
+        let dir = Community::new("ordered");
+        dir.write(
+            "attic/pack.json",
+            r#"{"id": "loft", "name": "The Loft", "description": "Up the ladder", "order": ["b", "a", "ghost"]}"#,
+        );
+        for id in ["a", "b", "c"] {
+            dir.write(
+                &format!("attic/{id}.json"),
+                &ELF.replace("The Shelf Inspector", id),
+            );
+        }
+        let mut v = vault();
+        let warnings = v.add_community(&dir.0);
+        assert_eq!(warnings.len(), 1, "{warnings:?}");
+        assert!(warnings[0].contains("lists \"ghost\""), "{warnings:?}");
+        assert_eq!(v.packs.last().unwrap().name, "The Loft");
+        let ids: Vec<&str> = v
+            .creatures
+            .iter()
+            .filter(|c| c.pack == "loft")
+            .map(|c| c.id.as_str())
+            .collect();
+        assert_eq!(ids, ["b", "a", "c"], "the order first, then the rest by id");
+    }
+
+    #[test]
+    fn broken_and_incomplete_creatures_are_skipped_with_a_warning() {
+        let dir = Community::new("broken");
+        dir.write("attic/good.json", ELF);
+        dir.write("attic/typo.json", "{ not json");
+        dir.write("attic/empty.json", "{}");
+        dir.write(
+            "attic/strong.json",
+            &ELF.replace('}', r#", "stats": {"strength": 11}}"#),
+        );
+        dir.write("attic/krampus.json", ELF);
+        dir.write(
+            "attic/emoji.json",
+            &ELF.replace("The Shelf Inspector", "Emoji Art"),
+        );
+        dir.write("attic/emoji.txt", "🎄🎄🎄");
+        dir.write("nordic/extra.json", ELF);
+        dir.write("hollow/pack.json", r#"{"name": "Nothing here"}"#);
+        dir.write("notes.txt", "not a pack");
+        let mut v = vault();
+        let warnings = v.add_community(&dir.0).join("\n");
+        for expected in [
+            "typo.json:",
+            "skipping \"empty\": needs a name; needs a description; needs at least one fact",
+            "skipping \"strong\": stats must be between 0 and 10",
+            "skipping \"krampus\": a creature with that id already exists",
+            "\"emoji\": the portrait must be printable ASCII",
+            "pack \"nordic\": a pack with that id already exists",
+        ] {
+            assert!(
+                warnings.contains(expected),
+                "missing {expected:?} in:\n{warnings}"
+            );
+        }
+        let attic: Vec<&str> = v
+            .creatures
+            .iter()
+            .filter(|c| c.pack == "attic")
+            .map(|c| c.id.as_str())
+            .collect();
+        assert_eq!(attic, ["emoji", "good"]);
+        assert!(v.get("emoji").unwrap().ascii.is_empty());
+        assert_eq!(v.get("krampus").unwrap().pack, "companions");
+        assert!(v.get("extra").is_none());
+        assert!(
+            !v.packs.iter().any(|p| p.id == "hollow"),
+            "an empty pack isn't listed"
+        );
+        assert_eq!(v.creatures.iter().filter(|c| c.pack == "nordic").count(), 4);
+    }
+
+    #[test]
+    fn an_unknown_pack_gets_a_suggestion_and_the_list() {
+        let e = vault().only_packs(&["nordik".into()]).unwrap_err();
+        assert_eq!(e.code, Code::BadPack);
+        assert!(e.message.contains("Did you mean nordic?"), "{}", e.message);
+        assert_eq!(
+            e.hint.as_deref(),
+            Some("choose from: companions, nordic, midwinter, dickens")
+        );
+        let e = vault().only_packs(&["elves".into()]).unwrap_err();
+        assert!(!e.message.contains("Did you mean"), "{}", e.message);
     }
 
     #[test]
