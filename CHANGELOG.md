@@ -17,6 +17,15 @@
 - `creature --json` with no name prints every creature.
 - A `no-terminal` error code when a screen that needs a terminal is run from a script, a pipe or CI, with
   a hint to use `--json`.
+- **The Christmas Cracker Quiz.** `quiz [creature]` asks multiple-choice questions built from the creature
+  data (`-n` sets how many), explains every answer and ends with a rank from Stocking Filler to Star of
+  the Tree.
+- **Guess the Guest.** `guess` hides a portrait behind a frosted window: `space` clears more frost and
+  brings clues, at the cost of points (`-n` sets the rounds).
+- **The Snowball Showdown.** `mash [creature] [creature]` stages three rounds between two creatures,
+  decided by their stats and a die; `--fast` skips the pauses.
+- All three games take `--json`, and `TERMINAL_OF_TINSEL_SEED` now fixes every random choice. A seed that
+  isn't a whole number is ignored with a warning.
 - Auntie Aerial has sign-off lines, and a special greeting on Christmas Eve and Christmas Day.
 
 ### Changed
