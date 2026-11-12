@@ -43,9 +43,25 @@ pub struct Creature {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub host_intro: String,
     pub theme: Theme,
+    /// The portrait, from `<id>.txt` beside the creature's JSON file.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub ascii: String,
     /// Filled in from the directory the creature was loaded from.
     #[serde(default)]
     pub pack: String,
+}
+
+impl Creature {
+    /// Where and when the creature first appeared, as a readable line.
+    pub fn first_appearance(&self) -> String {
+        let d = &self.debut;
+        match (&d.creator, d.year, &d.era) {
+            (Some(who), Some(year), _) => format!("{}, {} ({year})", d.title, who),
+            (_, _, Some(era)) => era.clone(),
+            (_, Some(year), _) => year.to_string(),
+            _ => d.title.clone(),
+        }
+    }
 }
 
 /// Where a creature first appeared.
@@ -125,6 +141,17 @@ pub struct Pack {
     pub name: String,
     pub description: String,
     pub order: Vec<String>,
+    /// How the explorer draws the pack's pages. "engraving" gives sepia ink
+    /// and drifting snow, like the plates of a Victorian Christmas book.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<String>,
+}
+
+impl Pack {
+    /// Whether the explorer draws this pack as an engraving.
+    pub fn is_engraving(&self) -> bool {
+        self.style.as_deref() == Some("engraving")
+    }
 }
 
 /// One door of the advent calendar.
@@ -162,6 +189,7 @@ impl Vault {
             for id in &pack.order {
                 let mut c: Creature = parse(dir, &format!("{pack_id}/{id}.json"));
                 c.pack = pack.id.clone();
+                c.ascii = portrait(dir, &format!("{pack_id}/{id}.txt"));
                 creatures.push(c);
             }
             packs.push(pack);
@@ -203,6 +231,11 @@ impl Vault {
         self.creatures.iter().find(|c| c.id == id)
     }
 
+    /// The pack a creature belongs to.
+    pub fn pack_of(&self, c: &Creature) -> Option<&Pack> {
+        self.packs.iter().find(|p| p.id == c.pack)
+    }
+
     /// The creatures grouped by pack, in pack order.
     pub fn by_pack(&self) -> Vec<(&Pack, Vec<&Creature>)> {
         let mut groups: BTreeMap<usize, Vec<&Creature>> = BTreeMap::new();
@@ -222,7 +255,7 @@ impl Vault {
     pub fn find(&self, query: &str) -> Result<&Creature> {
         let key = normalize(query);
         if key.is_empty() {
-            return Err(unknown(query, None));
+            return Err(unknown(query, &[]));
         }
         let names = |c: &Creature| {
             let mut v = vec![normalize(&c.id), normalize(&c.name)];
@@ -243,7 +276,7 @@ impl Vault {
             .collect();
         match matches.as_slice() {
             [one] => Ok(one),
-            [] => Err(unknown(query, self.suggest(&key))),
+            [] => Err(unknown(query, &self.suggest(&key))),
             many => {
                 let names: Vec<&str> = many.iter().map(|c| c.name.as_str()).collect();
                 Err(TinselError::new(
@@ -254,19 +287,35 @@ impl Vault {
         }
     }
 
-    /// The closest creature name to a query that matched nothing.
-    fn suggest(&self, key: &str) -> Option<&str> {
-        self.creatures
+    /// Up to three creature names within a few edits of a query that matched
+    /// nothing, nearest first.
+    fn suggest(&self, key: &str) -> Vec<&str> {
+        let mut scored: Vec<(usize, &str)> = self
+            .creatures
             .iter()
-            .flat_map(|c| {
-                std::iter::once(&c.name)
+            .filter_map(|c| {
+                std::iter::once(&c.id)
+                    .chain(std::iter::once(&c.name))
                     .chain(&c.aliases)
-                    .map(move |n| (levenshtein(&normalize(n), key), c.name.as_str()))
+                    .map(|n| levenshtein(&normalize(n), key))
+                    .min()
+                    .map(|d| (d, c.name.as_str()))
             })
             .filter(|(d, _)| *d <= 3.max(key.len() / 3))
-            .min_by_key(|(d, _)| *d)
-            .map(|(_, name)| name)
+            .collect();
+        scored.sort_by_key(|(d, _)| *d);
+        scored.into_iter().take(3).map(|(_, name)| name).collect()
     }
+}
+
+/// A creature's portrait, without the trailing newline and with Windows line
+/// endings normalised: a stray `\r` would garble the layout.
+fn portrait(dir: &Dir, path: &str) -> String {
+    dir.get_file(path)
+        .and_then(|f| f.contents_utf8())
+        .map(|art| art.replace("\r\n", "\n").replace('\r', ""))
+        .map(|art| art.trim_end_matches('\n').to_string())
+        .unwrap_or_default()
 }
 
 fn parse<T: serde::de::DeserializeOwned>(dir: &Dir, path: &str) -> T {
@@ -277,10 +326,14 @@ fn parse<T: serde::de::DeserializeOwned>(dir: &Dir, path: &str) -> T {
     serde_json::from_str(text).unwrap_or_else(|e| panic!("invalid packs/{path}: {e}"))
 }
 
-fn unknown(query: &str, suggestion: Option<&str>) -> TinselError {
+fn unknown(query: &str, suggestions: &[&str]) -> TinselError {
     let mut msg = format!("no creature called {query:?} is out tonight");
-    if let Some(s) = suggestion {
-        msg.push_str(&format!(". Did you mean {s}?"));
+    match suggestions {
+        [] => {}
+        [one] => msg.push_str(&format!(". Did you mean {one}?")),
+        [first @ .., last] => {
+            msg.push_str(&format!(". Did you mean {} or {last}?", first.join(", ")));
+        }
     }
     TinselError::new(Code::UnknownCreature, msg)
         .with_hint("try 'terminal-of-tinsel list' for tonight's guests")
@@ -289,23 +342,7 @@ fn unknown(query: &str, suggestion: Option<&str>) -> TinselError {
 /// Lowercases, folds common accents, drops a leading "the" and punctuation,
 /// so "the Yule-Cat" and "yule cat" match, and so do "Grýla" and "gryla".
 pub fn normalize(s: &str) -> String {
-    let folded: String = s
-        .trim()
-        .to_lowercase()
-        .chars()
-        .map(|ch| match ch {
-            'á' | 'à' | 'â' | 'ä' => 'a',
-            'é' | 'è' | 'ê' | 'ë' => 'e',
-            'í' | 'ì' | 'î' | 'ï' => 'i',
-            'ý' | 'ÿ' => 'y',
-            'ó' | 'ò' | 'ô' | 'ö' | 'ø' => 'o',
-            'ú' | 'ù' | 'û' | 'ü' => 'u',
-            'ð' => 'd',
-            'þ' => 't',
-            'æ' => 'a',
-            c => c,
-        })
-        .collect();
+    let folded: String = s.trim().chars().map(fold).collect();
     let folded = folded.strip_prefix("the ").unwrap_or(&folded);
     let cleaned: String = folded
         .chars()
@@ -316,6 +353,24 @@ pub fn normalize(s: &str) -> String {
         })
         .collect();
     cleaned.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+/// Lowercases one character and folds common accents, always to exactly one
+/// character, so positions in folded text line up with the original.
+pub fn fold(ch: char) -> char {
+    match ch.to_lowercase().next().unwrap_or(ch) {
+        'á' | 'à' | 'â' | 'ä' => 'a',
+        'é' | 'è' | 'ê' | 'ë' => 'e',
+        'í' | 'ì' | 'î' | 'ï' => 'i',
+        'ý' | 'ÿ' => 'y',
+        'ó' | 'ò' | 'ô' | 'ö' | 'ø' => 'o',
+        'ú' | 'ù' | 'û' | 'ü' => 'u',
+        'ð' => 'd',
+        'þ' => 't',
+        'æ' => 'a',
+        'č' => 'c',
+        c => c,
+    }
 }
 
 /// Edit distance, for "did you mean".
@@ -403,6 +458,50 @@ mod tests {
     }
 
     #[test]
+    fn every_creature_has_a_portrait_of_plain_characters() {
+        for c in vault().creatures {
+            let id = &c.id;
+            assert!(!c.ascii.is_empty(), "{id}: needs a portrait in {id}.txt");
+            // Anything but printable ASCII risks a double-width cell, which
+            // would misalign the portrait and the frost in the guessing game.
+            assert!(
+                c.ascii
+                    .chars()
+                    .all(|ch| ch == '\n' || (' '..='~').contains(&ch)),
+                "{id}: portraits use printable ASCII only"
+            );
+            let lines: Vec<&str> = c.ascii.lines().collect();
+            assert!(lines.len() <= 20, "{id}: portrait is over 20 lines");
+            assert!(
+                lines.iter().all(|l| l.len() <= 46 && !l.ends_with(' ')),
+                "{id}: portrait lines are at most 46 columns, with no trailing spaces"
+            );
+        }
+    }
+
+    #[test]
+    fn only_dickens_is_an_engraving() {
+        let v = vault();
+        let styled: Vec<&str> = v
+            .packs
+            .iter()
+            .filter(|p| p.is_engraving())
+            .map(|p| p.id.as_str())
+            .collect();
+        assert_eq!(styled, ["dickens"]);
+    }
+
+    #[test]
+    fn first_appearance_reads_naturally() {
+        let v = vault();
+        assert_eq!(
+            v.get("marley").unwrap().first_appearance(),
+            "A Christmas Carol, Charles Dickens (1843)"
+        );
+        assert!(!v.get("gryla").unwrap().first_appearance().is_empty());
+    }
+
+    #[test]
     fn ids_are_unique() {
         let v = vault();
         let mut ids: Vec<_> = v.creatures.iter().map(|c| &c.id).collect();
@@ -450,6 +549,14 @@ mod tests {
         assert_eq!(e.code, Code::UnknownCreature);
         assert!(e.message.contains("Did you mean Krampus?"), "{}", e.message);
         assert_eq!(v.find("rudolph").unwrap_err().code, Code::UnknownCreature);
+        // Several near misses are all offered, nearest first.
+        assert_eq!(
+            unknown("x", &["A", "B", "C"])
+                .message
+                .matches("A, B or C")
+                .count(),
+            1
+        );
     }
 
     #[test]

@@ -172,7 +172,7 @@ pub fn visible_width(s: &str) -> usize {
 }
 
 /// Cuts text to fit `max` columns, with an ellipsis.
-fn truncate(text: &str, max: usize) -> String {
+pub fn truncate(text: &str, max: usize) -> String {
     if text.width() <= max {
         return text.to_string();
     }
@@ -229,6 +229,7 @@ pub fn welcome(p: &Painter, vault: &Vault, today: Date, greeting: &str) -> Strin
     out.push(String::new());
     out.push(p.heading("START HERE", GREEN));
     for (cmd, what) in [
+        ("creature", "tune in to the Midwinter Special"),
         ("list", "meet tonight's guests"),
         ("creature krampus", "read a creature's page"),
         ("random --daily", "the Fact of the Night"),
@@ -302,12 +303,7 @@ pub fn creature(p: &Painter, c: &Creature, pack_name: &str, reveal: bool) -> Str
         primary,
     )];
     out.extend(p.wrap(&c.description, w, |l| p.italic(l, SNOW)));
-    let first = match (&c.debut.creator, c.debut.year, &c.debut.era) {
-        (Some(who), Some(year), _) => format!("{}, {} ({year})", c.debut.title, who),
-        (_, _, Some(era)) => era.clone(),
-        (_, Some(year), _) => year.to_string(),
-        _ => c.debut.title.clone(),
-    };
+    let first = c.first_appearance();
     let meta = format!("{} · first appeared: {first} · pack: {pack_name}", c.origin);
     out.extend(p.wrap(&meta, w, |l| p.paint(l, DIM)));
     out.push(String::new());
