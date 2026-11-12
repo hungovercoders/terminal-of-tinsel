@@ -77,6 +77,10 @@ jobs:
           $bin stocking reset -y
           $bin random --daily
           $bin countdown --date 2026-12-24
+          $bin countdown --date 2026-12-24 --json > /dev/null
+          $bin tonight --date 2026-12-19
+          $bin tonight --shuffle > /dev/null
+          $bin tonight --date 2026-12-19 --json > /dev/null
           $bin advent --date 2026-12-12
           $bin completions bash > /dev/null
           $bin list --json > /dev/null

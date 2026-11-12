@@ -152,6 +152,22 @@ your config directory; set TERMINAL_OF_TINSEL_HOME to keep it somewhere else."
         action: Option<StockingAction>,
     },
 
+    /// See tonight's Christmas double bill
+    #[command(
+        long_about = "Print a ticket for tonight's Channel 25 double bill. The line-up changes every \
+night, so check back tomorrow, or use --shuffle for a different bill. From 1 to 24 December the \
+guest behind that night's advent door tops the bill."
+    )]
+    Tonight {
+        /// See the bill for another night (YYYY-MM-DD)
+        #[arg(long, value_name = "YYYY-MM-DD")]
+        date: Option<String>,
+
+        /// Pick a random double bill instead of tonight's
+        #[arg(long)]
+        shuffle: bool,
+    },
+
     /// Count the sleeps until Christmas
     Countdown {
         /// Pretend it's this date (YYYY-MM-DD)
