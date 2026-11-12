@@ -145,7 +145,7 @@ Badge emoji will be checked against the two-column rule before they land.
 | [x] | daily seed `YYYYMMDD` | the same | done |
 | [x] | notes: Halloween, Friday the 13th, anniversaries | notes: Krampusnacht, St Nicholas Day, the Tió, Carol anniversary, Christmas Eve, Boxing Day, Twelfth Night, Epiphany, Yule Lads, Twelve Days | done |
 | [x] | moon phase (mean synodic month from the 6 January 2000 new moon; name, emoji, illumination) | the moon's age and the full-moon test arrived with the badges (P3); the name, emoji, illumination and `moon` in `countdown --json` to come | done (P4) |
-| [x] | full-moon note | full-moon note (December's is the Cold Moon) | P4 |
+| [x] | full-moon note | full-moon note (December's is the Cold Moon) | done (P4) |
 | [x] | "N nights until Halloween" note within 60 nights | "N sleeps until Christmas" note within 60 | done (P4) |
 | [x] | film anniversaries from `film.releaseDate`: today's and the next | the "next special night": the nearer of the next film anniversary and the next dated feast | done (P4) |
 | [x] | `tonight`: a ticket, two features at 9:00 PM and 10:45 PM, the host's intro, notes | a cinema ticket for Channel 25's double bill at 7:00 PM and 8:45 PM | done (P4) |
