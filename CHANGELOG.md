@@ -32,6 +32,14 @@
 - Progress is saved as `stocking.json` in your config directory, or in `TERMINAL_OF_TINSEL_HOME` if set.
   A broken save file never stops a game: it warns and carries on.
 - A `store` error code when saved progress can't be read or written.
+- **Tonight's double bill.** `tonight` prints a cinema ticket for the night's two features, the same all
+  day and different tomorrow; `--shuffle` deals another, `--date` looks ahead. In advent, the guest
+  behind the night's door tops the bill.
+- `countdown` shows tonight's moon and the next special night: the nearer of the next feast of the
+  season and the next film anniversary. `countdown --json` gains `moon` and `nextSpecialNight`.
+- New notes: the winter solstice, Christmas Day, a full moon (the Cold Moon in December), film
+  anniversaries, and the sleeps until Christmas when there are 60 or fewer.
+- Films can carry `releaseDate`, `studio`, `makeup` and `silent`. *Scrooge* (1951) has its release date.
 - Auntie Aerial has sign-off lines, and a special greeting on Christmas Eve and Christmas Day.
 
 ### Changed
