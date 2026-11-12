@@ -25,6 +25,31 @@ const QUIPS: &[&str] = &[
     "And they say Christmas telly isn't educational.",
 ];
 
+const SIGN_OFFS: &[&str] = &[
+    "That's all from the top of the tree. Sleep well, and leave the porridge out. Auntie Aerial, signing off.",
+    "Don't touch that dial... actually, do. It's late, and somebody has to hang the stockings. Good night!",
+    "The test card is coming up, which means it's time for bed. Mind the Yule Cat on the stairs.",
+    "Until next time, keep your rhymes sharp and your jumper new. Good night from Channel 25.",
+];
+
+const CHRISTMAS_EVE: &str = "It's Christmas Eve, and every guest we have is out in the snow tonight. Porridge on the step, new clothes on, rhymes at the ready. I'm Auntie Aerial, and this is the biggest Midwinter Special of the year.";
+
+const CHRISTMAS_DAY: &str = "Merry Christmas from the top of the tree! The Yule Lads are heading home one by one, and there's a mince pie with your name on it. I'm Auntie Aerial, and you're watching Channel 25.";
+
+/// The opening line for the big nights, if this is one.
+pub fn seasonal_greeting(month: i8, day: i8) -> Option<&'static str> {
+    match (month, day) {
+        (12, 24) => Some(CHRISTMAS_EVE),
+        (12, 25) => Some(CHRISTMAS_DAY),
+        _ => None,
+    }
+}
+
+/// A random closing line.
+pub fn sign_off(rng: &mut Rng) -> &'static str {
+    rng.pick::<&str>(SIGN_OFFS)
+}
+
 /// A random opening line.
 pub fn greeting(rng: &mut Rng) -> &'static str {
     rng.pick::<&str>(GREETINGS)

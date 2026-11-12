@@ -4,9 +4,11 @@ mod calendar;
 mod cli;
 mod creatures;
 mod error;
+mod explorer;
 mod host;
 mod render;
 mod rng;
+mod search;
 
 use std::io::{self, IsTerminal, Write};
 use std::process::ExitCode;
@@ -49,9 +51,8 @@ fn main() -> ExitCode {
 }
 
 fn run(cli: Cli) -> Result<()> {
-    let plain = cli.no_color
-        || std::env::var_os("NO_COLOR").is_some_and(|v| !v.is_empty())
-        || !io::stdout().is_terminal();
+    let no_colour = cli.no_color || std::env::var_os("NO_COLOR").is_some_and(|v| !v.is_empty());
+    let plain = no_colour || !io::stdout().is_terminal();
     let painter = Painter::new(plain, terminal_width());
     let vault = Vault::load().only_packs(&cli.pack)?;
     let json = cli.json;
@@ -83,17 +84,61 @@ fn run(cli: Cli) -> Result<()> {
             print(&render::list(&painter, &vault));
         }
 
-        Some(Command::Creature { name, reveal }) => {
-            let c = vault.find(&name.join(" "))?;
+        Some(Command::Creature {
+            name,
+            reveal,
+            explore,
+            all,
+            no_intro,
+        }) => {
+            let named = if name.is_empty() {
+                None
+            } else {
+                Some(vault.find(&name.join(" "))?)
+            };
             if json {
-                return print_json(c);
+                return match named {
+                    Some(c) => print_json(c),
+                    None => print_json(&vault.creatures),
+                };
             }
-            let pack = vault
-                .packs
-                .iter()
-                .find(|p| p.id == c.pack)
-                .map_or(c.pack.as_str(), |p| p.name.as_str());
-            print(&render::creature(&painter, c, pack, reveal));
+            match named {
+                Some(c) if !explore && !all => {
+                    let pack = vault.pack_of(c).map_or(c.pack.as_str(), |p| &p.name);
+                    print(&render::creature(&painter, c, pack, reveal));
+                }
+                _ => {
+                    require_terminal(
+                        "the Midwinter Special",
+                        "use --json for the data, name a creature to print its page, or tune in from a shell",
+                    )?;
+                    let visit = explorer::run(
+                        &vault,
+                        explorer::Options {
+                            show_all: all,
+                            start_id: named.map(|c| c.id.clone()),
+                            no_intro,
+                            reveal,
+                            colour: !no_colour,
+                            today: calendar::today(),
+                            rng: Rng::from_env_or_clock(),
+                        },
+                    )?;
+                    if let Some(line) = visit.sign_off {
+                        let text = format!("{}{line}", painter.glyph("📺"));
+                        print(&(painter.italic(&text, render::DIM) + "\n"));
+                    }
+                    let met = visit.seen.len();
+                    if met > 0 {
+                        let guests = if met == 1 { "guest" } else { "guests" };
+                        let text = format!(
+                            "You met {met} of tonight's {} {guests}.",
+                            vault.creatures.len()
+                        );
+                        print(&(painter.paint(&text, render::DIM) + "\n"));
+                    }
+                }
+            }
         }
 
         Some(Command::Random { daily, date }) => {
@@ -255,6 +300,22 @@ fn print_json<T: Serialize + ?Sized>(value: &T) -> Result<()> {
         .map_err(|e| TinselError::new(Code::Usage, e.to_string()))?;
     print(&(text + "\n"));
     Ok(())
+}
+
+/// The guard in front of every screen that takes over the terminal. Run from
+/// a script, a pipe or CI, such a screen would hang waiting for a key or spray
+/// escape codes into the pipe; this says plainly what it needs instead.
+/// `what` names the screen in the show's own words; `instead` says what a
+/// script should use.
+fn require_terminal(what: &str, instead: &str) -> Result<()> {
+    if io::stdout().is_terminal() && io::stdin().is_terminal() {
+        return Ok(());
+    }
+    Err(TinselError::new(
+        Code::NoTerminal,
+        format!("{what} needs a terminal to play on (stdout or stdin is not one)"),
+    )
+    .with_hint(instead))
 }
 
 fn terminal_width() -> usize {

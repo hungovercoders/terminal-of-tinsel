@@ -49,6 +49,12 @@ jobs:
           $bin
           $bin list
           $bin creature krampus --reveal
+          $bin creature --json > /dev/null
+          $bin creature tomte --json | grep -q '"ascii"'
+          if $bin creature < /dev/null > /dev/null 2>&1; then
+            echo "expected the explorer to refuse to run without a terminal"
+            exit 1
+          fi
           $bin random --daily
           $bin countdown --date 2026-12-24
           $bin advent --date 2026-12-12

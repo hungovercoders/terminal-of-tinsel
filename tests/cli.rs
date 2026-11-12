@@ -35,6 +35,7 @@ fn every_command_runs() {
         vec!["list"],
         vec!["creature", "krampus"],
         vec!["creature", "mari", "lwyd", "--reveal"],
+        vec!["creature", "--json"],
         vec!["random"],
         vec!["random", "--daily"],
         vec!["countdown"],
@@ -88,6 +89,47 @@ fn creature_json_by_alias() {
     let v = json(&["creature", "jolakotturinn"]);
     assert_eq!(v["id"], "yule-cat");
     assert_eq!(v["myths"][0]["true"], false);
+}
+
+#[test]
+fn creature_json_without_a_name_is_every_creature() {
+    let v = json(&["creature"]);
+    assert_eq!(v.as_array().unwrap().len(), 14);
+    let v = json(&["creature", "--pack", "nordic"]);
+    assert_eq!(v.as_array().unwrap().len(), 4);
+}
+
+#[test]
+fn creature_json_carries_the_portrait() {
+    let v = json(&["creature", "tomte"]);
+    let art = v["ascii"].as_str().unwrap();
+    assert!(art.lines().count() > 5);
+    assert!(!art.contains('\r') && !art.ends_with('\n'));
+}
+
+#[test]
+fn the_explorer_refuses_to_run_without_a_terminal() {
+    // Under `cargo test` neither stdin nor stdout is a terminal, as in a
+    // script, a pipe or CI.
+    for args in [
+        vec!["creature"],
+        vec!["creature", "--all", "--no-intro"],
+        vec!["creature", "krampus", "--explore"],
+    ] {
+        tinsel()
+            .args(&args)
+            .assert()
+            .failure()
+            .stdout(predicate::str::is_empty())
+            .stderr(predicate::str::contains("needs a terminal"))
+            .stderr(predicate::str::contains("hint: use --json for the data"));
+    }
+    // A name the vault doesn't know is reported before the terminal is.
+    tinsel()
+        .args(["creature", "rudolph", "--explore"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("no creature called"));
 }
 
 #[test]
