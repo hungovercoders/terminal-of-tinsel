@@ -40,10 +40,21 @@
 - New notes: the winter solstice, Christmas Day, a full moon (the Cold Moon in December), film
   anniversaries, and the sleeps until Christmas when there are 60 or fewer.
 - Films can carry `releaseDate`, `studio`, `makeup` and `silent`. *Scrooge* (1951) has its release date.
+- **Packs.** `packs` lists every pack, built-in and community. `packs new <id>` makes a community pack in
+  your config directory with an example creature and portrait to edit.
+- **Community packs** load automatically from the `packs` folder of your config directory and join every
+  command. Only `name`, `description` and `facts` are required. Broken files, incomplete creatures and
+  ids already taken are skipped with a warning.
+- **Tab completion of creature names and pack ids**, community packs included. `completions <shell>` now
+  prints a short script that asks the program what to offer (`completion` works too).
+- **Man pages**, one per command, and the completion scripts ship in the release archives under `man/`
+  and `completions/`.
 - Auntie Aerial has sign-off lines, and a special greeting on Christmas Eve and Christmas Day.
 
 ### Changed
 
+- `--pack` accepts any pack that's loaded, and an unknown one gets a "did you mean" and the list to
+  choose from.
 - "Did you mean" now offers up to three names, nearest first, and matches ids as well as names.
 - `--no-color` and `NO_COLOR` also switch the explorer to the terminal's own colours.
 

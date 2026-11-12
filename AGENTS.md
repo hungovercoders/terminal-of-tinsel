@@ -11,7 +11,11 @@ interactive explorer), **owo-colors** and **textwrap** (printed output) and **ji
 ```
 src/main.rs        Entry point: parses args, runs the command, prints JSON or text, maps errors to exit codes
 src/cli.rs         The clap command tree
-src/creatures.rs   Creature, Pack and advent types, the embedded loader, name lookup and "did you mean"
+src/creatures.rs   Creature, Pack and advent types, the loader (built-in packs and community packs
+                   share it), validation and defaults, name lookup and "did you mean"
+src/packs.rs       'packs new': the scaffold for a community pack
+src/complete.rs    What tab completion offers: creature names and pack ids
+src/shelldocs.rs   Test-only: generates man/ and completions/ and fails when they're stale
 src/search.rs      Searching names and lore, for the explorer's /
 src/explorer/      The interactive explorer: mod.rs (entry point), model.rs (state and keys), view.rs (gallery and pages), intro.rs (Channel 25
                    tuning in), tests.rs (every screen drawn into ratatui's TestBackend)
@@ -29,6 +33,7 @@ src/host.rs        Auntie Aerial's lines
 src/rng.rs         SplitMix64, pinned so daily facts never change between releases
 src/error.rs       TinselError and its stable codes
 packs/             Built-in data: <pack>/pack.json, <pack>/<id>.json, <pack>/<id>.txt (portrait), advent.json
+man/ completions/  Generated man pages and completion scripts, shipped in the release archives
 tests/cli.rs       End-to-end tests of the binary
 ```
 
@@ -49,6 +54,10 @@ tests/cli.rs       End-to-end tests of the binary
   end-to-end tests do. Saving must never stop a game: `record` warns and carries on.
 - Game text must read the same for one creature or several (the Yule Lads are plural), so narration is
   in the past tense.
+- `man/` and `completions/` are generated: never edit them by hand. After changing a command, a flag, its
+  help text or the version, run `UPDATE_SHELLDOCS=1 cargo test shell_docs` and commit the result.
+- Every `Creature` field has a serde default so community packs can be short. The data tests, not the
+  parser, hold built-in creatures to the full set: keep them strict when you add a field.
 - Never push a `v*` tag without the maintainer's go-ahead: it publishes a release.
 - Keep dependencies few, and check what their default features pull in.
 - Return `Result<_, TinselError>` with a message a player can act on; don't panic on player input.
@@ -75,5 +84,5 @@ DUMP=1 cargo test dump_ -- --nocapture   # print sample explorer and game screen
 - **Adding a badge:** add it to `BADGES` in `src/stocking.rs` (the array's length is in its type), award
   it in `apply`, test it there, and add it to the README's badge table. Its emoji must be two columns wide.
 - **Adding a command:** add a variant to `Command` in `src/cli.rs`, handle it in `run` in `src/main.rs`
-  (with `--json` output), draw it in `src/render.rs`, and add it to the smoke test in `ci.yml` and to
+  (with `--json` output), draw it in `src/render.rs`, regenerate the man pages, and add it to the smoke test in `ci.yml` and to
   `every_command_runs` in `tests/cli.rs`.
