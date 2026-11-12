@@ -27,12 +27,12 @@ const QUIPS: &[&str] = &[
 
 /// A random opening line.
 pub fn greeting(rng: &mut Rng) -> &'static str {
-    rng.pick(GREETINGS)
+    rng.pick::<&str>(GREETINGS)
 }
 
 /// A short reaction to a fact.
 pub fn quip(rng: &mut Rng) -> &'static str {
-    rng.pick(QUIPS)
+    rng.pick::<&str>(QUIPS)
 }
 
 /// The host's introduction for a creature.
