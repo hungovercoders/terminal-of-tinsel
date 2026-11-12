@@ -12,6 +12,7 @@ use crate::creatures::{Creature, Vault};
 use crate::host;
 use crate::rng::Rng;
 use crate::search::{self, Hit};
+use crate::tui::Ink;
 
 /// Animation speeds: the intro runs fast, and the snow over an engraving
 /// only needs to drift.
@@ -98,7 +99,7 @@ pub struct Options {
 
 pub struct Model<'a> {
     pub(super) vault: &'a Vault,
-    pub(super) colour: bool,
+    pub(super) ink: Ink,
     rng: Rng,
 
     pub(super) screen: Screen,
@@ -143,7 +144,9 @@ impl<'a> Model<'a> {
             .unwrap_or_else(|| host::greeting(&mut rng));
         let mut m = Self {
             vault,
-            colour: opts.colour,
+            ink: Ink {
+                colour: opts.colour,
+            },
             snow_seed: rng.next_u64(),
             rng,
             screen: Screen::Intro,

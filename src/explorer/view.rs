@@ -15,9 +15,8 @@ use super::intro;
 use super::model::{Model, Screen, Tab};
 use crate::creatures::Creature;
 use crate::host;
-use crate::render::{DIM, GOLD, GREEN, RED, SNOW, parse_hex, truncate};
-
-type Lines = Vec<Line<'static>>;
+use crate::render::{GREEN, RED, SNOW, truncate};
+use crate::tui::{self, Lines, beside, boxed, hanging, join_fit, rgb, wrap};
 
 /// Portraits sit beside the text from this width up.
 const WIDE: usize = 100;
@@ -46,30 +45,14 @@ const FULL_HELP: &[&str] = &[
 
 // ── Colours ────────────────────────────────────────────────────────────────
 
-/// A `#RRGGBB` colour, or the terminal's own if it doesn't parse.
-pub fn rgb(hex: &str) -> Color {
-    parse_hex(hex).map_or(Color::Reset, |(r, g, b)| Color::Rgb(r, g, b))
-}
-
 /// A foreground colour, or no colour at all under `--no-color`.
 pub fn fg(m: &Model, colour: Color) -> Style {
-    if m.colour {
-        Style::new().fg(colour)
-    } else {
-        Style::new()
-    }
+    m.ink.fg(colour)
 }
 
 /// The style of the title bar.
 pub fn title_style(m: &Model) -> Style {
-    if m.colour {
-        Style::new()
-            .fg(rgb(GOLD))
-            .bg(Color::Rgb(0x1B, 0x43, 0x32))
-            .add_modifier(Modifier::BOLD)
-    } else {
-        Style::new().add_modifier(Modifier::BOLD | Modifier::REVERSED)
-    }
+    m.ink.title()
 }
 
 /// The colours one creature is drawn in.
@@ -90,14 +73,7 @@ fn palette(m: &Model, c: &Creature) -> Palette {
     } else {
         (rgb(&c.theme.primary), rgb(&c.theme.accent), rgb(SNOW))
     };
-    let badge = if m.colour {
-        Style::new()
-            .fg(Color::Black)
-            .bg(primary)
-            .add_modifier(Modifier::BOLD)
-    } else {
-        Style::new().add_modifier(Modifier::BOLD | Modifier::REVERSED)
-    };
+    let badge = m.ink.badge(primary);
     Palette {
         primary: fg(m, primary),
         accent: fg(m, accent),
@@ -107,68 +83,18 @@ fn palette(m: &Model, c: &Creature) -> Palette {
 }
 
 fn dim(m: &Model) -> Style {
-    fg(m, rgb(DIM))
+    m.ink.dim()
 }
 
 fn heading_style(m: &Model) -> Style {
-    fg(m, rgb(GOLD)).add_modifier(Modifier::BOLD)
+    m.ink.heading()
 }
 
 fn host_style(m: &Model) -> Style {
-    dim(m).add_modifier(Modifier::ITALIC)
+    m.ink.host()
 }
 
 // ── Building blocks ────────────────────────────────────────────────────────
-
-fn wrap(text: &str, width: usize, style: Style) -> Lines {
-    textwrap::wrap(text, width.max(10))
-        .into_iter()
-        .map(|l| Line::styled(l.into_owned(), style))
-        .collect()
-}
-
-/// Wraps text under a marker with a hanging indent.
-fn hanging(marker: &str, marker_style: Style, text: &str, width: usize, style: Style) -> Lines {
-    let lead = format!(" {marker} ");
-    let indent = lead.width();
-    textwrap::wrap(text, width.saturating_sub(indent).max(10))
-        .into_iter()
-        .enumerate()
-        .map(|(i, l)| {
-            let first = if i == 0 {
-                Span::styled(lead.clone(), marker_style)
-            } else {
-                Span::raw(" ".repeat(indent))
-            };
-            Line::from(vec![first, Span::styled(l.into_owned(), style)])
-        })
-        .collect()
-}
-
-/// Joins short items with a separator, wrapping onto as many lines as the
-/// width needs.
-fn join_fit(items: Vec<Span<'static>>, sep: &str, width: usize) -> Lines {
-    let mut lines: Lines = Vec::new();
-    let mut spans: Vec<Span<'static>> = Vec::new();
-    let mut used = 0;
-    for item in items {
-        let w = item.width();
-        if !spans.is_empty() && used + sep.width() + w > width {
-            lines.push(Line::from(std::mem::take(&mut spans)));
-            used = 0;
-        }
-        if !spans.is_empty() {
-            spans.push(Span::raw(sep.to_string()));
-            used += sep.width();
-        }
-        used += w;
-        spans.push(item);
-    }
-    if !spans.is_empty() {
-        lines.push(Line::from(spans));
-    }
-    lines
-}
 
 fn keys(m: &Model, items: &[&str], sep: &str, width: usize) -> Lines {
     let spans = items
@@ -197,43 +123,6 @@ fn viewport(m: &Model, mut lines: Lines, offset: usize, height: usize) -> Lines 
         visible[height - 1] = Line::styled("  ▼ more below", dim(m));
     }
     visible
-}
-
-/// Puts `lines` in a rounded box, `inner` columns wide inside its padding.
-fn boxed(lines: Lines, inner: usize, pad_x: usize, pad_y: usize, border: Style) -> Lines {
-    let span = inner + pad_x * 2;
-    let edge = |l: &str, r: &str| Line::styled(format!("{l}{}{r}", "─".repeat(span)), border);
-    let row = |line: Line<'static>| {
-        let gap = inner.saturating_sub(line.width());
-        let mut spans = vec![Span::styled("│", border), Span::raw(" ".repeat(pad_x))];
-        spans.extend(line.spans);
-        spans.push(Span::raw(" ".repeat(gap + pad_x)));
-        spans.push(Span::styled("│", border));
-        Line::from(spans)
-    };
-    let mut out = vec![edge("╭", "╮")];
-    out.extend((0..pad_y).map(|_| row(Line::default())));
-    out.extend(lines.into_iter().map(row));
-    out.extend((0..pad_y).map(|_| row(Line::default())));
-    out.push(edge("╰", "╯"));
-    out
-}
-
-/// Sets two blocks of lines side by side.
-fn beside(left: Lines, left_width: usize, gap: usize, right: Lines) -> Lines {
-    let rows = left.len().max(right.len());
-    let mut left = left.into_iter();
-    let mut right = right.into_iter();
-    (0..rows)
-        .map(|_| {
-            let l = left.next().unwrap_or_default();
-            let pad = left_width.saturating_sub(l.width()) + gap;
-            let mut spans = l.spans;
-            spans.push(Span::raw(" ".repeat(pad)));
-            spans.extend(right.next().unwrap_or_default().spans);
-            Line::from(spans)
-        })
-        .collect()
 }
 
 fn art_width(art: &str) -> usize {
@@ -275,17 +164,7 @@ fn portrait(m: &Model, c: &Creature, p: &Palette, snowing: bool) -> Lines {
 // ── Shared chrome ──────────────────────────────────────────────────────────
 
 fn title_bar(m: &Model, right: &str) -> Line<'static> {
-    let (w, _) = m.size();
-    let left = Span::styled(" 🎄 TERMINAL OF TINSEL 🎄 ", title_style(m));
-    let used = left.width() + right.width();
-    if used + 2 > w {
-        return Line::from(left);
-    }
-    Line::from(vec![
-        left,
-        Span::raw(" ".repeat(w - used)),
-        Span::styled(right.to_string(), dim(m)),
-    ])
+    tui::title_bar(m.ink, "🎄 TERMINAL OF TINSEL 🎄", right, m.size().0)
 }
 
 fn footer(m: &Model, normal: &[&str]) -> Lines {
@@ -737,44 +616,4 @@ pub fn draw(m: &Model, frame: &mut Frame) {
     Paragraph::new(header).render(place(0, head), buf);
     Paragraph::new(body).render(place(top, middle), buf);
     Paragraph::new(footer).render(place(area.height - foot, foot), buf);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn join_fit_wraps_to_the_width() {
-        let items = || {
-            ["one", "two", "three", "four"]
-                .iter()
-                .map(|s| Span::raw(s.to_string()))
-                .collect::<Vec<_>>()
-        };
-        assert_eq!(join_fit(items(), " · ", 80).len(), 1);
-        let narrow = join_fit(items(), " · ", 11);
-        assert_eq!(narrow.len(), 3);
-        assert!(narrow.iter().all(|l| l.width() <= 11));
-        assert!(join_fit(Vec::new(), " ", 10).is_empty());
-    }
-
-    #[test]
-    fn boxes_are_square() {
-        let lines = vec![Line::raw("ab"), Line::raw("abcd")];
-        let out = boxed(lines, 4, 2, 1, Style::new());
-        assert_eq!(out.len(), 6);
-        assert!(out.iter().all(|l| l.width() == 10), "{out:?}");
-    }
-
-    #[test]
-    fn beside_pads_the_left_column() {
-        let out = beside(
-            vec![Line::raw("a")],
-            3,
-            2,
-            vec![Line::raw("x"), Line::raw("y")],
-        );
-        let text: Vec<String> = out.iter().map(|l| l.to_string()).collect();
-        assert_eq!(text, ["a    x", "     y"]);
-    }
 }

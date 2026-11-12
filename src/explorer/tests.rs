@@ -34,27 +34,7 @@ fn type_text(m: &mut Model, text: &str) {
 
 /// Draws the model at a size and returns the screen as text.
 fn screen(m: &mut Model, width: u16, height: u16) -> String {
-    let mut terminal = Terminal::new(TestBackend::new(width, height)).unwrap();
-    m.resize(width, height);
-    terminal.draw(|frame| view::draw(m, frame)).unwrap();
-    let buffer = terminal.backend().buffer();
-    buffer
-        .content()
-        .chunks(usize::from(width))
-        .map(|row| {
-            // A double-width emoji takes two cells; the second is a filler.
-            let mut text = String::new();
-            let mut skip = false;
-            for cell in row {
-                if !std::mem::take(&mut skip) {
-                    text.push_str(cell.symbol());
-                    skip = unicode_width::UnicodeWidthStr::width(cell.symbol()) == 2;
-                }
-            }
-            text.trim_end().to_string()
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
+    crate::tui::snapshot(m, width, height)
 }
 
 fn on_page<'a>(vault: &'a Vault, id: &str) -> Model<'a> {
