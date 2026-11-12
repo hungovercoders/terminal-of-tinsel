@@ -1,0 +1,6 @@
+{
+  "id": "companions",
+  "name": "St Nicholas's Companions",
+  "description": "The saint brings the presents. These are the ones he brings along for everybody else.",
+  "order": ["krampus", "belsnickel", "pere-fouettard", "hans-trapp"]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "perchta",
+  "name": "Frau Perchta",
+  "aliases": ["Perchta", "Berchta", "Percht", "Bertha"],
+  "emoji": "🧶",
+  "description": "The Alpine spirit of the Twelve Days, who rewards the hard-working and slits open the lazy",
+  "origin": "Alpine folklore of Austria, Bavaria and Switzerland",
+  "debut": {"medium": "folklore", "title": "Alpine folk tradition", "era": "described in medieval sermons and handbooks against superstition"},
+  "legend": "Frau Perchta walks the Alps during the Twelve Days of Christmas, sometimes as a beautiful woman in white, sometimes as a hag with a hooked nose and one foot shaped like a goose's. She checks that the spinning has been finished and the house kept in order. The diligent might find a silver coin in a shoe. The lazy, or anyone who skipped the traditional feast-day meal of fish and gruel, risk a terrible punishment: she slits open their belly, pulls out what they ate and stuffs them with straw and pebbles. Her night is the eve of Epiphany, and Perchten runs still parade through Alpine villages.",
+  "myths": [
+    {"claim": "Perchta punishes people by stuffing them with straw.", "true": true, "explanation": "She slits open the bellies of the lazy and refills them with straw and pebbles."},
+    {"claim": "Perchta is always a hideous hag.", "true": false, "explanation": "She has two faces: one beautiful and one ugly, mirrored in the Schönperchten and Schiachperchten of the parades."},
+    {"claim": "Perchta's time is the Twelve Days of Christmas.", "true": true, "explanation": "She roams between Christmas and Epiphany, and her own night is 5 January."}
+  ],
+  "quotes": [],
+  "powers": ["Two faces, fair and foul", "Checking every spindle", "A knife for the lazy"],
+  "weaknesses": ["Finished spinning", "A proper feast-day meal", "Households that keep their customs"],
+  "stats": {"strength": 6, "speed": 6, "cunning": 8, "dread": 9},
+  "legacy": [
+    "Perchtenlauf parades in Salzburg and Tyrol, with beautiful and ugly Perchten",
+    "Her name lives on in the Perchten masks carved across the Alps"
+  ],
+  "facts": [
+    "Frau Perchta roams the Alps during the Twelve Days of Christmas",
+    "She appears either as a beautiful woman in white or a hideous hag",
+    "She's sometimes described with one goose-like foot",
+    "She rewards hard workers, sometimes with a silver coin",
+    "She slits open the lazy and stuffs their bellies with straw and pebbles",
+    "Her night is 5 January, the eve of Epiphany",
+    "Perchten parades with beautiful and ugly masks are still held in Austria"
+  ],
+  "hostIntro": "A word to the viewers who haven't finished their Christmas jobs. Tonight's guest will be checking, and she brings her own stuffing.",
+  "theme": {"primary": "#E0E1DD", "accent": "#778DA9"}
+}

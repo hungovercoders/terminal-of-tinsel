@@ -1,0 +1,34 @@
+{
+  "id": "gryla",
+  "name": "Grýla",
+  "aliases": ["Gryla", "Grýla the Ogress"],
+  "emoji": "👹",
+  "description": "The Icelandic ogress who comes down from the mountains at Christmas to cook naughty children",
+  "origin": "Icelandic folklore",
+  "debut": {"medium": "folklore", "title": "Icelandic sagas and folk tradition", "era": "named as a troll in 13th-century Icelandic writing"},
+  "legend": "Grýla lives in a cave in the mountains, and every Christmas she comes down to the farms looking for children who have misbehaved. She stuffs them in her sack and takes them home to boil in her pot, a stew she's very fond of. She's an old figure: her name turns up as a troll's in Icelandic writing of the 1200s. Later folklore gave her a lazy husband, Leppalúði, thirteen mischievous sons, the Yule Lads, and a giant pet, the Yule Cat. She and her sons became so frightening that in 1746 the authorities issued a decree against parents using them to scare children.",
+  "myths": [
+    {"claim": "Grýla is the mother of the Yule Lads.", "true": true, "explanation": "The thirteen Yule Lads are her sons, usually with her husband Leppalúði."},
+    {"claim": "Grýla is a modern invention.", "true": false, "explanation": "Her name appears as a troll's in Icelandic writing of the 1200s. The Christmas role came later."},
+    {"claim": "Grýla only eats children who misbehave.", "true": true, "explanation": "Good children are safe. The naughty ones go in the sack, and then the pot."}
+  ],
+  "quotes": [],
+  "powers": ["Smelling out naughty children", "A sack that's never full", "A bottomless cooking pot", "A family of trolls"],
+  "weaknesses": ["Children who behave", "Her own lazy husband", "A long walk from the mountains"],
+  "stats": {"strength": 9, "speed": 4, "cunning": 7, "dread": 10},
+  "legacy": [
+    "Countless Icelandic poems and songs about Grýla and her family",
+    "The 1746 decree against frightening children with the Yule Lads"
+  ],
+  "facts": [
+    "Grýla is a child-eating ogress from Icelandic folklore",
+    "She comes down from the mountains at Christmas looking for naughty children",
+    "She cooks the children she catches in a big stew",
+    "Her name appears as a troll's in Icelandic writing of the 1200s",
+    "She's the mother of the thirteen Yule Lads",
+    "Her husband Leppalúði is famously lazy and mostly stays in the cave",
+    "In 1746 a decree forbade parents from frightening children with the Yule Lads"
+  ],
+  "hostIntro": "Our guest tonight runs a family business: thirteen sons, one cat and a very big pot. Don't ask what's in the stew.",
+  "theme": {"primary": "#386641", "accent": "#A7C957"}
+}

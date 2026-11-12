@@ -1,0 +1,33 @@
+{
+  "id": "hans-trapp",
+  "name": "Hans Trapp",
+  "aliases": ["Hans von Trotha", "Hanstrapp"],
+  "emoji": "🌾",
+  "description": "The Alsatian bogeyman who comes with the Christkindel to frighten the naughty",
+  "origin": "Folklore of Alsace and Lorraine",
+  "debut": {"medium": "folklore", "title": "Alsatian Christmas tradition", "era": "legend built on a real knight of the late 1400s"},
+  "legend": "In Alsace the Christkindel, a figure in white bearing gifts, doesn't visit alone. Behind it comes Hans Trapp, a dark, frightening figure who growls at the children and threatens the naughty. His legend borrows the name of a real man, Hans von Trotha, a knight of the late 1400s who fought a bitter feud with the abbey of Wissembourg and was excommunicated for it. In the folk telling he became a greedy, godless brute who was finally struck down by heaven and now comes back each Christmas to scare children into being good.",
+  "myths": [
+    {"claim": "Hans Trapp is based on a real person.", "true": true, "explanation": "His name comes from Hans von Trotha, a knight who feuded with the abbey of Wissembourg in the late 1400s."},
+    {"claim": "Hans Trapp brings the presents in Alsace.", "true": false, "explanation": "The Christkindel brings the gifts. Hans Trapp is the threat that comes with them."},
+    {"claim": "Hans Trapp is mostly a figure of Alsace and Lorraine.", "true": true, "explanation": "He belongs to the Christmas traditions of north-east France, close to the German border."}
+  ],
+  "quotes": [],
+  "powers": ["A terrifying growl", "Knowing who's misbehaved", "The shadow of a real knight's bad name"],
+  "weaknesses": ["The Christkindel", "Good children", "A legend that already ended badly for him"],
+  "stats": {"strength": 6, "speed": 5, "cunning": 5, "dread": 7},
+  "legacy": [
+    "Christmas markets in Alsace, where Hans Trapp still makes appearances",
+    "The castle of Berwartstein in the Palatinate, Hans von Trotha's real home"
+  ],
+  "facts": [
+    "Hans Trapp is a Christmas bogeyman from Alsace and Lorraine",
+    "He accompanies the Christkindel, who brings the presents",
+    "His name comes from Hans von Trotha, a real knight of the late 1400s",
+    "The real Hans von Trotha feuded with the abbey of Wissembourg and was excommunicated",
+    "Folklore turned the knight into a greedy brute punished by heaven",
+    "He returns each Christmas to frighten naughty children into behaving"
+  ],
+  "hostIntro": "Every channel has a villain who won't stay cancelled. Ours was excommunicated five hundred years ago and he's still doing Christmas specials.",
+  "theme": {"primary": "#9C6644", "accent": "#DDB892"}
+}

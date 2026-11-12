@@ -1,0 +1,39 @@
+[package]
+name = "terminal-of-tinsel"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Channel 25's Midwinter Special: the creatures of Christmas folklore, live in your terminal"
+license = "CC0-1.0"
+repository = "https://github.com/hungovercoders/terminal-of-tinsel"
+homepage = "https://github.com/hungovercoders/terminal-of-tinsel"
+readme = "README.md"
+keywords = ["cli", "christmas", "folklore", "terminal", "advent"]
+categories = ["command-line-utilities", "games"]
+include = ["src/**", "packs/**", "README.md", "LICENSE", "CHANGELOG.md"]
+
+[dependencies]
+clap = { version = "4.6.7", features = ["derive", "wrap_help"] }
+clap_complete = "4.6.11"
+include_dir = "0.7.4"
+jiff = "0.2.43"
+owo-colors = "4.4.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+terminal_size = "0.4.4"
+textwrap = { version = "0.16.4", default-features = false, features = ["unicode-width", "smawk"] }
+unicode-width = "0.2.3"
+
+[dev-dependencies]
+assert_cmd = "2.2.2"
+predicates = "3.1.4"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"

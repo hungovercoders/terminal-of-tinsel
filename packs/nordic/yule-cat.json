@@ -1,0 +1,34 @@
+{
+  "id": "yule-cat",
+  "name": "The Yule Cat",
+  "aliases": ["Jólakötturinn", "Jolakotturinn", "Christmas Cat"],
+  "emoji": "🐈",
+  "description": "The giant Icelandic cat who eats anyone without new clothes by Christmas Eve",
+  "origin": "Icelandic folklore",
+  "debut": {"medium": "folklore", "title": "Icelandic folk tradition", "era": "recorded in the 1800s, made famous by a poem of 1932"},
+  "legend": "Somewhere out in the Icelandic snow prowls a cat as big as a house, with whiskers like wire and eyes that glow. On Christmas Eve it peers through the windows to see who has new clothes. Anyone who doesn't, it eats, or at least it eats their Christmas dinner. The threat had a purpose: on farms, everyone who helped finish the autumn wool before Christmas was rewarded with a new garment, so the Yule Cat kept the spinning and knitting moving. The poet Jóhannes úr Kötlum made it famous with his poem Jólakötturinn in 1932, and in some tales it's the pet of the ogress Grýla.",
+  "myths": [
+    {"claim": "The Yule Cat eats naughty children.", "true": false, "explanation": "Behaviour doesn't come into it. The cat goes after anyone who hasn't got new clothes by Christmas Eve."},
+    {"claim": "The Yule Cat was a way to get the wool work done.", "true": true, "explanation": "Farmhands who finished the autumn wool got new clothes, and the cat's threat kept them working."},
+    {"claim": "The Yule Cat lives with Grýla and the Yule Lads.", "true": true, "explanation": "In many tellings it's the family pet of the ogress Grýla and her thirteen sons."}
+  ],
+  "quotes": [],
+  "powers": ["Enormous size", "Glowing eyes at the window", "Spotting old clothes at a glance"],
+  "weaknesses": ["A new pair of socks", "Finishing the knitting on time", "Generous households"],
+  "stats": {"strength": 9, "speed": 8, "cunning": 6, "dread": 8},
+  "legacy": [
+    "Jólakötturinn (1932), the poem by Jóhannes úr Kötlum, later set to music",
+    "A giant illuminated Yule Cat put up in Reykjavík's Lækjartorg square each Christmas"
+  ],
+  "facts": [
+    "The Yule Cat, Jólakötturinn, is a giant cat from Icelandic folklore",
+    "It eats people who haven't received new clothes before Christmas Eve",
+    "Farm workers who finished the autumn wool were rewarded with new clothes",
+    "So the cat's threat was really a way to keep the wool work moving",
+    "Jóhannes úr Kötlum's poem Jólakötturinn (1932) made the cat famous",
+    "In many tellings it's the pet of the ogress Grýla",
+    "In some versions it only eats your Christmas dinner, not you"
+  ],
+  "hostIntro": "Check your jumper, viewers. If it's last year's, I'd stay away from the windows tonight.",
+  "theme": {"primary": "#4A4E69", "accent": "#F2E94E"}
+}

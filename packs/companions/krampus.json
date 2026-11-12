@@ -1,0 +1,36 @@
+{
+  "id": "krampus",
+  "name": "Krampus",
+  "aliases": ["The Krampus", "Krampusz"],
+  "emoji": "😈",
+  "description": "The horned, chain-rattling demon who deals with the naughty while St Nicholas rewards the good",
+  "origin": "Alpine folklore of Austria, Bavaria and their neighbours",
+  "debut": {"medium": "folklore", "title": "Alpine folk tradition", "era": "centuries-old customs, on greeting cards from the 1800s"},
+  "legend": "In the Alps, St Nicholas doesn't travel alone. On the night of 5 December, Krampusnacht, the eve of St Nicholas Day, he's joined by Krampus: shaggy, horned and long-tongued, rattling chains and bells. While the saint hands out treats, Krampus swats the naughty with bundles of birch and, in the scarier tellings, stuffs them in a sack or basket and carries them off. In the 1800s Austrians sent each other Krampus greeting cards, and today towns hold Krampuslauf runs where costumed Krampuses charge through the streets.",
+  "myths": [
+    {"claim": "Krampus visits on Christmas Eve.", "true": false, "explanation": "His night is 5 December, Krampusnacht, the eve of St Nicholas Day."},
+    {"claim": "Krampus is St Nicholas's enemy.", "true": false, "explanation": "They work as a team: the saint rewards the good while Krampus deals with the naughty."},
+    {"claim": "People sent each other Krampus Christmas cards.", "true": true, "explanation": "Krampuskarten were popular in Austria from the 1800s, often with the greeting Gruß vom Krampus."},
+    {"claim": "Krampus parades are a thing of the past.", "true": false, "explanation": "Krampuslauf runs take place every December across the Alps and increasingly around the world."}
+  ],
+  "quotes": [],
+  "powers": ["Stinging birch switches", "Rattling chains and bells", "A sack big enough for a child", "A long, lolling tongue"],
+  "weaknesses": ["Genuinely good children", "St Nicholas's authority", "Only one night a year"],
+  "stats": {"strength": 8, "speed": 7, "cunning": 6, "dread": 9},
+  "legacy": [
+    "Krampuskarten, the Austrian greeting cards of the 1800s and early 1900s",
+    "Krampuslauf runs in towns from Salzburg to Los Angeles",
+    "Krampus (2015), a horror comedy directed by Michael Dougherty"
+  ],
+  "facts": [
+    "Krampus is a horned, hairy creature from Alpine folklore",
+    "He accompanies St Nicholas, who rewards the good while Krampus punishes the naughty",
+    "His night is 5 December, Krampusnacht, the eve of St Nicholas Day",
+    "He carries chains, bells and bundles of birch switches called Ruten",
+    "Naughty children might be stuffed into his sack or basket and carried away",
+    "In Krampuslauf parades, costumed Krampuses charge through town streets",
+    "Austrians sent each other Krampus greeting cards in the 1800s"
+  ],
+  "hostIntro": "First guest of the season, and he's brought his own chains. He's on a list of his own, and he's checking yours twice.",
+  "theme": {"primary": "#D00000", "accent": "#F48C06"}
+}

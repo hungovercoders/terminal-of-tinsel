@@ -1,0 +1,46 @@
+{
+  "id": "marley",
+  "name": "Marley's Ghost",
+  "aliases": ["Jacob Marley", "Marley"],
+  "emoji": "👻",
+  "description": "Scrooge's late business partner, who drags the chain he forged in life to warn him on Christmas Eve",
+  "origin": "A Christmas Carol by Charles Dickens",
+  "debut": {"medium": "novella", "title": "A Christmas Carol", "creator": "Charles Dickens", "year": 1843},
+  "film": {
+    "title": "Scrooge",
+    "year": 1951,
+    "director": "Brian Desmond Hurst",
+    "star": "Michael Hordern",
+    "note": "Released in the US as A Christmas Carol, with Alastair Sim as Scrooge."
+  },
+  "legend": "Marley was dead: to begin with. Seven years to the night after his partner's death, Ebenezer Scrooge sees Marley's face in his door knocker, and soon the ghost himself comes through the locked door. Around his waist is a long chain made of cash-boxes, keys, padlocks, ledgers, deeds and heavy purses, forged by every mean act of his life. Marley warns Scrooge that his own chain is longer still, and that he has one hope of escaping the same fate: he will be haunted by three spirits.",
+  "myths": [
+    {"claim": "Marley is one of the three spirits who visit Scrooge.", "true": false, "explanation": "Marley comes first, to announce the three spirits: of Christmas Past, Present and Yet to Come."},
+    {"claim": "Marley's face first appears in Scrooge's door knocker.", "true": true, "explanation": "Scrooge sees it in the knocker as he puts his key in the door on Christmas Eve."},
+    {"claim": "Marley had been dead for seven years.", "true": true, "explanation": "Dickens says Marley died seven years ago, on that very night."},
+    {"claim": "Scrooge believes in the ghost straight away.", "true": false, "explanation": "He blames indigestion: there's more of gravy than of grave about you, he tells it."}
+  ],
+  "quotes": [
+    {"text": "Marley was dead: to begin with.", "speaker": "Narrator", "source": "A Christmas Carol (1843), stave 1"},
+    {"text": "I wear the chain I forged in life.", "speaker": "Marley's Ghost", "source": "A Christmas Carol (1843), stave 1"},
+    {"text": "There's more of gravy than of grave about you, whatever you are!", "speaker": "Ebenezer Scrooge", "source": "A Christmas Carol (1843), stave 1"}
+  ],
+  "powers": ["Passing through locked doors", "A terrible, rattling chain", "Arranging three more visitors"],
+  "weaknesses": ["Can't undo his own life", "Doomed to wander", "Can only warn, not save"],
+  "stats": {"strength": 5, "speed": 3, "cunning": 6, "dread": 9},
+  "legacy": [
+    "Scrooge (1951), with Michael Hordern as Marley",
+    "Endless adaptations on stage, radio and screen since 1844"
+  ],
+  "facts": [
+    "Jacob Marley was Ebenezer Scrooge's business partner",
+    "A Christmas Carol was published on 19 December 1843",
+    "Marley appears on Christmas Eve, seven years after his death",
+    "His face first appears in Scrooge's door knocker",
+    "His chain is made of cash-boxes, keys, padlocks, ledgers, deeds and purses",
+    "He warns Scrooge that three spirits will visit him",
+    "The book's first edition sold out by Christmas Eve 1843"
+  ],
+  "hostIntro": "Our guest tonight was dead, to begin with. He's here with a warning, and a very heavy chain. Mind the carpet.",
+  "theme": {"primary": "#A8DADC", "accent": "#457B9D"}
+}

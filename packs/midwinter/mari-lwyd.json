@@ -1,0 +1,34 @@
+{
+  "id": "mari-lwyd",
+  "name": "The Mari Lwyd",
+  "aliases": ["Mari Lwyd", "Grey Mare", "Y Fari Lwyd"],
+  "emoji": "🐴",
+  "description": "A horse's skull on a pole, draped in white, that comes singing to Welsh doors at midwinter",
+  "origin": "Welsh folklore, especially Glamorgan and Gwent",
+  "debut": {"medium": "folklore", "title": "South Wales wassailing tradition", "era": "recorded from the early 1800s, revived across Wales today"},
+  "legend": "On a dark night between Christmas and Twelfth Night, there's singing at the door. Outside stands the Mari Lwyd: a horse's skull on a pole, its eye sockets filled with glass or baubles, its jaw on a spring so it snaps, its body a white sheet hung with ribbons and bells. Her party demands to be let in, in verse, and the household answers in verse. This battle of rhymes is the pwnco. If the house runs out of answers, the Mari is let in to cause chaos, snap at the guests and share the food and drink. Her name is usually taken to mean the Grey Mare.",
+  "myths": [
+    {"claim": "The Mari Lwyd has to win a battle of verses to get in.", "true": true, "explanation": "The pwnco is a rhyming contest between the party outside and the household inside."},
+    {"claim": "The Mari Lwyd tradition died out completely.", "true": false, "explanation": "It survived in places such as Llangynwyd and has been revived across Wales, from Chepstow to Cardiff."},
+    {"claim": "Mari Lwyd is generally taken to mean Grey Mare.", "true": true, "explanation": "Llwyd means grey in Welsh. Some have argued for Holy Mary instead, but Grey Mare is the usual reading."}
+  ],
+  "quotes": [],
+  "powers": ["A snapping jaw", "Improvised verse", "Getting through any door eventually", "Turning a quiet night into a party"],
+  "weaknesses": ["A household with a better rhyme", "Twelfth Night", "Disapproving chapel ministers"],
+  "stats": {"strength": 4, "speed": 4, "cunning": 9, "dread": 8},
+  "legacy": [
+    "The Llangynwyd Mari Lwyd near Maesteg, one of the longest-running parties",
+    "The Chepstow Wassail and Mari Lwyd, a midwinter gathering of Maris every January"
+  ],
+  "facts": [
+    "The Mari Lwyd is a horse's skull on a pole, draped in a white sheet",
+    "She's carried from house to house between Christmas and Twelfth Night",
+    "Her jaw is often fitted with a spring so it can snap at people",
+    "Her party challenges each household to a battle of verses called the pwnco",
+    "If the household loses, the Mari comes in for food and drink",
+    "The tradition is strongest in South Wales, especially Glamorgan and Gwent",
+    "Nonconformist ministers disapproved, but the custom has been widely revived"
+  ],
+  "hostIntro": "Croeso, viewers! Someone's singing at the studio door, and I'm afraid I've run out of rhymes. Let her in.",
+  "theme": {"primary": "#E9ECEF", "accent": "#C8102E"}
+}

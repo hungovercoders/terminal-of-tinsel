@@ -1,0 +1,33 @@
+{
+  "id": "tio-de-nadal",
+  "name": "Tió de Nadal",
+  "aliases": ["Tio de Nadal", "Caga Tió", "Caga Tio", "Christmas Log"],
+  "emoji": "🪵",
+  "description": "The smiling Catalan log that children feed all December and then beat with sticks until it poops presents",
+  "origin": "Catalan folklore",
+  "debut": {"medium": "folklore", "title": "Catalan Christmas tradition", "era": "an old midwinter custom, still in Catalan homes today"},
+  "legend": "From the feast of the Immaculate Conception on 8 December, a Catalan family brings home a log with a painted smiling face, little legs and a red barretina cap. The children feed it every night and tuck it under a blanket so it stays warm. Then, at Christmas, they put it by the fire, beat it with sticks and sing to it, ordering it to poop. Under the blanket they find sweets, nuts and turrón. When it has nothing left to give, the last thing it leaves is a salt herring, a head of garlic or an onion.",
+  "myths": [
+    {"claim": "Children beat the Tió with sticks.", "true": true, "explanation": "That's the whole point: they beat it and sing until it gives up its treats."},
+    {"claim": "The Tió is fed and kept warm through December.", "true": true, "explanation": "From 8 December children leave it food and cover it with a blanket."},
+    {"claim": "The Tió's last gift is always the best present.", "true": false, "explanation": "The last thing it leaves is often a salt herring, an onion or a head of garlic, the sign that it's finished."}
+  ],
+  "quotes": [],
+  "powers": ["A bottomless supply of turrón", "An irresistible smile", "Taking a beating cheerfully"],
+  "weaknesses": ["Sticks", "Running out of sweets", "Being thrown on the fire afterwards"],
+  "stats": {"strength": 1, "speed": 1, "cunning": 3, "dread": 2},
+  "legacy": [
+    "Caga Tió, the song children sing while beating the log",
+    "Tions of every size on sale at Christmas markets across Catalonia"
+  ],
+  "facts": [
+    "Tió de Nadal is a Christmas log from Catalan tradition",
+    "It has a painted smiling face, little legs and a red barretina cap",
+    "Children feed it from 8 December and cover it with a blanket",
+    "At Christmas they beat it with sticks and sing so it will poop presents",
+    "Its gifts are sweets, nuts and turrón hidden under the blanket",
+    "Its last offering is often a salt herring, an onion or a head of garlic"
+  ],
+  "hostIntro": "Tonight's guest is wooden, cheerful, and about to have a very rough Christmas. Mind the splinters.",
+  "theme": {"primary": "#B5651D", "accent": "#FFD166"}
+}

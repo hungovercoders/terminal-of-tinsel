@@ -1,0 +1,37 @@
+{
+  "id": "ghost-yet-to-come",
+  "name": "The Ghost of Christmas Yet to Come",
+  "aliases": ["Ghost of Christmas Future", "Spirit of Christmas Yet to Come", "Ghost of the Future"],
+  "emoji": "⌛",
+  "description": "The last and most frightening of Scrooge's spirits: a silent, hooded figure that points to what will be",
+  "origin": "A Christmas Carol by Charles Dickens",
+  "debut": {"medium": "novella", "title": "A Christmas Carol", "creator": "Charles Dickens", "year": 1843},
+  "legend": "The third spirit comes like a mist along the ground. It's wrapped in a deep black garment that hides everything but one outstretched hand, and it never speaks a word. It shows Scrooge businessmen joking about a dead man's cheap funeral, thieves selling the dead man's bed curtains, and a family relieved that their creditor is gone. Then it leads him to a neglected churchyard and points to a gravestone bearing his own name. Scrooge begs to know whether these are things that will be, or only things that may be, and promises to change.",
+  "myths": [
+    {"claim": "The Ghost of Christmas Yet to Come never speaks.", "true": true, "explanation": "It answers Scrooge only by pointing. It doesn't say a single word."},
+    {"claim": "Scrooge fears it more than the other spirits.", "true": true, "explanation": "He tells it he fears it more than any spectre he has seen."},
+    {"claim": "It shows Scrooge his own grave.", "true": true, "explanation": "The vision ends in a churchyard, at a neglected stone with Scrooge's name on it."},
+    {"claim": "The spirit shows Scrooge a future that can't be changed.", "true": false, "explanation": "Scrooge asks whether these are shadows of what will be or what may be, and wakes to find there's still time."}
+  ],
+  "quotes": [
+    {"text": "Ghost of the Future! I fear you more than any spectre I have seen.", "speaker": "Ebenezer Scrooge", "source": "A Christmas Carol (1843), stave 4"},
+    {"text": "Are these the shadows of the things that Will be, or are they shadows of things that May be, only?", "speaker": "Ebenezer Scrooge", "source": "A Christmas Carol (1843), stave 4"}
+  ],
+  "powers": ["Visions of the future", "Absolute silence", "A single pointing hand"],
+  "weaknesses": ["A heart that changes", "The future isn't fixed", "Christmas morning"],
+  "stats": {"strength": 3, "speed": 4, "cunning": 9, "dread": 10},
+  "legacy": [
+    "The model for many a silent, cloaked figure of doom in later fiction",
+    "Every adaptation of A Christmas Carol, from the 1901 silent film onwards"
+  ],
+  "facts": [
+    "The Ghost of Christmas Yet to Come is the third and last spirit to visit Scrooge",
+    "It's shrouded in a deep black garment that hides all but one hand",
+    "It never speaks, answering only by pointing",
+    "It shows Scrooge strangers reacting coldly to a rich man's death",
+    "It leads him to a neglected grave bearing his own name",
+    "Scrooge tells it he fears it more than any spectre he has seen"
+  ],
+  "hostIntro": "Our final guest doesn't do interviews. Or talking at all. Just watch where it's pointing, viewers.",
+  "theme": {"primary": "#CED4DA", "accent": "#6C757D"}
+}

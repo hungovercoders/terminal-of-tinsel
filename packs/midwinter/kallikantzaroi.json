@@ -1,0 +1,35 @@
+{
+  "id": "kallikantzaroi",
+  "name": "The Kallikantzaroi",
+  "aliases": ["Kallikantzaros", "Kalikantzari", "Callicantzari"],
+  "emoji": "🌳",
+  "description": "Greek goblins who spend all year sawing at the World Tree and surface at Christmas to make mischief",
+  "origin": "Greek and south-east European folklore",
+  "debut": {"medium": "folklore", "title": "Greek folk tradition", "era": "oral tradition, written down by folklorists from the 1800s"},
+  "legend": "Deep underground, the kallikantzaroi saw at the trunk of the tree that holds up the world. All year they saw, and just as they're about to cut through, the Twelve Days of Christmas begin and they swarm up to the surface to cause trouble: souring the milk, putting out fires and making a mess of every house. While they're away, the tree heals. When the waters are blessed at Epiphany on 6 January, they flee back underground and find the trunk whole again, so they start sawing all over again.",
+  "myths": [
+    {"claim": "The kallikantzaroi come out during the Twelve Days of Christmas.", "true": true, "explanation": "They surface at Christmas and are driven back underground at Epiphany."},
+    {"claim": "The kallikantzaroi are trying to cut down the World Tree.", "true": true, "explanation": "They saw all year, but the tree heals while they're up making mischief at Christmas."},
+    {"claim": "A colander on the doorstep makes them stop and count.", "true": true, "explanation": "In some tellings they can't resist counting the holes, and the sun comes up before they finish."},
+    {"claim": "They're friendly helpers like Santa's elves.", "true": false, "explanation": "They're pure mischief: they spoil food, put out fires and terrify households."}
+  ],
+  "quotes": [],
+  "powers": ["Endless mischief", "Coming down the chimney", "A year's patience with a saw"],
+  "weaknesses": ["A fire kept burning in the hearth", "A colander full of holes to count", "The blessing of the waters at Epiphany"],
+  "stats": {"strength": 4, "speed": 8, "cunning": 6, "dread": 6},
+  "legacy": [
+    "Kallikantzaroi still turn up in Greek Christmas stories and children's books",
+    "Similar Twelve Days goblins appear in folklore from Cyprus to the Balkans"
+  ],
+  "facts": [
+    "The kallikantzaroi are goblins from Greek and south-east European folklore",
+    "All year they live underground, sawing at the tree that holds up the world",
+    "They surface during the Twelve Days of Christmas to make mischief",
+    "While they're above ground, the World Tree heals itself",
+    "Keeping a fire burning in the hearth stops them coming down the chimney",
+    "Some households left a colander on the doorstep so they'd stop to count the holes",
+    "They're driven back underground by the blessing of the waters at Epiphany"
+  ],
+  "hostIntro": "Keep the fire lit tonight, viewers. Our guests have been sawing at the roots of the world all year and they've come up for a break.",
+  "theme": {"primary": "#606C38", "accent": "#DDA15E"}
+}

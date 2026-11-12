@@ -1,0 +1,30 @@
+{
+  "name": "24 Nights of Advent",
+  "description": "One guest behind each door of the advent calendar, from 1 to 24 December.",
+  "nights": [
+    {"night": 1, "id": "tomte", "note": "The tomte has been on duty all year. The first door is his."},
+    {"night": 2, "id": "kallikantzaroi", "note": "The sawing under the floorboards is getting louder."},
+    {"night": 3, "id": "belsnickel", "note": "The Belsnickel likes to call early, before anyone's ready."},
+    {"night": 4, "id": "hans-trapp", "note": "The Alsace Christmas markets are open, and someone is lurking behind the stalls."},
+    {"night": 5, "id": "krampus", "note": "It's Krampusnacht, the eve of St Nicholas Day."},
+    {"night": 6, "id": "pere-fouettard", "note": "It's St Nicholas Day, and Father Whipper is a step behind the saint."},
+    {"night": 7, "id": "yule-cat", "note": "Two and a half weeks to get some new clothes."},
+    {"night": 8, "id": "tio-de-nadal", "note": "It's the feast of the Immaculate Conception, when the Tió comes home to be fed."},
+    {"night": 9, "id": "marley", "note": "Fifteen nights until Marley's anniversary."},
+    {"night": 10, "id": "perchta", "note": "Is the spinning done? It had better be by the Twelve Days."},
+    {"night": 11, "id": "gryla", "note": "Grýla is packing her sons off down the mountain."},
+    {"night": 12, "id": "yule-lads", "note": "Sheep-Cote Clod, the first Yule Lad, comes down tonight."},
+    {"night": 13, "id": "mari-lwyd", "note": "Practise your rhymes now. You'll need them by Christmas."},
+    {"night": 14, "id": "ghost-yet-to-come", "note": "Eleven nights to go. It's pointing at the calendar."},
+    {"night": 15, "id": "krampus", "note": "Krampus is still out there, sharpening his switches for next year."},
+    {"night": 16, "id": "yule-lads", "note": "Five Yule Lads down the mountain, eight to come."},
+    {"night": 17, "id": "belsnickel", "note": "A week before Christmas: prime Belsnickel season."},
+    {"night": 18, "id": "tomte", "note": "Check the larder: is there enough butter for Christmas Eve?"},
+    {"night": 19, "id": "marley", "note": "A Christmas Carol was published on this day in 1843."},
+    {"night": 20, "id": "gryla", "note": "Nine sons arrived. Grýla is getting her pot ready."},
+    {"night": 21, "id": "kallikantzaroi", "note": "The longest night of the year, and the saw has nearly reached the heart of the tree."},
+    {"night": 22, "id": "tio-de-nadal", "note": "Two weeks of feeding. The Tió is looking well."},
+    {"night": 23, "id": "ghost-yet-to-come", "note": "Tomorrow night is Scrooge's night. Whatever comes after is still up to him."},
+    {"night": 24, "id": "yule-cat", "note": "It's Christmas Eve. Hope you got new clothes."}
+  ]
+}

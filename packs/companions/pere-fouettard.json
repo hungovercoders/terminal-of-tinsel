@@ -1,0 +1,34 @@
+{
+  "id": "pere-fouettard",
+  "name": "Père Fouettard",
+  "aliases": ["Pere Fouettard", "Father Whipper"],
+  "emoji": "🖤",
+  "description": "St Nicholas's grim, black-robed servant, who carries the whip so the saint doesn't have to",
+  "origin": "Folklore of north-east France and Wallonia in Belgium",
+  "debut": {"medium": "folklore", "title": "French and Walloon St Nicholas tradition", "era": "medieval legend, still walking in parades today"},
+  "legend": "On 6 December, St Nicholas parades through towns in Lorraine and Wallonia handing out gifts, and a step behind him walks Père Fouettard, Father Whipper, in dark robes with a wild beard and a bundle of switches. The best-known story of his origin is a grim one: a butcher lured three boys into his shop, killed them and salted them away in a barrel. St Nicholas found them and brought them back to life, and the repentant butcher was bound to follow the saint ever after, punishing the children who don't deserve presents.",
+  "myths": [
+    {"claim": "Père Fouettard means Father Whipper.", "true": true, "explanation": "Fouet is French for whip, and the switch or whip is his trademark."},
+    {"claim": "Père Fouettard comes on Christmas Day.", "true": false, "explanation": "He walks with St Nicholas on 6 December, St Nicholas Day."},
+    {"claim": "His legend involves St Nicholas raising three children from the dead.", "true": true, "explanation": "In the best-known version, the saint revives three boys killed by a butcher, who becomes his penitent servant."}
+  ],
+  "quotes": [],
+  "powers": ["A whip or bundle of switches", "A list of every naughty child", "Following very closely behind"],
+  "weaknesses": ["St Nicholas, his master", "His own guilty conscience", "Children with nothing to answer for"],
+  "stats": {"strength": 6, "speed": 5, "cunning": 6, "dread": 8},
+  "legacy": [
+    "St Nicholas parades in Nancy and other towns of Lorraine every December",
+    "Hans Muff, his German-speaking cousin in the Rhineland"
+  ],
+  "facts": [
+    "Père Fouettard means Father Whipper",
+    "He accompanies St Nicholas on 6 December in north-east France and Belgium",
+    "He wears dark robes and a wild beard, and carries a whip or switches",
+    "While the saint gives gifts, he punishes the children who don't deserve them",
+    "The best-known legend makes him a butcher who killed three boys",
+    "St Nicholas raised the boys from the dead, and the butcher became his servant",
+    "He still walks in the St Nicholas parades of Lorraine"
+  ],
+  "hostIntro": "Our next guest used to be a butcher. He's turned over a new leaf, but he's kept the whip. Sit up straight.",
+  "theme": {"primary": "#6C757D", "accent": "#ADB5BD"}
+}

@@ -1,0 +1,6 @@
+{
+  "id": "nordic",
+  "name": "Nordic Yule",
+  "description": "Long nights, deep snow and a household that had better have finished its wool by Christmas Eve.",
+  "order": ["yule-cat", "gryla", "yule-lads", "tomte"]
+}

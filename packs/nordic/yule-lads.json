@@ -1,0 +1,35 @@
+{
+  "id": "yule-lads",
+  "name": "The Yule Lads",
+  "aliases": ["Jólasveinarnir", "Jolasveinar", "Yuletide Lads", "Spoon-Licker", "Door-Slammer"],
+  "emoji": "🥄",
+  "description": "Grýla's thirteen troublemaking sons, who come down one at a time in the nights before Christmas",
+  "origin": "Icelandic folklore",
+  "debut": {"medium": "folklore", "title": "Icelandic folk tradition", "era": "the thirteen were fixed by Jóhannes úr Kötlum's poem of 1932"},
+  "legend": "From 12 December, one Yule Lad comes down from the mountains each night, until all thirteen have arrived by Christmas Eve. Each has his own bad habit, and his name gives it away: Sheep-Cote Clod pesters the sheep, Spoon-Licker licks the spoons, Door-Slammer bangs the doors all night, Skyr-Gobbler raids the skyr, Sausage-Swiper steals the sausages and Window-Peeper stares in at the windows. Icelandic children put a shoe on the windowsill, and each Lad leaves a small gift for the good, or a rotten potato for the naughty. From Christmas Day they head home again, one a day, the last leaving on 6 January.",
+  "myths": [
+    {"claim": "There have always been exactly thirteen Yule Lads.", "true": false, "explanation": "Older folklore gave different numbers and names. Jóhannes úr Kötlum's poem of 1932 fixed the thirteen."},
+    {"claim": "Naughty children find a rotten potato in their shoe.", "true": true, "explanation": "Good children get a small gift in the shoe on the windowsill. The naughty get a potato."},
+    {"claim": "The Yule Lads all arrive together on Christmas Eve.", "true": false, "explanation": "They arrive one a night from 12 December, so the last one gets in on Christmas Eve."},
+    {"claim": "The Yule Lads are Grýla's sons.", "true": true, "explanation": "They're the children of the ogress Grýla and her husband Leppalúði."}
+  ],
+  "quotes": [],
+  "powers": ["Thirteen nights of mischief", "Getting in through any door", "An unerring nose for sausages"],
+  "weaknesses": ["Locked larders", "Daylight", "Their own very specific obsessions"],
+  "stats": {"strength": 4, "speed": 7, "cunning": 8, "dread": 4},
+  "legacy": [
+    "Jólasveinarnir (1932), Jóhannes úr Kötlum's poem that fixed the thirteen",
+    "Over time the Lads have softened into red-suited, Santa-like gift-bringers"
+  ],
+  "facts": [
+    "There are thirteen Yule Lads, the sons of the ogress Grýla",
+    "One arrives each night from 12 December, the last on Christmas Eve",
+    "They leave again one a day from Christmas Day, the last on 6 January",
+    "Children leave a shoe on the windowsill for the Lads to fill",
+    "Good children get a small gift and naughty ones a rotten potato",
+    "Their names describe their habits, such as Spoon-Licker, Door-Slammer and Sausage-Swiper",
+    "Candle-Stealer, the last to arrive, was after the precious tallow candles"
+  ],
+  "hostIntro": "We're expecting thirteen guests tonight, viewers, all brothers, all arriving separately. Lock up the sausages.",
+  "theme": {"primary": "#BC4749", "accent": "#F2E8CF"}
+}

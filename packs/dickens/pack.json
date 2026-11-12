@@ -1,0 +1,6 @@
+{
+  "id": "dickens",
+  "name": "A Christmas Carol",
+  "description": "The spirits from Charles Dickens's ghost story of 1843, the book that haunted Christmas for good.",
+  "order": ["marley", "ghost-yet-to-come"]
+}

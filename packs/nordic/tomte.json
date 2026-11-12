@@ -1,0 +1,34 @@
+{
+  "id": "tomte",
+  "name": "The Tomte",
+  "aliases": ["Tomte", "Nisse", "Tomtenisse", "Jultomte"],
+  "emoji": "🥣",
+  "description": "The small, bearded guardian of the farm, who expects his porridge on Christmas Eve, with butter",
+  "origin": "Swedish, Norwegian and Danish folklore",
+  "debut": {"medium": "folklore", "title": "Scandinavian farm tradition", "era": "a household spirit for centuries, a Christmas figure from the 1800s"},
+  "legend": "Every good farm in Scandinavia had a tomte, or nisse: a little old man, no taller than a child, with a long grey beard and a red cap. He looked after the animals and kept the farm prosperous, as long as he was treated with respect. On Christmas Eve the family left out a bowl of porridge for him with a knob of butter on top. Forget the butter and there'd be trouble: in one well-known tale, a nisse who found no butter killed the farm's best cow, then found the butter hidden at the bottom of the bowl and was sorry. In the 1800s poems and paintings turned him into the jultomte, Sweden's Christmas gift-bringer.",
+  "myths": [
+    {"claim": "The tomte is a kind of Santa's elf.", "true": false, "explanation": "He's an old household and farm spirit. His Christmas gift-giving role only grew up in the 1800s."},
+    {"claim": "You should leave porridge out for the tomte on Christmas Eve.", "true": true, "explanation": "A bowl of rice porridge with butter is his traditional thank-you for a year of work."},
+    {"claim": "A tomte will happily take any insult.", "true": false, "explanation": "He's quick to take offence, and an offended tomte plays tricks or brings bad luck to the farm."}
+  ],
+  "quotes": [],
+  "powers": ["Great strength for his size", "Keeping a farm lucky", "Seeing everything that happens after dark"],
+  "weaknesses": ["Porridge without butter", "Rudeness and laziness", "Being told what to do"],
+  "stats": {"strength": 7, "speed": 5, "cunning": 7, "dread": 3},
+  "legacy": [
+    "Tomten (1881), Viktor Rydberg's poem of the tomte awake on a midwinter night",
+    "Jenny Nyström's paintings, which made the jultomte Sweden's Christmas gift-bringer"
+  ],
+  "facts": [
+    "The tomte (Swedish) or nisse (Norwegian and Danish) is a household spirit",
+    "He looks like a small old man with a beard and a red cap",
+    "He protects the farm and its animals when treated with respect",
+    "On Christmas Eve he expects a bowl of rice porridge with butter",
+    "In a well-known tale, a nisse killed a cow when he thought the butter was missing",
+    "Viktor Rydberg's poem Tomten (1881) helped make him a Christmas figure",
+    "The jultomte became Sweden's Christmas gift-bringer"
+  ],
+  "hostIntro": "A quiet one tonight, viewers. He's been looking after the farm all year. All he asks is a bit of porridge. With butter. Don't forget the butter.",
+  "theme": {"primary": "#C1121F", "accent": "#FDF0D5"}
+}

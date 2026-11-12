@@ -1,0 +1,34 @@
+version: '3'
+
+tasks:
+  default:
+    desc: Format, lint and test
+    cmds:
+      - task: check
+
+  build:
+    desc: Build a release binary into target/release
+    cmds:
+      - cargo build --release
+
+  run:
+    desc: Run the CLI, e.g. task run -- creature krampus
+    cmds:
+      - cargo run --quiet -- {{.CLI_ARGS}}
+
+  check:
+    desc: Format check, clippy and every test
+    cmds:
+      - cargo fmt --check
+      - cargo clippy --all-targets -- -D warnings
+      - cargo test
+
+  fmt:
+    desc: Format the code
+    cmds:
+      - cargo fmt
+
+  release:plan:
+    desc: Show what cargo-dist would build for a release
+    cmds:
+      - dist plan

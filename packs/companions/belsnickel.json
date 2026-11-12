@@ -1,0 +1,34 @@
+{
+  "id": "belsnickel",
+  "name": "Belsnickel",
+  "aliases": ["Pelznickel", "Belschnickel", "Fur Nicholas"],
+  "emoji": "🧥",
+  "description": "The ragged, fur-clad gift-giver who brings sweets in one hand and a switch in the other",
+  "origin": "The Palatinate in south-west Germany, carried to Pennsylvania by German settlers",
+  "debut": {"medium": "folklore", "title": "Palatinate and Pennsylvania Dutch tradition", "era": "brought to America in the 1700s and 1800s"},
+  "legend": "Some time before Christmas, there's a bang at the door and in comes the Belsnickel: dressed in tattered furs, his face masked or smeared with soot, a bag over his shoulder and a switch in his fist. He wants to know how the children have behaved. He might make them recite a verse or a prayer, then scatter sweets and nuts on the floor. Any child who grabs too greedily gets a rap on the knuckles. His name is usually read as Pelz-Nickel: Nicholas in furs.",
+  "myths": [
+    {"claim": "The Belsnickel is an American invention.", "true": false, "explanation": "He came from the Palatinate and the Rhineland, and German immigrants brought him to Pennsylvania."},
+    {"claim": "The Belsnickel both rewards and punishes.", "true": true, "explanation": "He carries treats and a switch, and children never quite know which they'll get."},
+    {"claim": "He only comes on Christmas Eve.", "true": false, "explanation": "He usually turns up in the week or two before Christmas, a warning to behave before the big night."}
+  ],
+  "quotes": [],
+  "powers": ["Knowing exactly who's been naughty", "A switch in one hand, sweets in the other", "An unsettling knock at the door"],
+  "weaknesses": ["Well-behaved children", "Polite answers", "Children who don't snatch the sweets"],
+  "stats": {"strength": 5, "speed": 4, "cunning": 7, "dread": 6},
+  "legacy": [
+    "Belsnickling, a Christmas mumming tradition in Nova Scotia",
+    "Dwight Schrute dresses as Belsnickel in The Office (US) episode Dwight Christmas (2012)"
+  ],
+  "facts": [
+    "The Belsnickel comes from the Palatinate region of south-west Germany",
+    "German settlers brought him to Pennsylvania, where he's part of Pennsylvania Dutch tradition",
+    "He wears ragged furs and sometimes a mask or a soot-blackened face",
+    "He carries a switch for the naughty and sweets or nuts for the good",
+    "He often visits a week or two before Christmas, not on Christmas Eve",
+    "Children might have to recite a verse or answer questions before he hands out treats",
+    "His name is usually read as Pelz-Nickel, Nicholas in furs"
+  ],
+  "hostIntro": "Hide the good biscuits. Tonight's guest asks the questions, and the wrong answer stings.",
+  "theme": {"primary": "#8B5E3C", "accent": "#E9C46A"}
+}
