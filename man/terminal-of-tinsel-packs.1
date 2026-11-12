@@ -1,0 +1,28 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH terminal-of-tinsel-packs 1  "packs " 
+.SH NAME
+terminal\-of\-tinsel\-packs \- List the packs of creatures, or make your own
+.SH SYNOPSIS
+\fBterminal\-of\-tinsel packs\fR [\fB\-\-json\fR] [\fB\-\-no\-color\fR] [\fB\-\-pack\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fIsubcommands\fR]
+.SH DESCRIPTION
+Creatures come in packs. Use \-\-pack with any command to keep to some of them, e.g. \*(Aqterminal\-of\-tinsel quiz \-\-pack nordic\*(Aq.
+.PP
+Community packs live in the \*(Aqpacks\*(Aq folder of your config directory and load automatically. \*(Aqpacks new <id>\*(Aq makes one with an example creature to edit. Broken files are skipped with a warning.
+.SH OPTIONS
+.TP
+\fB\-\-json\fR
+Print the command\*(Aqs data as JSON instead of drawing it (errors become a JSON object on stderr)
+.TP
+\fB\-\-no\-color\fR
+Plain output: no colour, no emoji, ASCII borders (also set by NO_COLOR, or by piping)
+.TP
+\fB\-\-pack\fR \fI<PACK>\fR
+Only use creatures from these packs, e.g. \-\-pack nordic,dickens
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.SH SUBCOMMANDS
+.TP
+terminal\-of\-tinsel\-packs\-new(1)
+Make a community pack with an example creature to edit

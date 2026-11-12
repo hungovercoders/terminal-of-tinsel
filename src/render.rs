@@ -266,9 +266,12 @@ pub fn list(p: &Painter, vault: &Vault) -> String {
     let w = p.text_width();
     let mut out = vec![p.bold(
         &format!(
-            "{}TONIGHT'S GUESTS · {} creatures",
+            "{}TONIGHT'S GUESTS · {}",
             p.glyph("🎄"),
-            vault.creatures.len()
+            match vault.creatures.len() {
+                1 => "1 creature".to_string(),
+                n => format!("{n} creatures"),
+            }
         ),
         GOLD,
     )];
@@ -771,6 +774,57 @@ pub fn unlocks(p: &Painter, u: &Unlocks) -> String {
         ));
     }
     out.push(p.paint("See your collection: terminal-of-tinsel stocking", DIM));
+    out.join("\n") + "\n"
+}
+
+// ── Packs ──────────────────────────────────────────────────────────────────
+
+/// Every pack, built-in and community, and where to put your own.
+pub fn packs(p: &Painter, vault: &Vault, community_dir: Option<&std::path::Path>) -> String {
+    let w = p.text_width();
+    let mut out = vec![p.bold(
+        &format!("{}THE PACKS · {} packs", p.glyph("📦"), vault.packs.len()),
+        GOLD,
+    )];
+    for (pack, creatures) in vault.by_pack() {
+        out.push(String::new());
+        let count = match creatures.len() {
+            1 => "1 creature".to_string(),
+            n => format!("{n} creatures"),
+        };
+        out.push(format!(
+            "{}  {}",
+            p.bold(&format!("{} ({})", pack.name, pack.id), GREEN),
+            p.paint(&count, DIM)
+        ));
+        if !pack.description.is_empty() {
+            out.extend(p.wrap(&pack.description, w, |l| p.italic(l, DIM)));
+        }
+        let names: Vec<String> = creatures
+            .iter()
+            .map(|c| format!("{}{}", p.glyph(&c.emoji), c.name))
+            .collect();
+        out.extend(p.wrap(&names.join(" · "), w, |l| l.to_string()));
+        if pack.source != crate::creatures::BUILT_IN {
+            let path = crate::store::tilde(std::path::Path::new(&pack.source));
+            out.extend(p.wrap(&format!("A community pack, from {path}"), w, |l| {
+                p.paint(l, GOLD)
+            }));
+        }
+    }
+    out.push(String::new());
+    out.push(p.paint(
+        "Keep to some packs with --pack, e.g. terminal-of-tinsel quiz --pack nordic",
+        DIM,
+    ));
+    out.push(p.paint("Make your own: terminal-of-tinsel packs new <id>", DIM));
+    if let Some(dir) = community_dir {
+        out.extend(p.wrap(
+            &format!("Community packs live in {}", crate::store::tilde(dir)),
+            w,
+            |l| p.paint(l, DIM),
+        ));
+    }
     out.join("\n") + "\n"
 }
 

@@ -1,0 +1,47 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH terminal-of-tinsel-completions 1  "completions " 
+.SH NAME
+terminal\-of\-tinsel\-completions \- Print a shell completion script
+.SH SYNOPSIS
+\fBterminal\-of\-tinsel completions\fR [\fB\-\-json\fR] [\fB\-\-no\-color\fR] [\fB\-\-pack\fR] [\fB\-h\fR|\fB\-\-help\fR] <\fISHELL\fR> 
+.SH DESCRIPTION
+Print the script that teaches your shell to complete terminal\-of\-tinsel: commands, flags, creature names and pack ids, community packs included. The script asks the program itself what to offer, so it never goes out of date.
+.SH OPTIONS
+.TP
+\fB\-\-json\fR
+Print the command\*(Aqs data as JSON instead of drawing it (errors become a JSON object on stderr)
+.TP
+\fB\-\-no\-color\fR
+Plain output: no colour, no emoji, ASCII borders (also set by NO_COLOR, or by piping)
+.TP
+\fB\-\-pack\fR \fI<PACK>\fR
+Only use creatures from these packs, e.g. \-\-pack nordic,dickens
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+<\fISHELL\fR>
+The shell to complete for
+.br
+
+.br
+\fIPossible values:\fR
+.RS 14
+.IP \(bu 2
+bash
+.IP \(bu 2
+elvish
+.IP \(bu 2
+fish
+.IP \(bu 2
+powershell
+.IP \(bu 2
+zsh
+.RE
+.SH EXTRA
+For example, in ~/.zshrc:
+  source <(terminal\-of\-tinsel completions zsh)
+
+Then:
+  terminal\-of\-tinsel creature kra<TAB>

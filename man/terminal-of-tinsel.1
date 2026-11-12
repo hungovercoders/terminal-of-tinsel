@@ -1,0 +1,68 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH terminal-of-tinsel 1  "terminal-of-tinsel 0.1.0" 
+.SH NAME
+terminal\-of\-tinsel \- Channel 25\*(Aqs Midwinter Special: the creatures of Christmas folklore, live in your terminal
+.SH SYNOPSIS
+\fBterminal\-of\-tinsel\fR [\fB\-\-json\fR] [\fB\-\-no\-color\fR] [\fB\-\-pack\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] [\fIsubcommands\fR]
+.SH DESCRIPTION
+Terminal of Tinsel brings the creatures of Christmas folklore to your terminal: St Nicholas\*(Aqs grim companions, the Yule Cat and the Yule Lads, the Mari Lwyd at the door and the spirits of A Christmas Carol, presented by your host, Auntie Aerial, live on Channel 25\*(Aqs Midwinter Special.
+.PP
+Start here:  terminal\-of\-tinsel creature
+.SH OPTIONS
+.TP
+\fB\-\-json\fR
+Print the command\*(Aqs data as JSON instead of drawing it (errors become a JSON object on stderr)
+.TP
+\fB\-\-no\-color\fR
+Plain output: no colour, no emoji, ASCII borders (also set by NO_COLOR, or by piping)
+.TP
+\fB\-\-pack\fR \fI<PACK>\fR
+Only use creatures from these packs, e.g. \-\-pack nordic,dickens
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print version
+.SH SUBCOMMANDS
+.TP
+terminal\-of\-tinsel\-list(1)
+List every creature, grouped by pack
+.TP
+terminal\-of\-tinsel\-creature(1)
+Tune in to the Midwinter Special, or read one creature\*(Aqs page
+.TP
+terminal\-of\-tinsel\-random(1)
+A random creature fact, or with \-\-daily the Fact of the Night
+.TP
+terminal\-of\-tinsel\-quiz(1)
+Pull a cracker: the Christmas Cracker Quiz
+.TP
+terminal\-of\-tinsel\-guess(1)
+Guess the Guest: name the creature behind the frosted window
+.TP
+terminal\-of\-tinsel\-mash(1)
+The Snowball Showdown: pit two creatures against each other
+.TP
+terminal\-of\-tinsel\-stocking(1)
+Look in your stocking: the creatures you\*(Aqve caught, your badges and records
+.TP
+terminal\-of\-tinsel\-tonight(1)
+See tonight\*(Aqs Christmas double bill
+.TP
+terminal\-of\-tinsel\-countdown(1)
+Count the sleeps until Christmas
+.TP
+terminal\-of\-tinsel\-advent(1)
+Open the advent calendar: a different guest behind each door
+.TP
+terminal\-of\-tinsel\-packs(1)
+List the packs of creatures, or make your own
+.TP
+terminal\-of\-tinsel\-completions(1)
+Print a shell completion script
+.SH EXTRA
+Set NO_COLOR or pass \-\-no\-color for plain output. Every command takes \-\-json.
+.SH VERSION
+v0.1.0

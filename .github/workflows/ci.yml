@@ -83,6 +83,19 @@ jobs:
           $bin tonight --date 2026-12-19 --json > /dev/null
           $bin advent --date 2026-12-12
           $bin completions bash > /dev/null
+          COMPLETE=fish $bin -- terminal-of-tinsel creature kra | grep -q '^krampus'
+          COMPLETE=fish $bin -- terminal-of-tinsel quiz --pack nor | grep -q '^nordic'
+          $bin packs
+          $bin packs --json > /dev/null
+          $bin packs new ci-pack > /dev/null
+          $bin list --pack ci-pack > /dev/null
+          $bin quiz --pack ci-pack --json > /dev/null
+          if $bin packs new nordic 2> /dev/null; then
+            echo "expected an error for a built-in pack id"
+            exit 1
+          fi
+          test -s man/terminal-of-tinsel.1
+          test -s completions/terminal-of-tinsel.bash
           $bin list --json > /dev/null
 
   msrv:

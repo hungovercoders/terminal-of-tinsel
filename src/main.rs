@@ -2,6 +2,7 @@
 
 mod calendar;
 mod cli;
+mod complete;
 mod creatures;
 mod error;
 mod explorer;
@@ -9,10 +10,13 @@ mod games;
 mod guess;
 mod host;
 mod mash;
+mod packs;
 mod quiz;
 mod render;
 mod rng;
 mod search;
+#[cfg(test)]
+mod shelldocs;
 mod stocking;
 mod store;
 mod tui;
@@ -24,7 +28,7 @@ use clap::error::{ContextKind, ContextValue, ErrorKind};
 use clap::{CommandFactory, Parser};
 use serde::Serialize;
 
-use cli::{Cli, Command, StockingAction};
+use cli::{Cli, Command, PacksAction, StockingAction};
 use creatures::Vault;
 use error::{Code, Result, TinselError};
 use render::Painter;
@@ -32,6 +36,10 @@ use rng::Rng;
 use stocking::{Kind, Outcome};
 
 fn main() -> ExitCode {
+    // When the shell asks for completions (COMPLETE=bash and so on), answer
+    // and leave: nothing else runs.
+    clap_complete::CompleteEnv::with_factory(Cli::command).complete();
+
     let args: Vec<String> = std::env::args().collect();
     let wants_json = args.iter().any(|a| a == "--json");
     let cli = match Cli::try_parse_from(&args) {
@@ -63,7 +71,13 @@ fn run(cli: Cli) -> Result<()> {
     let plain = no_colour || !io::stdout().is_terminal();
     let painter = Painter::new(plain, terminal_width());
     // The stocking's badges count every creature, whatever --pack says.
-    let everything = Vault::load();
+    let mut everything = Vault::load();
+    // Community packs: anything broken is reported and skipped, never fatal.
+    if let Ok(dir) = store::dir() {
+        for warning in everything.add_community(&store::packs_dir(&dir)) {
+            eprintln!("warning: community pack: {warning}");
+        }
+    }
     let vault = everything.clone().only_packs(&cli.pack)?;
     let json = cli.json;
 
@@ -476,14 +490,80 @@ fn run(cli: Cli) -> Result<()> {
             print(&render::advent(&painter, &vault, today));
         }
 
+        Some(Command::Packs { action: None }) => {
+            if json {
+                let out: Vec<PackJson> = everything
+                    .by_pack()
+                    .into_iter()
+                    .map(|(pack, members)| PackJson {
+                        id: &pack.id,
+                        name: &pack.name,
+                        description: &pack.description,
+                        source: &pack.source,
+                        creatures: members.iter().map(|c| c.id.as_str()).collect(),
+                    })
+                    .collect();
+                return print_json(&out);
+            }
+            let dir = store::dir().ok().map(|d| store::packs_dir(&d));
+            print(&render::packs(&painter, &everything, dir.as_deref()));
+        }
+
+        Some(Command::Packs {
+            action: Some(PacksAction::New { id }),
+        }) => {
+            let dir = packs::scaffold(&everything, &store::packs_dir(&store::dir()?), &id)?;
+            let creature = packs::example_id(&id);
+            if json {
+                return print_json(&serde_json::json!({
+                    "pack": id,
+                    "creature": creature,
+                    "path": dir.display().to_string(),
+                }));
+            }
+            print(&format!(
+                "Created {}\n\n\
+                 Edit {creature}.json (and {creature}.txt for its portrait), then try:\n  \
+                 terminal-of-tinsel creature {creature}\n  \
+                 terminal-of-tinsel quiz --pack {id}\n\n\
+                 Only name, description and facts are required.\n",
+                store::tilde(&dir)
+            ));
+        }
+
         Some(Command::Completions { shell }) => {
-            let mut cmd = Cli::command();
-            let mut buf = Vec::new();
-            clap_complete::generate(shell, &mut cmd, "terminal-of-tinsel", &mut buf);
-            print(&String::from_utf8_lossy(&buf));
+            print(&complete_script(shell)?);
         }
     }
     Ok(())
+}
+
+/// The script that registers dynamic completion with a shell: the same one
+/// `COMPLETE=<shell> terminal-of-tinsel` prints.
+fn complete_script(shell: clap_complete::Shell) -> Result<String> {
+    let name = shell.to_string();
+    let shells = clap_complete::env::Shells::builtins();
+    let completer = shells.completer(&name).ok_or_else(|| {
+        TinselError::new(Code::Usage, format!("no completions for {name}"))
+            .with_hint("choose from: bash, elvish, fish, powershell, zsh")
+    })?;
+    let mut script = Vec::new();
+    let bin = "terminal-of-tinsel";
+    completer
+        .write_registration("COMPLETE", bin, bin, bin, &mut script)
+        .map_err(|e| TinselError::new(Code::Usage, e.to_string()))?;
+    Ok(String::from_utf8_lossy(&script).into_owned())
+}
+
+/// A pack as `packs --json` prints it.
+#[derive(Serialize)]
+struct PackJson<'a> {
+    id: &'a str,
+    name: &'a str,
+    description: &'a str,
+    /// "built-in", or the directory a community pack was loaded from.
+    source: &'a str,
+    creatures: Vec<&'a str>,
 }
 
 /// Saves an outcome to the player's stocking and announces anything new.

@@ -1,0 +1,33 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH terminal-of-tinsel-mash 1  "mash " 
+.SH NAME
+terminal\-of\-tinsel\-mash \- The Snowball Showdown: pit two creatures against each other
+.SH SYNOPSIS
+\fBterminal\-of\-tinsel mash\fR [\fB\-\-fast\fR] [\fB\-\-json\fR] [\fB\-\-no\-color\fR] [\fB\-\-pack\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fINAME\fR] 
+.SH DESCRIPTION
+Stage a three\-round showdown between two creatures. Each round tests strength, speed, cunning or dread, using each creature\*(Aqs stat card plus the roll of a die. Leave out one or both names for random contenders. Put a name of several words in quotes.
+.SH OPTIONS
+.TP
+\fB\-\-fast\fR
+Skip the dramatic pauses
+.TP
+\fB\-\-json\fR
+Print the command\*(Aqs data as JSON instead of drawing it (errors become a JSON object on stderr)
+.TP
+\fB\-\-no\-color\fR
+Plain output: no colour, no emoji, ASCII borders (also set by NO_COLOR, or by piping)
+.TP
+\fB\-\-pack\fR \fI<PACK>\fR
+Only use creatures from these packs, e.g. \-\-pack nordic,dickens
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+[\fINAME\fR]
+Up to two creatures, e.g. krampus "yule cat"
+.SH EXTRA
+Examples:
+  terminal\-of\-tinsel mash
+  terminal\-of\-tinsel mash krampus
+  terminal\-of\-tinsel mash "yule cat" gryla \-\-fast

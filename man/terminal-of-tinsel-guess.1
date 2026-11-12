@@ -1,0 +1,27 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH terminal-of-tinsel-guess 1  "guess " 
+.SH NAME
+terminal\-of\-tinsel\-guess \- Guess the Guest: name the creature behind the frosted window
+.SH SYNOPSIS
+\fBterminal\-of\-tinsel guess\fR [\fB\-\-json\fR] [\fB\-n\fR|\fB\-\-rounds\fR] [\fB\-\-no\-color\fR] [\fB\-\-pack\fR] [\fB\-h\fR|\fB\-\-help\fR] 
+.SH DESCRIPTION
+A creature\*(Aqs portrait is hidden behind a frosted window. Guess who it is, or press space to clear a little more frost and get clues, at the cost of points.
+.PP
+With \-\-json the rounds are printed with their answers instead.
+.SH OPTIONS
+.TP
+\fB\-\-json\fR
+Print the command\*(Aqs data as JSON instead of drawing it (errors become a JSON object on stderr)
+.TP
+\fB\-n\fR, \fB\-\-rounds\fR \fI<N>\fR [default: 5]
+Number of rounds
+.TP
+\fB\-\-no\-color\fR
+Plain output: no colour, no emoji, ASCII borders (also set by NO_COLOR, or by piping)
+.TP
+\fB\-\-pack\fR \fI<PACK>\fR
+Only use creatures from these packs, e.g. \-\-pack nordic,dickens
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
