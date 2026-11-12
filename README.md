@@ -160,6 +160,42 @@ terminal-of-tinsel mash "yule cat" gryla --fast   # skip the dramatic pauses
 
 The quiz and Guess the Guest need a terminal. With `--json` all three print their data instead: the questions with their answers, the rounds, or the whole showdown.
 
+## 🧦 The Stocking
+
+Answer three questions about a creature correctly, in the quiz or Guess the Guest, and it goes in your **stocking**. The stocking keeps your collection, your badges and your records.
+
+```bash
+terminal-of-tinsel stocking
+terminal-of-tinsel stocking reset   # tip it out and start again (-y skips the question)
+```
+
+<details>
+<summary><b>🏅 All 17 badges</b></summary>
+
+| Badge | How to earn it |
+|-------|----------------|
+| 🎉 First Cracker | Finish your first quiz |
+| 🏆 Top of the Tree | Score 100% on a quiz of 5 or more questions |
+| 🧦 Stocking Filler | Put your first creature in the stocking |
+| 🔍 Frost Reader | Name a guest in Guess the Guest through the thickest frost |
+| 🥊 Snowball Referee | Stage your first Snowball Showdown |
+| 📚 Fireside Scholar | Visit every creature's page in the explorer |
+| 🦉 Up Past Bedtime | Play between midnight and 4am |
+| 🌕 Cold Moon | Play a game on a full-moon night |
+| 😈 Krampusnacht Survivor | Play a game on 5 December |
+| 🎄 Christmas Spirit | Play a game on Christmas Day |
+| 🌟 Twelfth Nighter | Play a game on Twelfth Night, 5 January |
+| 🎬 Matinee Regular | Capture every creature with a classic film |
+| 🎁 Saint's Shadow | Capture every companion of St Nicholas |
+| 🌍 Midwinter Wanderer | Capture 5 from Midwinter Europe, or all it has |
+| 🐈 Friend of the Yule Cat | Capture every creature of the Nordic Yule |
+| 📖 Dickensian | Capture every spirit of *A Christmas Carol* |
+| 👑 Keeper of the Stocking | Capture every creature |
+
+</details>
+
+Progress is saved as JSON in your config directory (`~/.config/terminal-of-tinsel/stocking.json` on Linux). Set `TERMINAL_OF_TINSEL_HOME` to keep it somewhere else. The badges count every creature, whatever `--pack` you play with, and the moon is worked out offline.
+
 ## 📅 The advent calendar
 
 `advent` shows all 24 doors, opening as December goes on, with tonight's guest in full. `countdown` draws the tree and the sleeps until Christmas, tonight's door, and notes for the special nights: Krampusnacht, St Nicholas Day, the arrival of each Yule Lad, the anniversary of *A Christmas Carol*, the Twelve Days and Twelfth Night.
@@ -182,7 +218,7 @@ Use `--pack` with any command to keep to some packs: `terminal-of-tinsel list --
 
 ## 🤖 For scripts
 
-Every command takes `--json` and prints its data instead of drawing. Errors become one JSON object on stderr with a stable code (`unknown-creature`, `ambiguous-creature`, `bad-pack`, `bad-date`, `bad-flag`, `no-terminal`, `usage`) and exit 1.
+Every command takes `--json` and prints its data instead of drawing. Errors become one JSON object on stderr with a stable code (`unknown-creature`, `ambiguous-creature`, `bad-pack`, `bad-date`, `bad-flag`, `no-terminal`, `store`, `usage`) and exit 1.
 
 ```bash
 terminal-of-tinsel countdown --json | jq .sleepsUntilChristmas
@@ -191,6 +227,7 @@ terminal-of-tinsel creature --json | jq -r '.[].name'      # no name: every crea
 terminal-of-tinsel creature tomte --json | jq -r .ascii    # the portrait
 terminal-of-tinsel quiz -n 5 --json | jq '.[].prompt'
 terminal-of-tinsel mash krampus gryla --json | jq -r .winner
+terminal-of-tinsel stocking --json | jq '.captured | keys'
 ```
 
 Output is plain (no colour, no emoji, ASCII borders) when piped, with `--no-color`, or when `NO_COLOR` is set. Set `TERMINAL_OF_TINSEL_SEED` to a number to make every random choice repeatable: the questions, the portraits, the showdowns, `random` and the host's lines.

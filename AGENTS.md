@@ -22,6 +22,8 @@ src/quiz.rs        Quiz questions generated from the creature data, name masking
 src/guess.rs       Guess the Guest: rounds, the frost and its points
 src/mash.rs        The Snowball Showdown: the three-round fight simulation
 src/games.rs       The quiz and guess screens (ratatui), and their results
+src/stocking.rs    Captures and badges: what a session of play earns
+src/store.rs       Saved progress: stocking.json in the config dir (TERMINAL_OF_TINSEL_HOME overrides)
 src/render.rs      Everything printed: colours, boxes, pages, the tree and the big digits
 src/host.rs        Auntie Aerial's lines
 src/rng.rs         SplitMix64, pinned so daily facts never change between releases
@@ -43,6 +45,8 @@ tests/cli.rs       End-to-end tests of the binary
   that take over the terminal call `require_terminal` first, and fail with the `no-terminal` code.
 - Every random choice goes through `Rng` (`src/rng.rs`), seeded by `TERMINAL_OF_TINSEL_SEED`, so a run
   can be repeated. Don't add another source of randomness. Set the seed when testing.
+- Set `TERMINAL_OF_TINSEL_HOME` to a scratch directory when testing, so real progress isn't touched. The
+  end-to-end tests do. Saving must never stop a game: `record` warns and carries on.
 - Game text must read the same for one creature or several (the Yule Lads are plural), so narration is
   in the past tense.
 - Never push a `v*` tag without the maintainer's go-ahead: it publishes a release.
@@ -68,6 +72,8 @@ DUMP=1 cargo test dump_ -- --nocapture   # print sample explorer and game screen
 - **Changing the explorer:** state and keys go in `src/explorer/model.rs`, drawing in `view.rs`. Pages
   are built as `Vec<Line>` by plain functions of the model, so test them in `tests.rs` by pressing keys
   and reading the screen back, at small and large sizes. Then try it in a real terminal.
+- **Adding a badge:** add it to `BADGES` in `src/stocking.rs` (the array's length is in its type), award
+  it in `apply`, test it there, and add it to the README's badge table. Its emoji must be two columns wide.
 - **Adding a command:** add a variant to `Command` in `src/cli.rs`, handle it in `run` in `src/main.rs`
   (with `--json` output), draw it in `src/render.rs`, and add it to the smoke test in `ci.yml` and to
   `every_command_runs` in `tests/cli.rs`.

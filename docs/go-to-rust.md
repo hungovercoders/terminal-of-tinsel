@@ -121,3 +121,35 @@ Monster and Monster Mash: the same rules and numbers, with Christmas words.
 - **Grammar is a data problem.** Terror's fight lines are in the present tense ("hurls"), which reads
   wrongly for a plural name. Tinsel has the Yule Lads, so its lines are in the past tense, and the
   loser's parting mutter is quoted rather than woven into the sentence.
+
+## Phase 3: the Stocking
+
+Terror's crypt (`internal/crypt`, `internal/store`) becomes Tinsel's stocking (`src/stocking.rs`,
+`src/store.rs`): the same save file fields, the same capture rule, 17 badges.
+
+- **Finding the config directory.** Go's standard library has `os.UserConfigDir`. Rust's doesn't, so
+  Tinsel uses the `directories` crate (three small crates in the tree on Linux). The two agree on Linux
+  (`~/.config`) and macOS (`~/Library/Application Support`), but on Windows `directories` adds a
+  `config` folder under `%APPDATA%\terminal-of-tinsel`.
+- **Missing fields.** Go's `encoding/json` leaves a missing field at its zero value, and Terror then
+  fills in nil maps by hand in `init()`. serde refuses a missing field unless told otherwise, so
+  `Progress` carries `#[serde(default)]`, and a `BTreeMap` has no nil to guard against.
+- **Sorted maps.** Go randomises map iteration, so Terror sorts before printing anywhere the order
+  shows. `BTreeMap` is always in key order, and the save file comes out the same every time.
+- **Times as text.** Terror stores `time.Time`, which marshals itself as RFC 3339. jiff can do the
+  same behind its `serde` feature; Tinsel stores the local date and time as a plain string instead and
+  keeps the feature off.
+- **Atomic saves.** Both write a temporary file beside the real one and rename it over the top. Go has
+  `os.CreateTemp` for the name; Rust's standard library has no equivalent, so the name is made from the
+  process id.
+- **One function, many awards.** Terror collects unlocks in an `awarder` struct with methods. In Rust
+  the same shape runs into the borrow checker (the awarder holds the progress mutably while the rules
+  want to read it), so `apply` works out what is true first and awards afterwards, with a closure that
+  takes the progress as an argument instead of capturing it.
+- **A fixed-size list of badges.** `BADGES` is a `[Badge; 17]`: add a badge without changing the 17
+  and it doesn't compile. Go's slice literal would simply grow.
+- **Testing without the real home directory.** Terror's store reads `TERMINAL_OF_TERROR_HOME` deep
+  inside `store.Dir()`, and its tests set the variable. Rust runs unit tests in parallel threads of one
+  process, where setting an environment variable is a data race (and `unsafe` since the 2024 edition),
+  so `load`, `save` and `reset` take the directory as an argument and only `store::dir()` reads the
+  environment. The end-to-end tests set the variable per child process, which is safe.
