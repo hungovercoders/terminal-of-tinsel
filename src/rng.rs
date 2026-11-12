@@ -6,6 +6,10 @@
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
+/// Fixes every random choice (questions, portraits, showdowns, the host's
+/// lines) so a run can be repeated exactly.
+pub const SEED_ENV: &str = "TERMINAL_OF_TINSEL_SEED";
+
 /// SplitMix64: fast, tiny, and good enough for a Christmas special.
 #[derive(Debug, Clone)]
 pub struct Rng(u64);
@@ -18,15 +22,19 @@ impl Rng {
     /// A seed from `TERMINAL_OF_TINSEL_SEED` if set (for repeatable tests and
     /// demos), otherwise from the clock.
     pub fn from_env_or_clock() -> Self {
-        let seed = std::env::var("TERMINAL_OF_TINSEL_SEED")
-            .ok()
-            .and_then(|s| s.trim().parse().ok())
-            .unwrap_or_else(|| {
-                SystemTime::now()
-                    .duration_since(UNIX_EPOCH)
-                    .map(|d| d.as_nanos() as u64)
-                    .unwrap_or(0)
-            });
+        let clock = || {
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map(|d| d.as_nanos() as u64)
+                .unwrap_or(0)
+        };
+        let seed = match std::env::var(SEED_ENV) {
+            Ok(s) if !s.trim().is_empty() => s.trim().parse().unwrap_or_else(|_| {
+                eprintln!("warning: ignoring {SEED_ENV}={s:?}: it should be a whole number");
+                clock()
+            }),
+            _ => clock(),
+        };
         Self::new(seed)
     }
 
@@ -42,6 +50,18 @@ impl Rng {
     pub fn below(&mut self, n: usize) -> usize {
         assert!(n > 0, "Rng::below(0)");
         (self.next_u64() % n as u64) as usize
+    }
+
+    /// Shuffles a slice in place (Fisher-Yates).
+    pub fn shuffle<T>(&mut self, items: &mut [T]) {
+        for i in (1..items.len()).rev() {
+            items.swap(i, self.below(i + 1));
+        }
+    }
+
+    /// The roll of a six-sided die: 1 to 6.
+    pub fn die(&mut self) -> u8 {
+        self.below(6) as u8 + 1
     }
 
     /// A random element of a non-empty slice.
@@ -67,6 +87,29 @@ mod tests {
     fn sequence_is_pinned() {
         // If this changes, every Fact of the Night changes with it.
         assert_eq!(Rng::new(0).next_u64(), 0xE220_A839_7B1D_CDAF);
+    }
+
+    #[test]
+    fn shuffle_keeps_every_item_and_is_repeatable() {
+        let deal = |seed| {
+            let mut cards: Vec<u32> = (0..20).collect();
+            Rng::new(seed).shuffle(&mut cards);
+            cards
+        };
+        assert_eq!(deal(25), deal(25));
+        assert_ne!(deal(25), deal(26));
+        let mut sorted = deal(25);
+        sorted.sort_unstable();
+        assert_eq!(sorted, (0..20).collect::<Vec<_>>());
+        Rng::new(1).shuffle::<u8>(&mut []);
+    }
+
+    #[test]
+    fn a_die_rolls_one_to_six() {
+        let mut r = Rng::new(7);
+        let rolls: Vec<u8> = (0..200).map(|_| r.die()).collect();
+        assert!(rolls.iter().all(|d| (1..=6).contains(d)));
+        assert!((1..=6).all(|face| rolls.contains(&face)));
     }
 
     #[test]
