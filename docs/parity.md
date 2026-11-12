@@ -6,7 +6,7 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 - `[x]` Tinsel has it already (v0.1.0)
 - `[ ]` to build, in the phase shown (P1 to P7)
 - `[~]` deliberately different, with the reason
-- `[?]` needs a decision: see [Open questions](#open-questions)
+- `[?]` needs a decision: see [Decisions](#decisions)
 
 ## Commands
 
@@ -14,12 +14,12 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 |-|--------|--------|-------|
 | [x] | bare `terminal-of-terror` prints help | bare command prints Auntie Aerial's welcome (Tinsel extra, kept) | done |
 | [x] | `list` | `list` (alias `ls`) | done |
-| [ ] | `monster` with no name: the interactive explorer | `creature` with no name opens the Midwinter Special explorer | P1 |
-| [?] | `monster <name>`: explorer opened on that monster | `creature <name>`: the static page stays (Q1) | P1 |
+| [x] | `monster` with no name: the interactive explorer | `creature` with no name opens the Midwinter Special explorer | done (P1) |
+| [x] | `monster <name>`: explorer opened on that monster | `creature <name>` prints the static page; `creature <name> --explore` (`-x`) opens the explorer there | done (P1) |
 | [x] | `monster <name> --json` | `creature <name> --json` | done |
-| [ ] | `monster --json` with no name: every monster | `creature --json` with no name: every creature | P1 |
-| [ ] | `monster --all` / `-a`: open on the gallery | `creature --all` / `-a` | P1 |
-| [ ] | `monster --no-intro` | `creature --no-intro` | P1 |
+| [x] | `monster --json` with no name: every monster | `creature --json` with no name: every creature | done (P1) |
+| [x] | `monster --all` / `-a`: open on the gallery | `creature --all` / `-a` | done (P1) |
+| [x] | `monster --no-intro` | `creature --no-intro` | done (P1) |
 | [x] | `random`, `--daily` / `-d`, `--date` | the same | done |
 | [ ] | `quiz [monster]`, `-n` / `--questions` (default 10) | `quiz [creature]`: the Christmas Cracker Quiz | P2 |
 | [ ] | `guess`, `-n` / `--rounds` (default 5) | `guess`: Guess the Guest, the portrait behind a frosted window | P2 |
@@ -56,29 +56,29 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [x] | `unknown-monster` | `unknown-creature` | done |
 | [x] | `ambiguous-monster` | `ambiguous-creature` | done |
 | [x] | `bad-pack`, `bad-date`, `bad-flag`, `usage` | the same | done |
-| [ ] | `no-terminal` (explorer, quiz, guess, `crypt reset` without `-y`), with a hint | `no-terminal`, same places | P1 to P3 |
+| [ ] | `no-terminal` (explorer, quiz, guess, `crypt reset` without `-y`), with a hint | `no-terminal`: the explorer has it (P1); the games and `stocking reset` to come | P2, P3 |
 | [ ] | `store` (progress can't be read or written) | `store` | P3 |
 
 ## The explorer (Bubble Tea becomes ratatui + crossterm)
 
 | | Terror | Tinsel | Phase |
 |-|--------|--------|-------|
-| [ ] | intro: TV static, big logo, the host's greeting typed out, tonight's notes; any key skips, `q` quits | Channel 25 tunes in through snow, then the same | P1 |
-| [ ] | special greeting on Halloween | special greeting on Christmas Eve and Christmas Day | P1 |
-| [ ] | gallery of every monster with a preview | gallery of every creature, grouped by pack | P1 |
-| [ ] | detail page with up to 7 numbered sections; empty ones are dropped | Facts, Legend, On Screen, Myth or Fact?, From the Page, Stat Card, Legacy | P1 |
-| [ ] | `tab` / `shift+tab` / `1`-`7` switch section | the same | P1 |
-| [ ] | `←` `→` / `h` `l` / `p` `n` previous and next | the same | P1 |
-| [ ] | `↑` `↓` / `j` `k`, `space`, `pgup` / `pgdn`, `home` / `end` scroll | the same | P1 |
-| [ ] | `r` reveals the myth verdicts | the same | P1 |
-| [ ] | `/` searches names, aliases, description, origin, film, facts, legend, myths and legacy, with a snippet | the same | P1 |
-| [ ] | `g` / `esc` gallery, `?` help, `q` / `ctrl+c` quit with a sign-off line | the same; Auntie Aerial needs sign-off lines | P1 |
-| [ ] | portrait beside the text on wide screens | the same | P1 |
-| [ ] | per-monster colours from `theme` | already used by the static page; reuse | P1 |
-| [?] | silent-film monsters in black and white with intertitles and film grain | the Dickens pack as a Victorian engraving: sepia, with gently falling snow (Q2) | P1 |
-| [ ] | ASCII portraits, `<id>.txt` beside each JSON file | original portraits for all 14 creatures | P1 |
+| [x] | intro: TV static, big logo, the host's greeting typed out, tonight's notes; any key skips, `q` quits | Channel 25 tunes in through snow, then the same | done (P1) |
+| [x] | special greeting on Halloween | special greeting on Christmas Eve and Christmas Day | done (P1) |
+| [x] | gallery of every monster with a preview | gallery of every creature, grouped by pack | done (P1) |
+| [x] | detail page with up to 7 numbered sections; empty ones are dropped | Facts, Legend, On Screen, Myth or Fact?, From the Page, Stat Card, Legacy | done (P1) |
+| [x] | `tab` / `shift+tab` / `1`-`7` switch section | the same | done (P1) |
+| [x] | `←` `→` / `h` `l` / `p` `n` previous and next | the same | done (P1) |
+| [x] | `↑` `↓` / `j` `k`, `space`, `pgup` / `pgdn`, `home` / `end` scroll | the same | done (P1) |
+| [x] | `r` reveals the myth verdicts | the same | done (P1) |
+| [x] | `/` searches names, aliases, description, origin, film, facts, legend, myths and legacy, with a snippet | the same | done (P1) |
+| [x] | `g` / `esc` gallery, `?` help, `q` / `ctrl+c` quit with a sign-off line | the same; Auntie Aerial needs sign-off lines | done (P1) |
+| [x] | portrait beside the text on wide screens | the same | done (P1) |
+| [x] | per-monster colours from `theme` | already used by the static page; reuse | done (P1) |
+| [x] | silent-film monsters in black and white with intertitles and film grain | the Dickens pack as a Victorian engraving: sepia ink, an ENGRAVER'S INK badge and drifting snow, switched on by `"style": "engraving"` in `pack.json` | done (P1) |
+| [x] | ASCII portraits, `<id>.txt` beside each JSON file | original portraits for all 14 creatures | done (P1) |
 | [ ] | returns the pages visited, for progress | the same (recorded from P3) | P1, P3 |
-| [ ] | tests render every page at several sizes; `DUMP=1` prints sample screens | ratatui `TestBackend` tests of every page and size | P1 |
+| [x] | tests render every page at several sizes; `DUMP=1` prints sample screens | ratatui `TestBackend` tests of every page and size | done (P1) |
 
 ## Games
 
@@ -147,11 +147,11 @@ Badge emoji will be checked against the two-column rule before they land.
 | [ ] | moon phase (mean synodic month from the 6 January 2000 new moon; name, emoji, illumination) | the same sum with jiff; `moon` in `countdown --json` | P4 |
 | [ ] | full-moon note | full-moon note (December's is the Cold Moon) | P4 |
 | [ ] | "N nights until Halloween" note within 60 nights | "N sleeps until Christmas" note within 60 | P4 |
-| [ ] | film anniversaries from `film.releaseDate`: today's and the next | the same, plus dated feasts (Q3) | P4 |
+| [ ] | film anniversaries from `film.releaseDate`: today's and the next | the "next special night": the nearer of the next film anniversary and the next dated feast | P4 |
 | [ ] | `tonight`: a ticket, two features at 9:00 PM and 10:45 PM, the host's intro, notes | a cinema ticket for Channel 25's double bill at 7:00 PM and 8:45 PM | P4 |
 | [ ] | `tonight --json`: `date`, `features[]`, `notes` | the same | P4 |
 | [ ] | `tonight` needs two creatures, else `usage` | the same | P4 |
-| [ ] | the explorer's intro shows tonight's notes | the same | P1 |
+| [x] | the explorer's intro shows tonight's notes | the same | done (P1) |
 | [~] | Friday the 13th | no Christmas twin; Krampusnacht takes its badge | - |
 | [ ] | no equivalent | winter solstice note on 21 December (a Tinsel extra, cheap with the moon work) | P4 |
 
@@ -162,12 +162,12 @@ Badge emoji will be checked against the two-column rule before they land.
 | [x] | `id`, `name`, `aliases`, `emoji`, `description`, `origin`, `debut`, `legend`, `myths`, `quotes`, `powers`, `weaknesses`, `stats`, `legacy`, `facts`, `hostIntro`, `theme`, `pack` | all present, same JSON names | done |
 | [x] | `film.title`, `year`, `director`, `star`, `note` | present | done |
 | [ ] | `film.releaseDate`, `studio`, `makeup`, `silent` | add all four as optional | P4 |
-| [ ] | `ascii` from `<id>.txt`, with `\r\n` normalised | add; shown in `--json` as `ascii` | P1 |
+| [x] | `ascii` from `<id>.txt`, with `\r\n` normalised | add; shown in `--json` as `ascii` | done (P1) |
 | [ ] | `Pack.Source`: "built-in" or a path | add | P5 |
 | [x] | lookup by id, name, alias, partial; ambiguity listed; "did you mean" by edit distance | present, and it folds accents too | done |
-| [ ] | "did you mean" lists up to three names | Tinsel suggests one; match Terror | P1 |
+| [x] | "did you mean" lists up to three names | Tinsel suggests one; match Terror | done (P1) |
 | [x] | data tests: every field, 5+ facts, stats 1 to 10, colours, emoji width, unique ids | present | done |
-| [ ] | data test: portraits are single-width characters | add with the portraits | P1 |
+| [x] | data test: portraits are single-width characters | add with the portraits | done (P1) |
 | [ ] | data test: `film` only where the pack allows | already a house rule; add the test | P4 |
 | [ ] | 55 monsters in 6 packs | 14 in 4 today; grow towards it | P6 |
 
@@ -190,7 +190,7 @@ Badge emoji will be checked against the two-column rule before they land.
 | [x] | GoReleaser: Linux, macOS, Windows on Intel and ARM | cargo-dist, same targets | done |
 | [x] | Homebrew cask in `hungovercoders/homebrew-tap` | Homebrew formula, same tap | done |
 | [ ] | a man page per command, from the command tree | clap_mangen | P5 |
-| [ ] | man pages and completion scripts in every archive | cargo-dist `include` (Q4) | P5 |
+| [ ] | man pages and completion scripts in every archive | generated `man/` and `completions/` committed, a test that fails when they're stale, and cargo-dist `include` | P5 |
 | [~] | Homebrew installs man pages and completions | cargo-dist's generated formula can't; the README will say where they are in the archive | P5 |
 | [~] | a Release button (`workflow_dispatch`) that tags and publishes | cargo-dist owns `release.yml` and is tag-driven; left as it is | - |
 | [x] | CI: format, lint, tests on three systems, smoke test | present, plus MSRV 1.88 | done |
@@ -211,9 +211,9 @@ Badge emoji will be checked against the two-column rule before they land.
 | [ ] | VHS tapes, `render.sh`, `theme.json`; hero, quiz, guess and mash GIFs; list, random, countdown, tonight and crypt stills | the same set, plus advent and stocking; seed 25 | P7 |
 | [ ] | `docs/README.md` routing table, `docs/ui.md` | the same | P7 |
 | [ ] | README: programme table, keys, games, badges, rituals, roster by pack, command reference | grow with each phase | P1 to P7 |
-| [?] | slopstopper: `.slopstopper.yml` (profile `ui`), `Taskfile.ss.yml`, `ss-*.yml`, `.githooks/pre-push`, the `slopstopper-cli` pin, two Claude skills | the same installer with profile `library` until there's a website (Q5) | P7 |
-| [~] | `package.json`, `.markdownlint.json`, `.zap/`, `public/_headers`, `wrangler.jsonc` | website tooling; only with the website stretch goal | stretch |
-| [ ] | website: a Go generator, a page per monster, the course, Cloudflare Workers Builds | stretch goal; ask first | stretch |
+| [ ] | slopstopper: `.slopstopper.yml` (profile `ui`), `Taskfile.ss.yml`, `ss-*.yml`, `.githooks/pre-push`, the `slopstopper-cli` pin, two Claude skills | the same installer: profile `library` in P7, switched to `ui` when the website lands | P7, P8 |
+| [ ] | `package.json`, `.markdownlint.json`, `.zap/`, `public/_headers`, `wrangler.jsonc` | website tooling, with the website | P8 |
+| [ ] | website: a Go generator, a page per monster, the course, Cloudflare Workers Builds | a Rust generator, a page per creature, Cloudflare: see [The website](#the-website-phase-8) | P8 |
 | [ ] | Count Cathode's Night School, 31 nights | Auntie Aerial's Night School, 24 nights; stretch goal; ask first | stretch |
 | [ ] | `TUTORIAL.md` pointing at the course | only with the course | stretch |
 | [x] | no equivalent | `docs/go-to-rust.md`, updated every phase | ongoing |
@@ -224,7 +224,7 @@ Each gets its default features and tree checked before it lands, and MSRV 1.88 m
 
 | Phase | Crate | Why |
 |-------|-------|-----|
-| P1 | `ratatui` (default features off, `crossterm` backend only), `crossterm` | the explorer and the game screens |
+| P1, done | `ratatui` 0.30 (default features off, `crossterm` backend only; crossterm comes re-exported, so it isn't a direct dependency) | the explorer and the game screens. MSRV 1.88, the same as Tinsel's. About 45 more crates |
 | P3 | `directories` | the config dir |
 | P5 | `clap_complete` feature `unstable-dynamic` | `CompleteEnv`; it's behind an unstable feature flag, so the version gets pinned |
 | P5 | `clap_mangen` | man pages |
@@ -232,27 +232,49 @@ Each gets its default features and tree checked before it lands, and MSRV 1.88 m
 No `regex` (the quiz's name masking is small enough to write by hand) and no `rand` (SplitMix64 stays, so
 seeded games never change between releases).
 
-## Open questions
+## Decisions
 
-1. **`creature <name>` with a terminal.** Terror opens the explorer on that monster. Your brief says only
-   the no-name form opens the TUI. I'd keep the static page for `creature <name>` (it's shipped, and good
-   in scripts) and let `creature <name> --explore` (`-x`) open the explorer there. Yes?
-2. **The Dickens pack as an engraving.** Terror draws silent-film monsters in black and white with grain.
-   The nearest Christmas twin is drawing the Dickens spirits in sepia like John Leech's 1843 plates, with
-   snow drifting. In or out?
-3. **Next anniversary.** Few Tinsel creatures have a film, so "next film anniversary" would often be empty.
-   I'd make it the "next special night": the nearer of the next film anniversary and the next dated feast
-   (Krampusnacht, St Lucy's night and so on). Yes?
-4. **Man pages in the archives.** cargo-dist includes files that exist at build time. I'd commit generated
-   `man/` and `completions/` and have a test fail if they're stale, which is simple and reviewable. The
-   other way is a hidden `terminal-of-tinsel man <dir>` command run by a dist build step. Preference?
-5. **Slopstopper profile.** Without a website nearly every browser check is moot, so I'd install with
-   `--profile library` (hygiene and security checks, the pre-push hook). The installer comes from
-   `hungovercoders/slopstopper`, which I'll need read access to in P7.
-6. **Game names.** Christmas Cracker Quiz is yours. Guess the Guest, the Snowball Showdown and the badge
-   names above are my suggestions: change any you like.
-7. **Order.** It's 12 November, 43 sleeps out. The phases are in your order. If you'd like more guests on
-   screen before December, P6 (content) can move up without disturbing the rest.
+Settled with the maintainer on 12 November 2026.
+
+1. **`creature <name>` with a terminal** prints the static page; `--explore` (`-x`) opens the explorer on
+   that creature. Done in P1.
+2. **The Dickens pack is an engraving.** In. Done in P1.
+3. **Next anniversary** becomes the "next special night": the nearer of the next film anniversary and the
+   next dated feast. P4.
+4. **Man pages in the archives.** cargo-dist copies extra files into each archive but has no "run this
+   first" step, so the files must already exist. Plan: commit generated `man/` and `completions/`, with a
+   test that fails when they no longer match the command tree. The alternative, a hidden command run by a
+   hand-edited `release.yml`, was explained and not chosen; say so before P5 if you'd rather have it.
+5. **Slopstopper and the website.** The website is planned (P8), not a stretch goal. Slopstopper goes in
+   with profile `library` in P7 and moves to `ui` in P8. P7 needs read access to
+   `hungovercoders/slopstopper`.
+6. **Names:** the Christmas Cracker Quiz, Guess the Guest, the Snowball Showdown, the Stocking, and the
+   badge names above.
+7. **Order:** as numbered.
+
+Still to ask: the Night School course (a stretch goal), and for the website a domain name and the
+go-ahead to connect Cloudflare.
+
+## The website (phase 8)
+
+Terror's site is generated from the repository by `go run ./site` and published to Cloudflare by Workers
+Builds on every push to `main`. Tinsel's follows the same shape.
+
+| | Terror | Tinsel |
+|-|--------|--------|
+| [ ] | `site/` Go program reading `internal/monsters` | a `site` workspace member reading the same pack data as the CLI, which means moving the CLI's modules behind a `src/lib.rs`; cargo-dist keeps shipping only the CLI |
+| [ ] | `html/template` files, one per page kind plus a base | the same pages from a small template crate (to be vetted) or plain Rust |
+| [ ] | pages: home, roster, one per monster, privacy, 404 | home, roster, one per creature with its portrait and colours, the advent calendar (a Tinsel extra), privacy, 404 |
+| [ ] | course pages rendered from `course/` | only if the Night School stretch goal goes ahead |
+| [ ] | `sitemap.xml`, `robots.txt`, `llms.txt` generated | the same |
+| [ ] | no inline styles or scripts; CSP in `public/_headers`; per-monster colours as generated CSS classes | the same |
+| [ ] | self-hosted fonts with their licences | the same, in a Christmas-card pairing |
+| [ ] | README install, games and rituals copy repeated on the landing page | the same |
+| [ ] | hero GIF and screenshots from `docs/assets`; a social card | the same, from the P7 recordings |
+| [ ] | `go test ./site` builds the site and checks every internal link | a test that builds into a temp dir and checks every link |
+| [ ] | `wrangler.jsonc`, Workers Builds deploys `main` | the same, once a Cloudflare project and domain are agreed |
+| [ ] | slopstopper profile `ui`: smoke, e2e, accessibility, SEO, links, web vitals, DAST | switch the profile and set the production URL |
+| [ ] | `docs/website.md` | the same |
 
 ## Phases
 
@@ -262,10 +284,11 @@ and `cargo test` before every PR. Each phase updates the README, `CHANGELOG.md`,
 
 | Phase | Branch | Contents | go-to-rust.md teaches |
 |-------|--------|----------|-----------------------|
-| 1 | `feature/explorer` | ratatui explorer, portraits, `no-terminal`, search, `--all`, `--no-intro` | Bubble Tea's Elm loop against ratatui's immediate mode; who owns the event loop |
+| 1 (done) | `feature/explorer` | ratatui explorer, portraits, `no-terminal`, search, `--all`, `--no-intro` | Bubble Tea's Elm loop against ratatui's immediate mode; who owns the event loop |
 | 2 | `feature/games` | quiz, guess, mash, the seed everywhere | `math/rand` against a pinned generator; enums with data for question kinds |
 | 3 | `feature/stocking` | store, captures, badges, reset | `os.UserConfigDir` against `directories`; maps of times in serde; atomic writes |
 | 4 | `feature/rituals` | `tonight`, the moon, anniversaries, new film fields | `time.Time` against jiff's civil dates |
 | 5 | `feature/packs` | `packs`, community packs, `packs new`, dynamic completion, man pages | `embed.FS` and `fs.FS` against `include_dir` plus `std::fs`; Cobra completion against `CompleteEnv` |
 | 6 | `feature/roster` | new creatures and portraits, advent doors refreshed | nothing new in code: the data tests as the reviewer |
 | 7 | `chore/polish` | tapes and GIFs, CONTRIBUTING, git-cliff, dependabot, .editorconfig, slopstopper | GoReleaser against cargo-dist, start to finish |
+| 8 | `feature/website` | the site generator, its pages and tests, Cloudflare hosting, slopstopper profile `ui` | `html/template` and `go run` against a workspace member; sharing code between a binary and a generator |
