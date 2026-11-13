@@ -21,9 +21,9 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [x] | `monster --all` / `-a`: open on the gallery | `creature --all` / `-a` | done (P1) |
 | [x] | `monster --no-intro` | `creature --no-intro` | done (P1) |
 | [x] | `random`, `--daily` / `-d`, `--date` | the same | done |
-| [ ] | `quiz [monster]`, `-n` / `--questions` (default 10) | `quiz [creature]`: the Christmas Cracker Quiz | P2 |
-| [ ] | `guess`, `-n` / `--rounds` (default 5) | `guess`: Guess the Guest, the portrait behind a frosted window | P2 |
-| [ ] | `mash [a] [b]`, `--fast` | `mash [a] [b]`, `--fast`: the Snowball Showdown | P2 |
+| [x] | `quiz [monster]`, `-n` / `--questions` (default 10) | `quiz [creature]`: the Christmas Cracker Quiz | done (P2) |
+| [x] | `guess`, `-n` / `--rounds` (default 5) | `guess`: Guess the Guest, the portrait behind a frosted window | done (P2) |
+| [x] | `mash [a] [b]`, `--fast` | `mash [a] [b]`, `--fast`: the Snowball Showdown | done (P2) |
 | [ ] | `crypt` | `stocking` | P3 |
 | [ ] | `crypt reset`, `-y` / `--yes` | `stocking reset`, `-y` / `--yes` | P3 |
 | [ ] | `tonight`, `--shuffle`, `--date` | `tonight`: tonight's Christmas double bill | P4 |
@@ -45,8 +45,8 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [ ] | `--pack` accepts community packs, with "did you mean" | today clap only accepts the four built-in ids; validate at run time instead | P5 |
 | [x] | `--no-color`, `NO_COLOR`, plain when piped | the same | done |
 | [x] | `TERMINAL_OF_TERROR_SEED` | `TERMINAL_OF_TINSEL_SEED` (only `random` and the welcome use it so far) | done |
-| [ ] | the seed fixes quiz, guess, mash, the explorer's host lines and `tonight --shuffle` | the same | P1, P2, P4 |
-| [ ] | a seed that isn't a number warns on stderr and is ignored | check and match | P2 |
+| [ ] | the seed fixes quiz, guess, mash, the explorer's host lines and `tonight --shuffle` | all but `tonight --shuffle` done (P1, P2) | P4 |
+| [x] | a seed that isn't a number warns on stderr and is ignored | check and match | done (P2) |
 | [ ] | `TERMINAL_OF_TERROR_HOME` | `TERMINAL_OF_TINSEL_HOME`; otherwise the `directories` crate's config dir | P3 |
 
 ## Error codes (`--json` puts one object on stderr)
@@ -56,7 +56,7 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [x] | `unknown-monster` | `unknown-creature` | done |
 | [x] | `ambiguous-monster` | `ambiguous-creature` | done |
 | [x] | `bad-pack`, `bad-date`, `bad-flag`, `usage` | the same | done |
-| [ ] | `no-terminal` (explorer, quiz, guess, `crypt reset` without `-y`), with a hint | `no-terminal`: the explorer has it (P1); the games and `stocking reset` to come | P2, P3 |
+| [ ] | `no-terminal` (explorer, quiz, guess, `crypt reset` without `-y`), with a hint | `no-terminal`: the explorer (P1) and the games (P2) have it; `stocking reset` to come | P3 |
 | [ ] | `store` (progress can't be read or written) | `store` | P3 |
 
 ## The explorer (Bubble Tea becomes ratatui + crossterm)
@@ -84,17 +84,17 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 
 | | Terror | Tinsel | Phase |
 |-|--------|--------|-------|
-| [ ] | quiz kinds: `fact`, `quote`, `debut`, `myth`, `film` (star, director), `year` | the same kinds from the same fields | P2 |
-| [ ] | names masked in clues (`▒▒▒▒`), no kind over a third of the quiz, every answer explained | the same | P2 |
-| [ ] | ranks: Ghoul-in-Training, Creature Feature Fan, Monster Scholar, Master of Horror | Stocking Filler, Cracker Puller, Carol Scholar, Star of the Tree | P2 |
-| [ ] | `quiz --json`: the questions with answers | the same shape, `creatureId` for `monsterId` | P2 |
-| [ ] | guess: 5 fog stages (15% to 100%), 100 down to 20 points, clues at stages 3 and 4, four options | the same numbers, with frost on a window | P2 |
-| [ ] | `guess --json`: rounds with options and answer | the same | P2 |
-| [ ] | guess needs 3 creatures and one portrait, else `usage` with a hint | the same | P2 |
-| [ ] | mash: three of four stats, stat plus a d6, re-roll ties, signature move, a finale line | the same rules, with snowball-fight narration | P2 |
-| [ ] | `mash --json`: `a`, `b`, `rounds`, `winner`, `finale` | the same | P2 |
-| [ ] | a creature can't fight itself; empty corners filled at random | the same | P2 |
-| [ ] | dramatic pauses unless `--fast` or piped | the same | P2 |
+| [x] | quiz kinds: `fact`, `quote`, `debut`, `myth`, `film` (star, director), `year` | the same kinds from the same fields | done (P2) |
+| [x] | names masked in clues (`▒▒▒▒`), no kind over a third of the quiz, every answer explained | the same | done (P2) |
+| [x] | ranks: Ghoul-in-Training, Creature Feature Fan, Monster Scholar, Master of Horror | Stocking Filler, Cracker Puller, Carol Scholar, Star of the Tree | done (P2) |
+| [x] | `quiz --json`: the questions with answers | the same shape, `creatureId` for `monsterId` | done (P2) |
+| [x] | guess: 5 fog stages (15% to 100%), 100 down to 20 points, clues at stages 3 and 4, four options | the same numbers, with frost on a window | done (P2) |
+| [x] | `guess --json`: rounds with options and answer | the same | done (P2) |
+| [x] | guess needs 3 creatures and one portrait, else `usage` with a hint | the same | done (P2) |
+| [x] | mash: three of four stats, stat plus a d6, re-roll ties, signature move, a finale line | the same rules, with snowball-fight narration in the past tense so plural names read properly | done (P2) |
+| [x] | `mash --json`: `a`, `b`, `rounds`, `winner`, `finale` | the same | done (P2) |
+| [x] | a creature can't fight itself; empty corners filled at random | the same | done (P2) |
+| [x] | dramatic pauses unless `--fast` or piped | the same | done (P2) |
 
 ## Progress (the Crypt becomes the Stocking)
 
@@ -285,7 +285,7 @@ and `cargo test` before every PR. Each phase updates the README, `CHANGELOG.md`,
 | Phase | Branch | Contents | go-to-rust.md teaches |
 |-------|--------|----------|-----------------------|
 | 1 (done) | `feature/explorer` | ratatui explorer, portraits, `no-terminal`, search, `--all`, `--no-intro` | Bubble Tea's Elm loop against ratatui's immediate mode; who owns the event loop |
-| 2 | `feature/games` | quiz, guess, mash, the seed everywhere | `math/rand` against a pinned generator; enums with data for question kinds |
+| 2 (done) | `feature/games` | quiz, guess, mash, the seed everywhere | `math/rand` against a pinned generator; enums with data for question kinds |
 | 3 | `feature/stocking` | store, captures, badges, reset | `os.UserConfigDir` against `directories`; maps of times in serde; atomic writes |
 | 4 | `feature/rituals` | `tonight`, the moon, anniversaries, new film fields | `time.Time` against jiff's civil dates |
 | 5 | `feature/packs` | `packs`, community packs, `packs new`, dynamic completion, man pages | `embed.FS` and `fs.FS` against `include_dir` plus `std::fs`; Cobra completion against `CompleteEnv` |

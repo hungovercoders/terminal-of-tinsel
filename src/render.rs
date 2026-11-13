@@ -10,7 +10,10 @@ use unicode_width::UnicodeWidthStr;
 
 use crate::calendar::{self, Note};
 use crate::creatures::{Creature, Vault};
+use crate::games::{GuessResult, QuizResult};
 use crate::host;
+use crate::mash::{Bout, Round};
+use crate::quiz;
 
 /// The house colours of Channel 25.
 pub const RED: &str = "#E63946";
@@ -232,6 +235,7 @@ pub fn welcome(p: &Painter, vault: &Vault, today: Date, greeting: &str) -> Strin
         ("creature", "tune in to the Midwinter Special"),
         ("list", "meet tonight's guests"),
         ("creature krampus", "read a creature's page"),
+        ("quiz", "pull a cracker: the Christmas Cracker Quiz"),
         ("random --daily", "the Fact of the Night"),
         ("countdown", "sleeps until Christmas"),
         ("advent", "open the advent calendar"),
@@ -450,6 +454,151 @@ fn hanging(
             format!("{marker_painted}{}", paint(line))
         })
         .collect()
+}
+
+// ── Games ──────────────────────────────────────────────────────────────────
+
+/// What's left on the terminal after a quiz: the score and the rank. Nothing
+/// if no question was answered.
+pub fn quiz_summary(p: &Painter, result: &QuizResult) -> String {
+    let (right, given) = result.score();
+    if given == 0 {
+        return String::new();
+    }
+    let pct = result.percent();
+    let mut out = vec![p.bold(
+        &format!(
+            "{}THE CHRISTMAS CRACKER QUIZ · {right} of {given} ({pct}%)",
+            p.glyph("🎉")
+        ),
+        GOLD,
+    )];
+    if result.completed {
+        out.push(p.bold(&format!("Your rank: {}", quiz::rank(pct)), GREEN));
+    } else {
+        out.push(p.paint(
+            &format!(
+                "You left after {given} of {} questions.",
+                result.questions.len()
+            ),
+            DIM,
+        ));
+    }
+    out.join("\n") + "\n"
+}
+
+/// What's left on the terminal after Guess the Guest. Nothing if no round
+/// was played.
+pub fn guess_summary(p: &Painter, result: &GuessResult) -> String {
+    let played = result.played();
+    if played == 0 {
+        return String::new();
+    }
+    let mut out = vec![p.bold(
+        &format!(
+            "{}GUESS THE GUEST · {} of a possible {} points",
+            p.glyph("🔍"),
+            result.score(),
+            played * crate::guess::POINTS[0]
+        ),
+        GOLD,
+    )];
+    if !result.completed {
+        out.push(p.paint(
+            &format!("You left after {played} of {} rounds.", result.rounds.len()),
+            DIM,
+        ));
+    }
+    out.join("\n") + "\n"
+}
+
+/// A compact trading card: a creature's name and its four stats.
+fn stat_card(p: &Painter, c: &Creature) -> String {
+    const INNER: usize = 30;
+    let (full, empty) = if p.plain { ("#", ".") } else { ("█", "░") };
+    let mut lines = vec![
+        p.bold(
+            &truncate(&format!("{}{}", p.glyph(&c.emoji), c.name), INNER),
+            &c.theme.primary,
+        ),
+        String::new(),
+    ];
+    for (label, value) in c.stats.labelled() {
+        let v = usize::from(value.min(10));
+        lines.push(format!(
+            "{} {}{} {value:>2}",
+            p.paint(&format!("{label:<9}"), GREEN),
+            p.paint(&full.repeat(v), &c.theme.primary),
+            p.paint(&empty.repeat(10 - v), DIM),
+        ));
+    }
+    p.boxed(&lines, INNER, &c.theme.accent)
+}
+
+/// The two contenders' cards, side by side where there's room, and the
+/// host's introduction.
+pub fn mash_header(p: &Painter, bout: &Bout) -> String {
+    let mut out = vec![
+        p.bold(&format!("{}THE SNOWBALL SHOWDOWN", p.glyph("🥊")), GOLD),
+        String::new(),
+    ];
+    let (a, b) = (stat_card(p, bout.a), stat_card(p, bout.b));
+    let (a, b): (Vec<&str>, Vec<&str>) = (a.lines().collect(), b.lines().collect());
+    let card = a.first().map_or(0, |l| visible_width(l));
+    if card * 2 + 6 <= p.width {
+        for (row, (left, right)) in a.iter().zip(&b).enumerate() {
+            let vs = if row == a.len() / 2 {
+                p.bold("VS", RED)
+            } else {
+                "  ".to_string()
+            };
+            out.push(format!("{left}  {vs}  {right}"));
+        }
+    } else {
+        out.extend(a.iter().map(|l| l.to_string()));
+        out.push(format!("{}{}", " ".repeat(card / 2 - 1), p.bold("VS", RED)));
+        out.extend(b.iter().map(|l| l.to_string()));
+    }
+    out.push(String::new());
+    let intro = format!(
+        "{}{}: “In this corner, {}! And in the other, {}! Three rounds, no rules, no refunds.”",
+        p.glyph("📺"),
+        host::NAME,
+        quiz::mid_sentence(&bout.a.name),
+        quiz::mid_sentence(&bout.b.name)
+    );
+    out.extend(p.wrap(&intro, p.text_width(), |l| p.italic(l, DIM)));
+    out.join("\n") + "\n\n"
+}
+
+/// One round of a showdown: the stat, the rolls and the story.
+pub fn mash_round(p: &Painter, bout: &Bout, round: &Round) -> String {
+    let w = p.text_width();
+    let mut out = vec![p.bold(&format!("Round {} · {}", round.number, round.stat), GOLD)];
+    let rolls = format!(
+        "{} rolls {} · {} rolls {}",
+        bout.a.name, round.roll_a, bout.b.name, round.roll_b
+    );
+    out.extend(p.wrap(&rolls, w, |l| p.paint(l, DIM)));
+    out.extend(p.wrap(&round.narration, w, |l| p.paint(l, SNOW)));
+    let winner = bout.round_winner(round);
+    out.extend(p.wrap(&round.signature, w, |l| p.italic(l, &winner.theme.primary)));
+    out.join("\n") + "\n\n"
+}
+
+/// The winner's banner and how the loser took it.
+pub fn mash_result(p: &Painter, bout: &Bout) -> String {
+    let winner = bout.winner();
+    let (won, lost) = bout.score();
+    let banner = format!(
+        "{}WINNER: {}{} ({won}-{lost})",
+        p.glyph("🏆"),
+        p.glyph(&winner.emoji),
+        winner.name.to_uppercase()
+    );
+    let mut out = vec![p.bold(&banner, GOLD)];
+    out.extend(p.wrap(&bout.finale, p.text_width(), |l| p.italic(l, DIM)));
+    out.join("\n") + "\n"
 }
 
 // ── Cards ──────────────────────────────────────────────────────────────────

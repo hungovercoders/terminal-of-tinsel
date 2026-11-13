@@ -3,14 +3,15 @@
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::Modifier;
 use ratatui::text::{Line, Span};
 use unicode_width::UnicodeWidthStr;
 
 use super::model::Model;
-use super::view::{self, rgb};
+use super::view;
 use crate::host;
 use crate::render::{DIM, GOLD, GREEN, RED};
+use crate::tui::rgb;
 
 /// The intro's timeline, in ticks.
 const TUNE_FRAMES: usize = 18; // static while the set warms up
@@ -144,13 +145,8 @@ pub fn draw(m: &Model, buf: &mut Buffer, area: Rect) {
     }
 
     let flashing = m.frame < TUNE_FRAMES + FLASH_FRAMES;
-    let logo_style = if flashing && m.colour {
-        Style::new()
-            .fg(Color::Black)
-            .bg(rgb(GOLD))
-            .add_modifier(Modifier::BOLD)
-    } else if flashing {
-        Style::new().add_modifier(Modifier::REVERSED | Modifier::BOLD)
+    let logo_style = if flashing {
+        m.ink.badge(rgb(GOLD))
     } else {
         view::fg(m, rgb(RED)).add_modifier(Modifier::BOLD)
     };
@@ -160,7 +156,7 @@ pub fn draw(m: &Model, buf: &mut Buffer, area: Rect) {
         Line::default(),
     ];
     // The block font is all drawing characters, so plain mode spells it out.
-    let logo_width = if m.colour { w } else { 0 };
+    let logo_width = if m.ink.colour { w } else { 0 };
     lines.extend(
         logo(logo_width)
             .into_iter()

@@ -5,11 +5,16 @@ mod cli;
 mod creatures;
 mod error;
 mod explorer;
+mod games;
+mod guess;
 mod host;
+mod mash;
 mod plain;
+mod quiz;
 mod render;
 mod rng;
 mod search;
+mod tui;
 
 use std::io::{self, IsTerminal, Write};
 use std::process::ExitCode;
@@ -184,6 +189,128 @@ fn run(cli: Cli) -> Result<()> {
             print(&render::fact_card(&painter, &title, c, &fact, &notes, quip));
         }
 
+        Some(Command::Quiz {
+            creature,
+            questions,
+        }) => {
+            if questions == 0 {
+                return Err(TinselError::new(
+                    Code::BadFlag,
+                    "--questions must be at least 1",
+                ));
+            }
+            let focus = if creature.is_empty() {
+                None
+            } else {
+                Some(vault.find(&creature.join(" "))?.id.as_str())
+            };
+            let mut rng = Rng::from_env_or_clock();
+            let quiz = quiz::generate(&mut rng, &vault.creatures, questions, focus);
+            if quiz.is_empty() {
+                return Err(
+                    TinselError::new(Code::Usage, "couldn't find any questions to ask")
+                        .with_hint("try a different --pack"),
+                );
+            }
+            if json {
+                return print_json(&quiz);
+            }
+            require_terminal(
+                "the Christmas Cracker Quiz",
+                "use --json for the questions and answers, or play from a shell",
+            )?;
+            let mut app = games::QuizApp::new(quiz, rng, !no_colour);
+            tui::run(&mut app, "the Christmas Cracker Quiz")?;
+            let result = app.into_result();
+            // The stocking records what was won here, once it exists.
+            print(&render::quiz_summary(&painter, &result));
+        }
+
+        Some(Command::Guess { rounds }) => {
+            if rounds == 0 {
+                return Err(TinselError::new(
+                    Code::BadFlag,
+                    "--rounds must be at least 1",
+                ));
+            }
+            let mut rng = Rng::from_env_or_clock();
+            let game = guess::rounds(&mut rng, &vault.creatures, rounds);
+            if game.is_empty() {
+                return Err(TinselError::new(
+                    Code::Usage,
+                    "Guess the Guest needs at least 3 different creatures, including one with a portrait",
+                )
+                .with_hint("try a different --pack"));
+            }
+            if json {
+                let out: Vec<guess::RoundJson> = game.iter().map(Into::into).collect();
+                return print_json(&out);
+            }
+            require_terminal(
+                "Guess the Guest",
+                "use --json for the rounds and answers, or play from a shell",
+            )?;
+            let mut app = games::GuessApp::new(game, rng, !no_colour);
+            tui::run(&mut app, "Guess the Guest")?;
+            print(&render::guess_summary(&painter, &app.into_result()));
+        }
+
+        Some(Command::Mash { creatures, fast }) => {
+            let mut rng = Rng::from_env_or_clock();
+            let mut corners = Vec::new();
+            for name in &creatures {
+                corners.push(vault.find(name)?);
+            }
+            if let [a, b] = corners.as_slice()
+                && a.id == b.id
+            {
+                return Err(TinselError::new(
+                    Code::Usage,
+                    format!("{} can't throw snowballs at itself", a.name),
+                )
+                .with_hint("pick two different creatures"));
+            }
+            // Fill the empty corners from creatures not already in one.
+            // Picking from this pool, not retrying at random, can't loop.
+            while corners.len() < 2 {
+                let pool: Vec<&creatures::Creature> = vault
+                    .creatures
+                    .iter()
+                    .filter(|c| corners.iter().all(|taken| taken.id != c.id))
+                    .collect();
+                if pool.is_empty() {
+                    return Err(TinselError::new(
+                        Code::Usage,
+                        "the Snowball Showdown needs at least two different creatures",
+                    )
+                    .with_hint("try a different --pack"));
+                }
+                corners.push(pool[rng.below(pool.len())]);
+            }
+            let bout = mash::fight(&mut rng, corners[0], corners[1]);
+            if json {
+                return print_json(&MashJson {
+                    a: bout.a.into(),
+                    b: bout.b.into(),
+                    rounds: &bout.rounds,
+                    winner: &bout.winner().id,
+                    finale: &bout.finale,
+                });
+            }
+            let pause = |ms: u64| {
+                if !fast && io::stdout().is_terminal() {
+                    std::thread::sleep(std::time::Duration::from_millis(ms));
+                }
+            };
+            print(&render::mash_header(&painter, &bout));
+            pause(1200);
+            for round in &bout.rounds {
+                print(&render::mash_round(&painter, &bout, round));
+                pause(1500);
+            }
+            print(&render::mash_result(&painter, &bout));
+        }
+
         Some(Command::Countdown { date }) => {
             let today = calendar::parse_date(date.as_deref())?;
             if json {
@@ -236,6 +363,32 @@ fn run(cli: Cli) -> Result<()> {
         }
     }
     Ok(())
+}
+
+/// A showdown as `--json` prints it: who fought, round by round, and who won.
+#[derive(Serialize)]
+struct MashJson<'a> {
+    a: FighterJson<'a>,
+    b: FighterJson<'a>,
+    rounds: &'a [mash::Round],
+    /// The winner's id.
+    winner: &'a str,
+    finale: &'a str,
+}
+
+#[derive(Serialize)]
+struct FighterJson<'a> {
+    id: &'a str,
+    name: &'a str,
+}
+
+impl<'a> From<&'a creatures::Creature> for FighterJson<'a> {
+    fn from(c: &'a creatures::Creature) -> Self {
+        Self {
+            id: &c.id,
+            name: &c.name,
+        }
+    }
 }
 
 #[derive(Serialize)]
