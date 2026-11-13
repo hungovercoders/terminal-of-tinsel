@@ -96,9 +96,13 @@ pub fn generate(rng: &mut Rng, all: &[Creature], n: usize, focus: Option<&str>) 
 /// Every question we can ask about a creature. The order is fixed, so a
 /// seeded generator always asks the same questions.
 fn questions_about(rng: &mut Rng, c: &Creature, all: &[Creature]) -> Vec<Question> {
+    // The wrong answers to "which creature is this about?". A creature from
+    // the same tradition is left out: a fact about A Christmas Carol fits
+    // both of its ghosts, and a decree about the Yule Lads fits their mother
+    // too, so offering both would give two right answers.
     let others: Vec<&str> = all
         .iter()
-        .filter(|o| o.id != c.id)
+        .filter(|o| o.id != c.id && o.origin != c.origin)
         .map(|o| o.name.as_str())
         .collect();
     let question = |kind, prompt: String, clue: Option<String>, explanation: String| Question {
@@ -150,7 +154,8 @@ fn questions_about(rng: &mut Rng, c: &Creature, all: &[Creature]) -> Vec<Questio
     for myth in &c.myths {
         let mut q = question(
             Kind::Myth,
-            "True or false?".into(),
+            // Claims say "he" and "it", so the prompt says who they mean.
+            format!("{}: true or false?", c.name),
             Some(myth.claim.clone()),
             myth.explanation.clone(),
         );
@@ -359,6 +364,41 @@ mod tests {
             let name = q.correct().to_lowercase();
             let name = name.strip_prefix("the ").unwrap_or(&name);
             assert!(!clue.contains(name), "{name} is named in: {clue}");
+        }
+    }
+
+    #[test]
+    fn a_who_is_it_question_never_offers_a_creature_of_the_same_tradition() {
+        let v = Vault::load();
+        let origin = |name: &str| {
+            let c = v.creatures.iter().find(|c| c.name == name).unwrap();
+            c.origin.as_str()
+        };
+        let mut asked = 0;
+        for q in generate(&mut Rng::new(7), &v.creatures, usize::MAX, None) {
+            if !matches!(q.kind, Kind::Fact | Kind::Quote) {
+                continue;
+            }
+            asked += 1;
+            let answer = origin(q.correct());
+            for (i, option) in q.options.iter().enumerate() {
+                assert!(
+                    i == q.answer || origin(option) != answer,
+                    "{option} could also be right: {q:?}"
+                );
+            }
+        }
+        assert!(asked > 50, "only {asked} such questions");
+    }
+
+    #[test]
+    fn myth_questions_say_who_they_are_about() {
+        let v = Vault::load();
+        for q in generate(&mut Rng::new(7), &v.creatures, usize::MAX, None) {
+            if q.kind == Kind::Myth {
+                let name = &v.get(&q.creature_id).unwrap().name;
+                assert_eq!(q.prompt, format!("{name}: true or false?"));
+            }
         }
     }
 

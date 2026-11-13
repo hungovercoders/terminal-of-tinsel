@@ -752,12 +752,13 @@ pub fn unlocks(p: &Painter, u: &Unlocks) -> String {
     for c in &u.captured {
         out.push(format!(
             "{} {}{}",
-            p.bold(&format!("{}IN THE STOCKING:", p.glyph("🧦")), GREEN),
+            p.bold(&format!("{}CAUGHT:", p.glyph("🧦")), GREEN),
             p.bold(
                 &format!("{}{}", p.glyph(&c.emoji), c.name),
                 &c.theme.primary
             ),
-            p.paint(" is yours", DIM)
+            // Past tense, so it reads the same for one creature or thirteen.
+            p.paint(" went into your stocking", DIM)
         ));
     }
     for b in &u.badges {
@@ -1167,6 +1168,26 @@ mod tests {
 
     fn colour() -> Painter {
         Painter::new(false, 80)
+    }
+
+    #[test]
+    fn a_catch_reads_the_same_for_one_creature_or_thirteen() {
+        let v = Vault::load();
+        let p = Painter::new(true, 80);
+        for id in ["krampus", "yule-lads"] {
+            let c = v.get(id).unwrap();
+            let u = Unlocks {
+                captured: vec![c],
+                badges: Vec::new(),
+            };
+            let text = unlocks(&p, &u);
+            assert!(
+                text.contains(&format!("CAUGHT: {} went into your stocking", c.name)),
+                "{text}"
+            );
+            assert!(!text.contains(" is yours") && !text.contains(" are yours"));
+        }
+        assert_eq!(unlocks(&p, &Unlocks::default()), "");
     }
 
     #[test]

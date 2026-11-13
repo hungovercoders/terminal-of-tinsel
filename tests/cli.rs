@@ -292,14 +292,18 @@ fn a_showdown_goes_in_the_stocking_and_reset_empties_it() {
     tinsel_at(&home).args(["mash", "--json"]).assert().success();
     assert_eq!(stocking()["mashesPlayed"], 2);
 
+    // How many badges depends on the night: a showdown on Krampusnacht, under
+    // a full moon or after midnight earns more than the referee's.
+    let badges = stocking()["badges"].as_object().unwrap().len();
+    assert!(badges >= 1);
     tinsel_at(&home)
         .arg("stocking")
         .assert()
         .success()
         .stdout(predicate::str::contains("THE STOCKING"))
-        .stdout(predicate::str::contains(
-            "0 of 14 creatures caught · 1 of 17 badges",
-        ))
+        .stdout(predicate::str::contains(format!(
+            "0 of 14 creatures caught · {badges} of 17 badges"
+        )))
         .stdout(predicate::str::contains("Snowball Showdowns staged: 2"))
         .stdout(predicate::str::contains("Progress is saved in"))
         .stdout(predicate::str::contains("stocking.json"));
