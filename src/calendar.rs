@@ -225,7 +225,13 @@ pub fn next_special_night(d: Date, creatures: &[Creature]) -> Option<SpecialNigh
     let films = creatures.iter().filter_map(|c| {
         let film = c.film.as_ref()?;
         let released = film.released()?;
-        let date = next_occurrence(d, released.month(), released.day())?;
+        // A film has no anniversary before it has been out a year, so for a
+        // date before then the search starts the year after the release.
+        let from = d.max(Date::new(released.year(), 12, 31).ok()?);
+        let date = next_occurrence(from, released.month(), released.day())?;
+        if date <= d {
+            return None;
+        }
         Some(SpecialNight {
             name: format!("{} turns {}", film.title, date.year() - released.year()),
             date,
@@ -234,6 +240,65 @@ pub fn next_special_night(d: Date, creatures: &[Creature]) -> Option<SpecialNigh
         })
     });
     feasts.chain(films).min_by_key(|night| night.sleeps)
+}
+
+/// Tonight's double bill: two different creatures, and not the same bill two
+/// nights running (unless there are only two creatures and one of them is an
+/// advent guest that night or the night before). In advent the guest behind
+/// the night's door tops it.
+/// Returns nothing with fewer than two creatures.
+pub fn double_bill(d: Date, vault: &Vault) -> Option<(&Creature, &Creature)> {
+    if vault.creatures.len() < 2 {
+        return None;
+    }
+    // The running order is fixed, so the schedule is the same for everyone.
+    let mut order: Vec<usize> = (0..vault.creatures.len()).collect();
+    Rng::new(25).shuffle(&mut order);
+    let (first, second) = bill(d, vault, &order, 0);
+    Some((&vault.creatures[first], &vault.creatures[second]))
+}
+
+/// The night's draw, before it is checked against the night before. The
+/// headliner walks through the running order a place a night, so without an
+/// advent guest two nights running never share one.
+fn drawn_bill(d: Date, vault: &Vault, order: &[usize]) -> (usize, usize) {
+    let n = order.len();
+    let day = date(2000, 1, 1)
+        .until(d)
+        .map_or(0, |span| i64::from(span.get_days()))
+        .rem_euclid(i64::MAX) as usize;
+    let at = day % n;
+    let first = order[at];
+    // The support act is 1 to n-1 places further on, moving on each lap.
+    let second = order[(at + 1 + (day / n) % (n - 1)) % n];
+    let guest = advent_guest(d, vault)
+        .and_then(|(_, guest, _)| vault.creatures.iter().position(|c| c.id == guest.id));
+    match guest {
+        Some(guest) if guest == first => (guest, second),
+        Some(guest) => (guest, first),
+        None => (first, second),
+    }
+}
+
+/// The night's bill. An advent guest can push the draw into repeating the
+/// night before, and then the support act is swapped for another. Only
+/// nights with a guest need to look back, so the looking stops at the
+/// start of advent.
+fn bill(d: Date, vault: &Vault, order: &[usize], depth: usize) -> (usize, usize) {
+    let drawn = drawn_bill(d, vault, order);
+    let Ok(yesterday) = d.yesterday() else {
+        return drawn;
+    };
+    let guests = advent_guest(d, vault).is_some() || advent_guest(yesterday, vault).is_some();
+    if !guests || depth > 31 || drawn != bill(yesterday, vault, order, depth + 1) {
+        return drawn;
+    }
+    // Only the support act changes, so the headliner still moves on a place
+    // a night and nights without a guest never need to look back. With only
+    // two creatures there is no other support act, and a repeat next to an
+    // advent guest's night can't be helped.
+    let other = order.iter().find(|i| **i != drawn.0 && **i != drawn.1);
+    (drawn.0, other.copied().unwrap_or(drawn.1))
 }
 
 /// Whether a date falls within a day of the full moon.
@@ -502,6 +567,74 @@ mod note_tests {
         for (_, _, emoji) in PHASES {
             assert_eq!(emoji.width(), 2, "{emoji}");
         }
+    }
+
+    #[test]
+    fn a_film_has_no_anniversary_before_its_first() {
+        let v = Vault::load();
+        // Scrooge opened on 31 October 1951. Before then, and in its first
+        // year, the next special night is a feast, never "turns 0" or "-1".
+        for d in [
+            date(1950, 1, 6),
+            date(1951, 1, 6),
+            date(1951, 10, 30),
+            date(1951, 10, 31),
+        ] {
+            let n = next_special_night(d, &v.creatures).unwrap();
+            assert!(n.creature.is_none(), "{d}: {}", n.name);
+        }
+        let n = next_special_night(date(1952, 1, 6), &v.creatures).unwrap();
+        assert_eq!(n.name, "Scrooge turns 1");
+        assert_eq!(n.date, date(1952, 10, 31));
+    }
+
+    #[test]
+    fn the_double_bill_is_never_the_same_two_nights_running() {
+        let packs: [&[&str]; 6] = [
+            &[],
+            &["dickens"],
+            &["nordic"],
+            &["companions"],
+            &["midwinter", "dickens"],
+            &["nordic", "companions"],
+        ];
+        for pack in packs {
+            let ids: Vec<String> = pack.iter().map(|p| p.to_string()).collect();
+            let v = Vault::load().only_packs(&ids).unwrap();
+            let ids = |d| {
+                let (a, b) = double_bill(d, &v).unwrap();
+                (a.id.as_str(), b.id.as_str())
+            };
+            let mut d = date(2025, 11, 1);
+            let mut before = ids(d);
+            while d < date(2028, 2, 1) {
+                d = d.tomorrow().unwrap();
+                let tonight = ids(d);
+                assert_ne!(tonight.0, tonight.1, "{pack:?} {d}: two different features");
+                // The one exception: a pack of two, next to a night whose
+                // advent guest is one of them and has to top the bill.
+                let guest = |d| advent_guest(d, &v).is_some();
+                let forced = v.creatures.len() == 2 && (guest(d) || guest(d.yesterday().unwrap()));
+                assert!(
+                    tonight != before || forced,
+                    "{pack:?} {d}: the same bill as last night"
+                );
+                if let Some((_, guest, _)) = advent_guest(d, &v) {
+                    assert_eq!(tonight.0, guest.id, "{pack:?} {d}: the guest tops the bill");
+                }
+                before = tonight;
+            }
+        }
+        let one = Vault {
+            creatures: Vault::load().creatures[..1].to_vec(),
+            ..Vault::load()
+        };
+        assert!(double_bill(date(2026, 12, 1), &one).is_none());
+        // The same for everyone, all day.
+        let v = Vault::load();
+        let (a, b) = double_bill(date(2026, 11, 13), &v).unwrap();
+        let (c, e) = double_bill(date(2026, 11, 13), &v).unwrap();
+        assert_eq!((&a.id, &b.id), (&c.id, &e.id));
     }
 
     #[test]

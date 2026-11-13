@@ -100,6 +100,16 @@ impl Ink {
         }
     }
 
+    /// An emoji and the space after it, or nothing in plain mode, which
+    /// promises no emoji and ASCII borders as well as no colour (see `plain`).
+    pub fn icon(self, emoji: &str) -> String {
+        if self.colour {
+            format!("{emoji} ")
+        } else {
+            String::new()
+        }
+    }
+
     pub fn dim(self) -> Style {
         self.fg(rgb(DIM))
     }
