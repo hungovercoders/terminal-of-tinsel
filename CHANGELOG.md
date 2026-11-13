@@ -1,5 +1,30 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **The Midwinter Special.** `creature` with no name opens an interactive explorer: Channel 25 tunes in
+  through static and snow, then a gallery of every creature and a page each, with numbered sections
+  (`tab` or `1`-`7`), `h`/`l` and the arrows to move between creatures, `j`/`k` to scroll, `r` to reveal
+  the Myth or Fact? verdicts, `/` to search names and lore, `g` or `esc` for the gallery, `?` for help and
+  `q` to quit.
+- `creature --all` opens on the gallery, `--no-intro` skips the opening and `creature <name> --explore`
+  opens the explorer on one creature.
+- An original ASCII portrait for every creature (`packs/<pack>/<id>.txt`), shown beside the text on wide
+  screens and included in `--json` as `ascii`.
+- The spirits of *A Christmas Carol* are drawn as engravings: sepia ink and drifting snow.
+- `creature --json` with no name prints every creature.
+- A `no-terminal` error code when a screen that needs a terminal is run from a script, a pipe or CI, with
+  a hint to use `--json`.
+- Auntie Aerial has sign-off lines, and a special greeting on Christmas Eve and Christmas Day.
+
+### Changed
+
+- "Did you mean" now offers up to three names, nearest first, and matches ids as well as names.
+- `--no-color` and `NO_COLOR` apply inside the explorer too: the terminal's own colours, no emoji and
+  ASCII borders.
+
 ## [0.1.0] - Unreleased
 
 The first broadcast of Channel 25's Midwinter Special.

@@ -18,7 +18,8 @@ between the two, and what changed on the way.
 | Errors | `codedError` + `errors.As` | a `TinselError` with a `Code` enum, returned as `Result<T, TinselError>` |
 | Tests | `go test` | `cargo test`: unit tests in each module, end-to-end in `tests/cli.rs` with assert_cmd |
 | Releases | GoReleaser + Homebrew cask | cargo-dist + Homebrew formula |
-| Interactive UI | Bubble Tea | not yet: the next step would be ratatui |
+| Interactive UI | Bubble Tea + Lip Gloss | ratatui with its crossterm backend (`src/explorer/`) |
+| Terminal check | `charmbracelet/x/term` | `std::io::IsTerminal`, in the standard library since Rust 1.70 |
 
 ## The same ideas
 
@@ -44,4 +45,49 @@ between the two, and what changed on the way.
 - **Compile times are longer, the binary is about the same.** A clean release build takes about 30
   seconds; the stripped binary is about 1.7 MB.
 - **Dependencies need a closer look.** textwrap's default features pull in the ICU line-breaking
-  data. Tinsel turns them off and keeps the dependency tree to about 40 crates.
+  data. Tinsel turns them off and kept the dependency tree to about 40 crates, until the explorer arrived
+  (see below).
+
+## Phase 1: the explorer (Bubble Tea to ratatui)
+
+Terror's explorer is a Bubble Tea program. Tinsel's is the same screens and the same keys on ratatui.
+The two libraries disagree about almost everything, which makes this the most interesting port so far.
+
+- **Who owns the loop.** Bubble Tea is the Elm architecture: you hand it a model with `Init`, `Update`
+  and `View`, and it runs the loop, calls you with messages and draws the string you return. ratatui is a
+  drawing library and nothing more. The loop in `src/explorer/mod.rs` is ours: draw, wait for a key or a
+  tick, update, go round again. It's 30 lines, and nothing is hidden in it.
+- **Ticks are a timeout, not a message.** Terror asks for animation frames with `tea.Tick`, which sends a
+  `tickMsg` later, and has to remember whether a tick is already in flight. In Tinsel the loop polls for
+  a key with a timeout: if the screen is animated (`Model::tick_every` returns `Some`), the timeout is
+  the time to the next frame; if it's still, the loop blocks on the keyboard and uses no CPU at all.
+- **Update mutates.** Bubble Tea's `Update` takes the model by value and returns a new one, so Terror's
+  methods are a mix of value receivers and pointer receivers that have to be kept straight. In Rust
+  `on_key(&mut self, ...)` changes the model in place, and the borrow checker guarantees nothing is
+  drawing from it at the same time.
+- **Strings against cells.** Lip Gloss builds a screen as one big string: style a piece, measure it,
+  join pieces side by side. ratatui draws styled cells into a buffer through widgets and layout
+  rectangles. Tinsel meets it halfway: each page is built as a `Vec<Line>` of styled spans by plain
+  functions (`view.rs`), with small helpers for a box and for two columns side by side, and only the last
+  step lays those lines on the frame. That keeps a page a pure function of the model, as it is in Go.
+- **No global colour switch.** Lip Gloss has a process-wide colour profile that Terror flips for plain
+  mode. ratatui has no globals, so the model carries `colour: bool` and every style goes through one
+  function. `NO_COLOR` therefore works inside Tinsel's explorer too, which it doesn't in Terror's.
+- **Keys are an enum.** Bubble Tea hands over keys as strings (`"shift+tab"`, `"pgdown"`), so a typo in
+  a `case` compiles and never matches. crossterm's `KeyCode` is an enum: `KeyCode::BackTab` either
+  exists or the build fails, and `KeyCode::Char('1'..='9')` is a pattern.
+- **Testing a screen.** Terror calls `View()` and searches the string. Tinsel draws into ratatui's
+  `TestBackend`, an in-memory terminal, and reads the cells back, so the tests see exactly what a real
+  terminal would, including what got clipped at the edge. `tests.rs` draws every page of every creature
+  at six sizes, down to one cell by one.
+- **Leaving the terminal tidy.** Both libraries switch to the alternate screen and raw mode.
+  `ratatui::try_init` also installs a panic hook that restores the terminal first, so a bug in the
+  explorer prints its message on a working terminal instead of a garbled one.
+- **Stateless snow.** Terror keeps the intro's static in the model and regenerates it on each tick.
+  Tinsel's snow is a pure function of `(seed, column, row, frame)`, so there is no flake state to keep,
+  it survives a resize, and a seeded run draws the same snow every time.
+- **Embedding text files.** `//go:embed packs` picks up `<id>.txt` portraits for free, and so does
+  `include_dir!`. Both normalise `\r\n`, because a checkout on Windows can add carriage returns.
+- **What it cost.** ratatui 0.30 needs Rust 1.88, exactly Tinsel's minimum. With default features off
+  and only the crossterm backend, it took the tree from about 40 crates to about 85 and the stripped release
+  binary from about 1.7 MB to 2.1 MB.

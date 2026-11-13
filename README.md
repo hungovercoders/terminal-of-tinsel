@@ -52,6 +52,7 @@ cargo install --git https://github.com/hungovercoders/terminal-of-tinsel
 
 ```bash
 terminal-of-tinsel                   # Auntie Aerial says hello
+terminal-of-tinsel creature          # tune in to the Midwinter Special
 terminal-of-tinsel list              # meet tonight's guests
 terminal-of-tinsel creature krampus  # read a creature's page
 terminal-of-tinsel random --daily    # the Fact of the Night
@@ -62,7 +63,56 @@ terminal-of-tinsel advent            # open the advent calendar
 > [!TIP]
 > Add `terminal-of-tinsel random --daily` to your `~/.zshrc` or `~/.bashrc` and every new terminal opens with the Fact of the Night. From 1 to 24 December, it's about the guest behind that night's advent door.
 
+## 📺 The Midwinter Special
+
+```bash
+terminal-of-tinsel creature
+```
+
+Channel 25 tunes in through a screen of static that settles into falling snow, Auntie Aerial says good evening, and then the guest list is yours. Every creature has its own colours, a portrait and a page of numbered sections:
+
+| Section | What you'll learn |
+|---------|-------------------|
+| **Facts** | The essentials, the origin and the first appearance |
+| **Legend** | The folklore and history behind the creature |
+| **On Screen** | A classic film outing, where there is one |
+| **Myth or Fact?** | True or false? Make your guesses, then press `r` for the verdicts |
+| **From the Page** | Lines from public-domain sources, such as Dickens |
+| **Stat Card** | Strength, speed, cunning and dread, plus powers and weaknesses |
+| **Legacy** | Where the creature turns up today |
+
+The spirits of *A Christmas Carol* are drawn in sepia, like the plates of a Victorian Christmas book, with snow drifting past the figure.
+
+```bash
+terminal-of-tinsel creature --all            # open on the gallery of every creature
+terminal-of-tinsel creature --no-intro       # skip the static
+terminal-of-tinsel creature marley --explore # open the explorer on one creature
+terminal-of-tinsel creature --pack nordic    # only some packs
+```
+
+<details>
+<summary><b>⌨️ Keys</b></summary>
+
+| Key | Action |
+|-----|--------|
+| `←` `→` / `h` `l` / `p` `n` | Previous / next creature |
+| `tab` `shift+tab` / `1`-`7` | Switch section |
+| `↑` `↓` / `j` `k`, `space`, `pgup`/`pgdn`, `home`/`end` | Scroll |
+| `r` | Reveal the Myth or Fact? verdicts |
+| `/` | Search names, nicknames, facts, legends and quotes |
+| `g` / `esc` | Back to the gallery |
+| `?` | Full help |
+| `q` / `Ctrl+C` | Quit |
+
+The explorer fills the terminal and adapts to its size. From 100 columns up, the portrait sits beside the text.
+
+</details>
+
+The explorer needs a terminal. From a script, a pipe or CI it stops with the error code `no-terminal` and points you at `--json` instead.
+
 ## 🧝 The creature pages
+
+Name a creature and its page is printed instead, which suits a quick look or a pipe:
 
 ```bash
 terminal-of-tinsel creature yule cat
@@ -71,17 +121,7 @@ terminal-of-tinsel creature gryla            # accents optional
 terminal-of-tinsel creature krampus --reveal # show the Myth or Fact? verdicts
 ```
 
-Every creature has its own colours and a page of sections:
-
-| Section | What you'll learn |
-|---------|-------------------|
-| **Facts** | The essentials |
-| **The Legend** | The folklore and history behind the creature |
-| **Myth or Fact?** | True or false? Guess, then run again with `--reveal` |
-| **From the Page** | Lines from public-domain sources, such as Dickens |
-| **On Screen** | A classic film outing, where there is one |
-| **Stat Card** | Strength, speed, cunning and dread, plus powers and weaknesses |
-| **Legacy** | Where the creature turns up today |
+A near miss gets a suggestion: `creature krampas` asks whether you meant Krampus.
 
 ## 📅 The advent calendar
 
@@ -105,14 +145,16 @@ Use `--pack` with any command to keep to some packs: `terminal-of-tinsel list --
 
 ## 🤖 For scripts
 
-Every command takes `--json` and prints its data instead of drawing. Errors become one JSON object on stderr with a stable code (`unknown-creature`, `ambiguous-creature`, `bad-pack`, `bad-date`, `bad-flag`, `usage`) and exit 1.
+Every command takes `--json` and prints its data instead of drawing. Errors become one JSON object on stderr with a stable code (`unknown-creature`, `ambiguous-creature`, `bad-pack`, `bad-date`, `bad-flag`, `no-terminal`, `usage`) and exit 1.
 
 ```bash
 terminal-of-tinsel countdown --json | jq .sleepsUntilChristmas
 terminal-of-tinsel creature marley --json | jq '.quotes[].text'
+terminal-of-tinsel creature --json | jq -r '.[].name'      # no name: every creature
+terminal-of-tinsel creature tomte --json | jq -r .ascii    # the portrait
 ```
 
-Output is plain (no colour, no emoji, ASCII borders) when piped, with `--no-color`, or when `NO_COLOR` is set. Set `TERMINAL_OF_TINSEL_SEED` to a number to make `random` repeatable.
+Output is plain (no colour, no emoji, ASCII borders) when piped, with `--no-color`, or when `NO_COLOR` is set. Set `TERMINAL_OF_TINSEL_SEED` to a number to make `random`, the host's lines and the explorer's snow repeatable.
 
 **Tab completion:** `source <(terminal-of-tinsel completions zsh)` (also `bash`, `fish`, `powershell` and `elvish`).
 
@@ -120,11 +162,11 @@ Output is plain (no colour, no emoji, ASCII borders) when piped, with `--no-colo
 
 ```bash
 cargo build --release      # target/release/terminal-of-tinsel
-cargo test                 # the data tests check every creature and every advent door
+cargo test                 # the data tests check every creature, portrait and advent door
 cargo clippy --all-targets -- -D warnings
 ```
 
-Or with [Task](https://taskfile.dev): `task check`, `task run -- creature krampus`.
+Or with [Task](https://taskfile.dev): `task check`, `task run -- creature krampus`. The explorer is drawn with [ratatui](https://ratatui.rs); `DUMP=1 cargo test dump_screens -- --nocapture` prints sample screens without a terminal.
 
 ### Releasing
 
