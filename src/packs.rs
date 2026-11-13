@@ -47,6 +47,19 @@ pub fn scaffold(vault: &Vault, packs_dir: &Path, id: &str) -> Result<PathBuf> {
         return Err(TinselError::new(Code::Usage, format!("{id:?} is {whose}"))
             .with_hint("choose another id"));
     }
+    // The example creature's id must be free too, or the loader would skip
+    // it on the next run and the new pack, left empty, wouldn't be listed.
+    let creature = example_id(id);
+    if let Some(taken) = vault.get(&creature) {
+        return Err(TinselError::new(
+            Code::Usage,
+            format!(
+                "the example creature would be called {creature:?}, and the {:?} pack already has one of those",
+                taken.pack
+            ),
+        )
+        .with_hint("choose another pack id"));
+    }
     let dir = packs_dir.join(id);
     if dir.exists() {
         return Err(
@@ -55,7 +68,6 @@ pub fn scaffold(vault: &Vault, packs_dir: &Path, id: &str) -> Result<PathBuf> {
         );
     }
 
-    let creature = example_id(id);
     let name = format!("My {id} creature");
     let pack = format!(
         "{{\n  \"id\": \"{id}\",\n  \"name\": \"My {id} pack\",\n  \"description\": \"Describe your pack here.\",\n  \"order\": [\"{creature}\"]\n}}\n"
@@ -186,6 +198,34 @@ mod tests {
             assert!(e.hint.unwrap().contains("lowercase"), "{bad:?}");
         }
         assert!(!scratch.0.exists(), "a refusal creates nothing");
+    }
+
+    #[test]
+    fn a_pack_whose_example_creature_is_already_taken_is_refused() {
+        let scratch = Scratch::new("taken");
+        // Somebody's attic already holds a creature with the id that
+        // 'packs new office-party' would give its example.
+        let attic = scratch.0.join("attic");
+        fs::create_dir_all(&attic).unwrap();
+        fs::write(
+            attic.join("office-party-creature.json"),
+            r#"{"name": "Early Guest", "description": "Got here first", "facts": ["It's early"]}"#,
+        )
+        .unwrap();
+        let mut vault = Vault::load();
+        assert!(vault.add_community(&scratch.0).is_empty());
+        let e = scaffold(&vault, &scratch.0, "office-party").unwrap_err();
+        assert_eq!(e.code, Code::Usage);
+        assert!(
+            e.message.contains("\"attic\" pack already has one"),
+            "{}",
+            e.message
+        );
+        assert_eq!(e.hint.as_deref(), Some("choose another pack id"));
+        assert!(
+            !scratch.0.join("office-party").exists(),
+            "nothing is written"
+        );
     }
 
     #[test]

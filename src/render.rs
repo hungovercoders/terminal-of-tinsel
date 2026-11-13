@@ -156,7 +156,9 @@ impl Painter {
 /// Parses `#RRGGBB`.
 pub fn parse_hex(hex: &str) -> Option<(u8, u8, u8)> {
     let h = hex.strip_prefix('#')?;
-    if h.len() != 6 {
+    // Six bytes that aren't six ASCII characters ("#aé123") would be sliced
+    // through the middle of a character below.
+    if h.len() != 6 || !h.is_ascii() {
         return None;
     }
     let byte = |i: usize| u8::from_str_radix(&h[i..i + 2], 16).ok();
@@ -1218,6 +1220,16 @@ mod tests {
 
     fn colour() -> Painter {
         Painter::new(false, 80)
+    }
+
+    #[test]
+    fn colours_that_are_not_six_hex_digits_are_refused_safely() {
+        assert_eq!(parse_hex("#E63946"), Some((0xE6, 0x39, 0x46)));
+        for bad in [
+            "", "#", "E63946", "#E6394", "#E639467", "#GGGGGG", "#aé123", "#ééé", "#€€",
+        ] {
+            assert_eq!(parse_hex(bad), None, "{bad:?}");
+        }
     }
 
     #[test]

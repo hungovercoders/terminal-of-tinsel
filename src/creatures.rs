@@ -482,6 +482,8 @@ fn read_pack(files: &dyn PackFiles, dir: &str, source: &str) -> (Pack, Vec<Creat
     pack.source = source.to_string();
 
     let mut found: BTreeMap<String, Creature> = BTreeMap::new();
+    // Which file each id came from, to name it if another file claims it too.
+    let mut claimed: BTreeMap<String, String> = BTreeMap::new();
     for stem in files.json_stems().into_iter().filter(|s| s != "pack") {
         let parsed = files
             .read(&format!("{stem}.json"))
@@ -497,6 +499,16 @@ fn read_pack(files: &dyn PackFiles, dir: &str, source: &str) -> (Pack, Vec<Creat
                     .read(&format!("{}.txt", c.id))
                     .map(|art| tidy_art(&art))
                     .unwrap_or_default();
+                // Two files can declare the same id. The first keeps it:
+                // quietly replacing it could lose a good creature to a bad one.
+                if let Some(first) = claimed.get(&c.id) {
+                    problems.push(format!(
+                        "{stem}.json: the id {:?} is already used by {first}.json, so this file is skipped",
+                        c.id
+                    ));
+                    continue;
+                }
+                claimed.insert(c.id.clone(), stem.clone());
                 found.insert(c.id.clone(), c);
             }
             Err(e) => problems.push(format!("{stem}.json: {e}")),
@@ -1005,6 +1017,47 @@ mod tests {
             "an empty pack isn't listed"
         );
         assert_eq!(v.creatures.iter().filter(|c| c.pack == "nordic").count(), 4);
+    }
+
+    #[test]
+    fn two_files_with_one_id_keep_the_first_and_warn() {
+        let dir = Community::new("twins");
+        dir.write("attic/a.json", &ELF.replace('{', r#"{"id": "guest", "#));
+        // The second is incomplete as well: it must not cost us the first.
+        dir.write("attic/b.json", r#"{"id": "guest", "name": "Impostor"}"#);
+        let mut v = vault();
+        let warnings = v.add_community(&dir.0);
+        assert_eq!(warnings.len(), 1, "{warnings:?}");
+        assert!(
+            warnings[0].contains("b.json: the id \"guest\" is already used by a.json"),
+            "{warnings:?}"
+        );
+        assert_eq!(v.get("guest").unwrap().name, "The Shelf Inspector");
+    }
+
+    #[test]
+    fn a_malformed_colour_falls_back_instead_of_panicking() {
+        let dir = Community::new("colours");
+        for (id, colour) in [
+            ("accent", "#aé123"),
+            ("short", "#fff"),
+            ("word", "tinsel"),
+            ("wide", "#ééé"),
+        ] {
+            let theme = format!(r#", "theme": {{"primary": "{colour}", "accent": "{colour}"}}}}"#);
+            dir.write(
+                &format!("attic/{id}.json"),
+                &ELF.replace("The Shelf Inspector", id).replace('}', &theme),
+            );
+        }
+        let mut v = vault();
+        let warnings = v.add_community(&dir.0);
+        assert!(warnings.is_empty(), "{warnings:?}");
+        for id in ["accent", "short", "word", "wide"] {
+            let c = v.get(id).unwrap();
+            assert_eq!(c.theme.primary, crate::render::GOLD, "{id}");
+            assert_eq!(c.theme.accent, crate::render::GREEN, "{id}");
+        }
     }
 
     #[test]
