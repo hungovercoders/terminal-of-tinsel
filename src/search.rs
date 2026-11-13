@@ -47,6 +47,8 @@ fn fields(c: &Creature) -> Vec<(&'static str, String)> {
     out.push(("origin", c.origin.clone()));
     if let Some(f) = &c.film {
         out.push(("film", format!("{} · {} · {}", f.title, f.director, f.star)));
+        // The note is on the On Screen page, so it should be findable too.
+        out.extend(f.note.iter().map(|note| ("film", note.clone())));
     }
     out.extend(c.facts.iter().map(|f| ("fact", f.clone())));
     out.push(("legend", c.legend.clone()));
@@ -118,6 +120,16 @@ mod tests {
         assert_eq!(found, unique);
         assert!(ids("zzzz").is_empty());
         assert!(ids("   ").is_empty());
+    }
+
+    #[test]
+    fn film_notes_are_searched() {
+        // Marley's film note names the actor who played Scrooge.
+        let v = Vault::load();
+        let hits = search(&v.creatures, "alastair sim");
+        assert_eq!(hits.len(), 1, "{hits:?}");
+        assert_eq!(v.creatures[hits[0].index].id, "marley");
+        assert_eq!(hits[0].field, "film");
     }
 
     #[test]

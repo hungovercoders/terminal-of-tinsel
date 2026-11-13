@@ -122,7 +122,11 @@ pub fn draw(m: &Model, buf: &mut Buffer, area: Rect) {
         }
         if m.frame > TUNE_FRAMES / 2 {
             let label = Line::styled(
-                format!(" 📺 {} · MIDWINTER SPECIAL ", host::CHANNEL),
+                format!(
+                    " {}{} · MIDWINTER SPECIAL ",
+                    view::icon(m, "📺"),
+                    host::CHANNEL
+                ),
                 view::title_style(m),
             );
             centred(buf, area, h / 2, &label);
@@ -155,14 +159,20 @@ pub fn draw(m: &Model, buf: &mut Buffer, area: Rect) {
         Line::styled(format!("*  {} presents  *", host::CHANNEL), dim),
         Line::default(),
     ];
-    lines.extend(logo(w).into_iter().map(|l| Line::styled(l, logo_style)));
+    // The block font is all drawing characters, so plain mode spells it out.
+    let logo_width = if m.colour { w } else { 0 };
+    lines.extend(
+        logo(logo_width)
+            .into_iter()
+            .map(|l| Line::styled(l, logo_style)),
+    );
     lines.push(Line::default());
     lines.push(Line::styled("~ The Midwinter Special ~", gold));
     lines.push(Line::default());
 
     // The greeting is wrapped whole and then revealed, so words never jump
     // from one line to the next as they are typed.
-    let full = format!("📺 {}: {}", host::NAME, m.greeting);
+    let full = format!("{}{}: {}", view::icon(m, "📺"), host::NAME, m.greeting);
     let typed = m.frame.saturating_sub(TUNE_FRAMES + FLASH_FRAMES) * TYPE_SPEED;
     let mut budget = if m.intro_done() {
         usize::MAX

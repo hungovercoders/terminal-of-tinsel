@@ -438,6 +438,115 @@ fn no_colour_means_no_colour() {
     }
 }
 
+#[test]
+fn no_colour_also_means_no_emoji_and_ascii_borders() {
+    use unicode_width::UnicodeWidthStr;
+    let vault = Vault::load();
+    let plain = || Options {
+        colour: false,
+        ..options()
+    };
+    let check = |m: &mut Model, what: &str| {
+        let mut terminal = Terminal::new(TestBackend::new(120, 40)).unwrap();
+        m.resize(120, 40);
+        terminal.draw(|frame| view::draw(m, frame)).unwrap();
+        for cell in terminal.backend().buffer().content() {
+            let symbol = cell.symbol();
+            assert!(symbol.width() < 2, "{what}: emoji {symbol:?}");
+            assert!(
+                crate::plain::ascii(symbol).is_none(),
+                "{what}: drawing character {symbol:?}"
+            );
+        }
+    };
+    // The intro: static, the flash, the typing and the finished card.
+    let mut intro = Model::new(&vault, plain());
+    for frame in 0..60 {
+        check(&mut intro, &format!("intro frame {frame}"));
+        intro.on_tick();
+    }
+    assert!(screen(&mut intro, 120, 40).contains("TERMINAL OF TINSEL"));
+    // The gallery, a search, and every section of two pages.
+    let mut gallery = Model::new(
+        &vault,
+        Options {
+            show_all: true,
+            no_intro: true,
+            ..plain()
+        },
+    );
+    check(&mut gallery, "gallery");
+    assert!(screen(&mut gallery, 120, 40).contains("> Krampus"));
+    press(&mut gallery, KeyCode::Char('/'));
+    type_text(&mut gallery, "the");
+    check(&mut gallery, "search");
+    for id in ["marley", "krampus"] {
+        let mut page = Model::new(
+            &vault,
+            Options {
+                start_id: Some(id.into()),
+                ..plain()
+            },
+        );
+        for tab in 0..page.tabs().len() {
+            press(&mut page, KeyCode::Char(char::from(b'1' + tab as u8)));
+            press(&mut page, KeyCode::Char('r'));
+            check(&mut page, &format!("{id}, section {tab}"));
+        }
+    }
+    let mut page = on_page(&vault, "krampus");
+    page.colour = false;
+    let text = screen(&mut page, 120, 40);
+    assert!(text.contains("+----"), "{text}");
+    assert!(
+        text.contains("TERMINAL OF TINSEL") && text.contains("KRAMPUS"),
+        "{text}"
+    );
+}
+
+#[test]
+fn a_one_or_two_row_page_still_shows_its_text() {
+    let vault = Vault::load();
+    let mut m = on_page(&vault, "krampus");
+    // Find heights that leave one and two rows for the page itself.
+    for rows in [1, 2] {
+        let height = (8..40)
+            .find(|h| {
+                m.resize(60, *h);
+                view::body_height(&m) == rows
+            })
+            .expect("a height with that many body rows");
+        // Past the blank line and the heading, to the first fact.
+        press(&mut m, KeyCode::Home);
+        for _ in 0..3 {
+            press(&mut m, KeyCode::Down);
+        }
+        let text = screen(&mut m, 60, height);
+        assert!(
+            !text.contains("more above") && !text.contains("more below"),
+            "{text}"
+        );
+        assert!(
+            text.contains("Krampus is a horned") || text.contains("He accompanies"),
+            "{rows} rows:\n{text}"
+        );
+    }
+    // With three rows the markers come back, with a line between them.
+    let height = (8..40)
+        .find(|h| {
+            m.resize(60, *h);
+            view::body_height(&m) == 3
+        })
+        .unwrap();
+    press(&mut m, KeyCode::Home);
+    press(&mut m, KeyCode::Down);
+    let text = screen(&mut m, 60, height);
+    assert!(
+        text.contains("more above") && text.contains("more below"),
+        "{text}"
+    );
+}
+
 /// `DUMP=1 cargo test dump_screens -- --nocapture` prints sample screens.
 #[test]
 fn dump_screens() {

@@ -6,6 +6,7 @@ mod creatures;
 mod error;
 mod explorer;
 mod host;
+mod plain;
 mod render;
 mod rng;
 mod search;
