@@ -24,6 +24,7 @@ src/mash.rs        The Snowball Showdown: the three-round fight simulation
 src/games.rs       The quiz and guess screens (ratatui), and their results
 src/stocking.rs    Captures and badges: what a session of play earns
 src/store.rs       Saved progress: stocking.json in the config dir (TERMINAL_OF_TINSEL_HOME overrides)
+src/plain.rs       Plain mode for full-screen pages: drawing characters swapped for ASCII
 src/render.rs      Everything printed: colours, boxes, pages, the tree and the big digits
 src/host.rs        Auntie Aerial's lines
 src/rng.rs         SplitMix64, pinned so daily facts never change between releases
@@ -49,6 +50,9 @@ tests/cli.rs       End-to-end tests of the binary
   end-to-end tests do. Saving must never stop a game: `record` warns and carries on.
 - Game text must read the same for one creature or several (the Yule Lads are plural), so narration is
   in the past tense.
+- Plain mode (`--no-color`, `NO_COLOR`) means no colour, no emoji and ASCII borders everywhere, the
+  full-screen pages included: build emoji with `icon`, and add any new drawing character to
+  `src/plain.rs`.
 - Never push a `v*` tag without the maintainer's go-ahead: it publishes a release.
 - Keep dependencies few, and check what their default features pull in.
 - Return `Result<_, TinselError>` with a message a player can act on; don't panic on player input.

@@ -50,6 +50,12 @@ pub fn fg(m: &Model, colour: Color) -> Style {
     m.ink.fg(colour)
 }
 
+/// An emoji and the space after it, or nothing under `--no-color`, which
+/// promises plain output: no emoji, and ASCII borders (see `plain`).
+pub fn icon(m: &Model, emoji: &str) -> String {
+    m.ink.icon(emoji)
+}
+
 /// The style of the title bar.
 pub fn title_style(m: &Model) -> Style {
     m.ink.title()
@@ -116,6 +122,11 @@ fn viewport(m: &Model, mut lines: Lines, offset: usize, height: usize) -> Lines 
     let offset = offset.min(lines.len() - height);
     let more_below = offset + height < lines.len();
     let mut visible: Lines = lines.drain(offset..offset + height).collect();
+    // The markers each take a row. With fewer than three there would be
+    // nothing left to read between them, so the text has the rows instead.
+    if height < 3 {
+        return visible;
+    }
     if offset > 0 {
         visible[0] = Line::styled("  ▲ more above", dim(m));
     }
@@ -164,7 +175,9 @@ fn portrait(m: &Model, c: &Creature, p: &Palette, snowing: bool) -> Lines {
 // ── Shared chrome ──────────────────────────────────────────────────────────
 
 fn title_bar(m: &Model, right: &str) -> Line<'static> {
-    tui::title_bar(m.ink, "🎄 TERMINAL OF TINSEL 🎄", right, m.size().0)
+    let tree = icon(m, "🎄");
+    let title = format!("{tree}TERMINAL OF TINSEL {}", tree.trim_end());
+    tui::title_bar(m.ink, title.trim_end(), right, m.size().0)
 }
 
 fn footer(m: &Model, normal: &[&str]) -> Lines {
@@ -220,7 +233,7 @@ fn gallery_lines(m: &Model, width: usize) -> (Lines, usize) {
         }
         let mut spans = vec![
             Span::styled(if selected { "▶ " } else { "  " }, fg(m, rgb(RED))),
-            Span::styled(format!("{} {}", c.emoji, c.name), name_style),
+            Span::styled(format!("{}{}", icon(m, &c.emoji), c.name), name_style),
         ];
         if let Some(year) = c.debut.year {
             spans.push(Span::styled(format!(" ({year})"), dim(m)));
@@ -242,7 +255,7 @@ fn preview(m: &Model, c: &Creature, width: usize) -> Lines {
     let p = palette(m, c);
     let inner = width.saturating_sub(4);
     let mut lines = vec![Line::styled(
-        format!("{} {}", c.emoji, c.name),
+        format!("{}{}", icon(m, &c.emoji), c.name),
         p.primary.add_modifier(Modifier::BOLD),
     )];
     lines.extend(wrap(
@@ -303,7 +316,11 @@ fn detail_header(m: &Model) -> Lines {
     }
 
     let mut name = vec![Span::styled(
-        format!("{}  {}", c.emoji, c.name.to_uppercase()),
+        format!(
+            "{}{}",
+            icon(m, &c.emoji).replace(' ', "  "),
+            c.name.to_uppercase()
+        ),
         p.primary.add_modifier(Modifier::BOLD),
     )];
     if m.engraving() {
@@ -322,7 +339,7 @@ fn detail_header(m: &Model) -> Lines {
     } else {
         lines.extend(wrap(&c.description, w, caption));
     }
-    let intro = format!("📺 {}: “{}”", host::NAME, host::intro(c));
+    let intro = format!("{}{}: “{}”", icon(m, "📺"), host::NAME, host::intro(c));
     if compact && !tiny {
         lines.push(Line::styled(truncate(&intro, w), host_style(m)));
     } else if !tiny {
@@ -561,7 +578,7 @@ fn search_results(m: &Model, width: usize, height: usize) -> Lines {
         }
         lines.push(Line::from(vec![
             Span::styled(if selected { "▶ " } else { "  " }, fg(m, rgb(RED))),
-            Span::styled(format!("{} {}", c.emoji, c.name), name),
+            Span::styled(format!("{}{}", icon(m, &c.emoji), c.name), name),
         ]));
         lines.push(Line::styled(
             format!(
@@ -582,6 +599,13 @@ fn search_results(m: &Model, width: usize, height: usize) -> Lines {
 
 /// Draws the current screen.
 pub fn draw(m: &Model, frame: &mut Frame) {
+    draw_screen(m, frame);
+    if !m.ink.colour {
+        crate::plain::plainify(frame.buffer_mut());
+    }
+}
+
+fn draw_screen(m: &Model, frame: &mut Frame) {
     let area = frame.area();
     let buf = frame.buffer_mut();
     let (header, body, footer) = match m.screen {

@@ -89,7 +89,7 @@ fn keys(ink: Ink, items: &[&str], width: usize) -> Lines {
 }
 
 fn host_line(ink: Ink, text: &str, width: usize) -> Lines {
-    wrap(&format!("📺 {text}"), width, ink.host())
+    wrap(&format!("{}{text}", ink.icon("📺")), width, ink.host())
 }
 
 /// The width to draw at, assuming 80 columns until told otherwise.
@@ -100,12 +100,23 @@ fn game_width(width: u16) -> usize {
     }
 }
 
-/// Lays a game's lines on the frame, centred on a wide terminal.
-fn place(lines: Lines, width: usize, frame: &mut Frame) {
+/// Lays a game's lines on the frame, centred on a wide terminal. If there
+/// are more lines than rows, the title stays and the rest is shown from the
+/// bottom up, so the choices, the verdict and the keys are always on screen
+/// and it's the top of the portrait or the clue that gives way.
+fn place(mut lines: Lines, width: usize, ink: Ink, frame: &mut Frame) {
     let area = frame.area();
+    let rows = usize::from(area.height);
+    if lines.len() > rows && rows >= 2 {
+        let cut = lines.len() - rows + 1;
+        lines.drain(1..cut);
+    }
     let width = u16::try_from(width).unwrap_or(u16::MAX).min(area.width);
     let x = area.x + (area.width - width) / 2;
     Paragraph::new(lines).render(Rect::new(x, area.y, width, area.height), frame.buffer_mut());
+    if !ink.colour {
+        crate::plain::plainify(frame.buffer_mut());
+    }
 }
 
 // ── The Christmas Cracker Quiz ─────────────────────────────────────────────
@@ -200,7 +211,7 @@ impl QuizApp {
         let mut out = vec![
             tui::title_bar(
                 ink,
-                "🎉 THE CHRISTMAS CRACKER QUIZ",
+                &format!("{}THE CHRISTMAS CRACKER QUIZ", ink.icon("🎉")),
                 &format!("Question {} of {total} · Score {right}", self.i + 1),
                 w,
             ),
@@ -310,7 +321,7 @@ impl App for QuizApp {
     }
 
     fn draw(&self, frame: &mut Frame) {
-        place(self.lines(), game_width(self.width), frame);
+        place(self.lines(), game_width(self.width), self.ink, frame);
     }
 
     fn quitting(&self) -> bool {
@@ -443,7 +454,7 @@ impl<'a> GuessApp<'a> {
         let mut out = vec![
             tui::title_bar(
                 ink,
-                "🔍 GUESS THE GUEST",
+                &format!("{}GUESS THE GUEST", ink.icon("🔍")),
                 &format!(
                     "Round {} of {total} · {} pts",
                     self.i + 1,
@@ -598,7 +609,7 @@ impl App for GuessApp<'_> {
     }
 
     fn draw(&self, frame: &mut Frame) {
-        place(self.lines(), game_width(self.width), frame);
+        place(self.lines(), game_width(self.width), self.ink, frame);
     }
 
     fn quitting(&self) -> bool {
@@ -823,6 +834,77 @@ mod tests {
             );
             press(&mut app, KeyCode::Char('1'));
             press(&mut app, KeyCode::Enter);
+        }
+    }
+
+    #[test]
+    fn the_choices_and_the_keys_stay_on_screen_in_a_standard_terminal() {
+        let v = Vault::load();
+        // Every portrait at 80 by 24, the size a terminal opens at: the
+        // tallest ones don't fit above the choices, and must not push them off.
+        let mut app = guess_app(&v, 14);
+        for _ in 0..14 {
+            let options = app.result.rounds[app.i].options.clone();
+            let text = snapshot(&mut app, 80, 24);
+            assert!(text.contains("GUESS THE GUEST"), "the title stays:\n{text}");
+            for (i, option) in options.iter().enumerate() {
+                let line = format!("{}. {}", i + 1, truncate(option, 40));
+                assert!(text.contains(&line), "{line} is off screen:\n{text}");
+            }
+            assert!(text.contains("space clear the frost"), "{text}");
+            press(&mut app, KeyCode::Char('1'));
+            let text = snapshot(&mut app, 80, 24);
+            assert!(text.contains("It's ") || text.contains("It was "), "{text}");
+            assert!(text.contains("enter next round"), "{text}");
+            press(&mut app, KeyCode::Enter);
+        }
+        // The quiz, on a terminal only twelve rows tall.
+        let mut app = quiz_app(&v, 6);
+        for _ in 0..6 {
+            let text = snapshot(&mut app, 60, 12);
+            assert!(text.contains("1. ") && text.contains("q quit"), "{text}");
+            press(&mut app, KeyCode::Char('1'));
+            let text = snapshot(&mut app, 60, 12);
+            assert!(text.contains("enter next question"), "{text}");
+            press(&mut app, KeyCode::Enter);
+        }
+    }
+
+    #[test]
+    fn plain_mode_has_no_emoji_or_drawing_characters() {
+        use ratatui::Terminal;
+        use ratatui::backend::TestBackend;
+        let v = Vault::load();
+        let mut rng = Rng::new(25);
+        let mut quiz = QuizApp::new(quiz::generate(&mut rng, &v.creatures, 3, None), rng, false);
+        let mut rng = Rng::new(25);
+        let mut guess = GuessApp::new(guess::rounds(&mut rng, &v.creatures, 2), rng, false);
+        let check = |app: &mut dyn FnMut(&mut Frame)| {
+            let mut terminal = Terminal::new(TestBackend::new(100, 30)).unwrap();
+            terminal.draw(|frame| app(frame)).unwrap();
+            for cell in terminal.backend().buffer().content() {
+                let symbol = cell.symbol();
+                assert!(symbol.width() < 2, "emoji {symbol:?}");
+                assert!(crate::plain::ascii(symbol).is_none(), "{symbol:?}");
+                assert_eq!(cell.fg, ratatui::style::Color::Reset);
+            }
+        };
+        for step in 0..8 {
+            quiz.resize(100, 30);
+            guess.resize(100, 30);
+            check(&mut |frame| quiz.draw(frame));
+            check(&mut |frame| guess.draw(frame));
+            let code = if step % 2 == 0 {
+                KeyCode::Char('1')
+            } else {
+                KeyCode::Enter
+            };
+            if !quiz.quitting() {
+                press(&mut quiz, code);
+            }
+            if !guess.quitting() {
+                press(&mut guess, code);
+            }
         }
     }
 

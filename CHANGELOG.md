@@ -37,7 +37,8 @@
 ### Changed
 
 - "Did you mean" now offers up to three names, nearest first, and matches ids as well as names.
-- `--no-color` and `NO_COLOR` also switch the explorer to the terminal's own colours.
+- `--no-color` and `NO_COLOR` apply inside the explorer too: the terminal's own colours, no emoji and
+  ASCII borders.
 
 ## [0.1.0] - Unreleased
 
