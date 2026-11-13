@@ -22,6 +22,7 @@ src/quiz.rs        Quiz questions generated from the creature data, name masking
 src/guess.rs       Guess the Guest: rounds, the frost and its points
 src/mash.rs        The Snowball Showdown: the three-round fight simulation
 src/games.rs       The quiz and guess screens (ratatui), and their results
+src/plain.rs       Plain mode for full-screen pages: drawing characters swapped for ASCII
 src/render.rs      Everything printed: colours, boxes, pages, the tree and the big digits
 src/host.rs        Auntie Aerial's lines
 src/rng.rs         SplitMix64, pinned so daily facts never change between releases
@@ -45,6 +46,9 @@ tests/cli.rs       End-to-end tests of the binary
   can be repeated. Don't add another source of randomness. Set the seed when testing.
 - Game text must read the same for one creature or several (the Yule Lads are plural), so narration is
   in the past tense.
+- Plain mode (`--no-color`, `NO_COLOR`) means no colour, no emoji and ASCII borders everywhere, the
+  full-screen pages included: build emoji with `icon`, and add any new drawing character to
+  `src/plain.rs`.
 - Never push a `v*` tag without the maintainer's go-ahead: it publishes a release.
 - Keep dependencies few, and check what their default features pull in.
 - Return `Result<_, TinselError>` with a message a player can act on; don't panic on player input.

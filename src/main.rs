@@ -9,6 +9,7 @@ mod games;
 mod guess;
 mod host;
 mod mash;
+mod plain;
 mod quiz;
 mod render;
 mod rng;
