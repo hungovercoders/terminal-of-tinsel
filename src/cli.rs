@@ -141,6 +141,17 @@ out one or both names for random contenders. Put a name of several words in quot
         fast: bool,
     },
 
+    /// Look in your stocking: the creatures you've caught, your badges and records
+    #[command(
+        long_about = "Your stocking holds every creature you've caught by answering three questions \
+about it, in the quiz or Guess the Guest, plus your badges and records. It's saved as JSON in \
+your config directory; set TERMINAL_OF_TINSEL_HOME to keep it somewhere else."
+    )]
+    Stocking {
+        #[command(subcommand)]
+        action: Option<StockingAction>,
+    },
+
     /// Count the sleeps until Christmas
     Countdown {
         /// Pretend it's this date (YYYY-MM-DD)
@@ -162,6 +173,16 @@ out one or both names for random contenders. Put a name of several words in quot
     Completions {
         /// The shell to complete for
         shell: Shell,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum StockingAction {
+    /// Empty your stocking and start again
+    Reset {
+        /// Don't ask for confirmation
+        #[arg(short, long)]
+        yes: bool,
     },
 }
 
@@ -221,6 +242,22 @@ mod tests {
             Some(Command::Mash { fast: true, ref creatures }) if creatures.len() == 2
         ));
         assert!(Cli::try_parse_from(["t", "mash", "a", "b", "c"]).is_err());
+    }
+
+    #[test]
+    fn the_stocking_has_a_reset() {
+        let cli = Cli::try_parse_from(["t", "stocking"]).unwrap();
+        assert!(matches!(
+            cli.command,
+            Some(Command::Stocking { action: None })
+        ));
+        let cli = Cli::try_parse_from(["t", "stocking", "reset", "-y"]).unwrap();
+        assert!(matches!(
+            cli.command,
+            Some(Command::Stocking {
+                action: Some(StockingAction::Reset { yes: true })
+            })
+        ));
     }
 
     #[test]

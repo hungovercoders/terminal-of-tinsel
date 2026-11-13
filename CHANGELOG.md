@@ -26,6 +26,12 @@
   decided by their stats and a die; `--fast` skips the pauses.
 - All three games take `--json`, and `TERMINAL_OF_TINSEL_SEED` now fixes every random choice. A seed that
   isn't a whole number is ignored with a warning.
+- **The Stocking.** Three correct answers about a creature, in the quiz or Guess the Guest, put it in
+  your stocking. `stocking` shows what you've caught, 17 badges and your records; `stocking reset` (`-y`
+  to skip the question) starts again. The games and the explorer record what was seen and won.
+- Progress is saved as `stocking.json` in your config directory, or in `TERMINAL_OF_TINSEL_HOME` if set.
+  A broken save file never stops a game: it warns and carries on.
+- A `store` error code when saved progress can't be read or written.
 - Auntie Aerial has sign-off lines, and a special greeting on Christmas Eve and Christmas Day.
 
 ### Changed

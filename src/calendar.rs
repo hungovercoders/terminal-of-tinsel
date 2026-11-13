@@ -12,6 +12,11 @@ pub fn today() -> Date {
     jiff::Zoned::now().date()
 }
 
+/// The date and time now, in the local time zone.
+pub fn now() -> jiff::civil::DateTime {
+    jiff::Zoned::now().datetime()
+}
+
 /// Parses `--date YYYY-MM-DD`, or returns today when it's absent.
 pub fn parse_date(arg: Option<&str>) -> Result<Date> {
     match arg {
@@ -87,6 +92,36 @@ pub fn yule_lads_in_town(d: Date) -> u8 {
         (1, day @ 1..=6) => (13 - 7 - day).max(0) as u8,
         _ => 0,
     }
+}
+
+/// The average time between new moons, in days.
+const SYNODIC_MONTH: f64 = 29.530_588_853;
+
+/// The moon's age on a date: days since the last new moon, counted from the
+/// new moon of 6 January 2000 (18:14 UTC) with the mean lunar month. It is
+/// accurate to within about a day, which is plenty for a Christmas special.
+pub fn moon_age(d: Date) -> f64 {
+    let since = date(2000, 1, 6)
+        .until(d)
+        .map(|span| f64::from(span.get_days()))
+        .unwrap_or_default();
+    // The date stands for its evening (9pm), and the reference moon was at 18:14.
+    (since + (21.0 - 18.0 - 14.0 / 60.0) / 24.0).rem_euclid(SYNODIC_MONTH)
+}
+
+/// Whether a date falls within a day of the full moon.
+pub fn is_full_moon(d: Date) -> bool {
+    (moon_age(d) - SYNODIC_MONTH / 2.0).abs() < 1.0
+}
+
+/// Whether it's Krampusnacht, the eve of St Nicholas Day.
+pub fn is_krampusnacht(d: Date) -> bool {
+    d.month() == 12 && d.day() == 5
+}
+
+/// Whether it's Twelfth Night, the last of the Twelve Days.
+pub fn is_twelfth_night(d: Date) -> bool {
+    twelve_days(d) == Some(12)
 }
 
 /// A note about a special night of the season, with an emoji for the terminal.
@@ -211,6 +246,28 @@ mod tests {
         assert_eq!(yule_lads_in_town(date(2026, 12, 25)), 12);
         assert_eq!(yule_lads_in_town(date(2027, 1, 5)), 1);
         assert_eq!(yule_lads_in_town(date(2027, 1, 6)), 0);
+    }
+
+    #[test]
+    fn the_moon_is_full_when_the_almanac_says_so() {
+        // Full moons: 24 December 2026 (01:28 UTC) and 13 December 2027.
+        assert!(is_full_moon(date(2026, 12, 24)) || is_full_moon(date(2026, 12, 23)));
+        assert!(is_full_moon(date(2027, 12, 13)));
+        // New moons: 9 December 2026 and 6 January 2000.
+        assert!(!is_full_moon(date(2026, 12, 9)));
+        assert!(moon_age(date(2000, 1, 6)) < 1.0);
+        let age = moon_age(date(2026, 12, 9));
+        assert!(!(1.5..=28.0).contains(&age), "new moon, but age {age}");
+        // Dates before the reference moon work too.
+        assert!((0.0..SYNODIC_MONTH).contains(&moon_age(date(1843, 12, 19))));
+    }
+
+    #[test]
+    fn the_big_nights_are_recognised() {
+        assert!(is_krampusnacht(date(2026, 12, 5)));
+        assert!(!is_krampusnacht(date(2026, 12, 6)));
+        assert!(is_twelfth_night(date(2027, 1, 5)));
+        assert!(!is_twelfth_night(date(2027, 1, 6)));
     }
 
     #[test]
