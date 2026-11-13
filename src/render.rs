@@ -156,7 +156,9 @@ impl Painter {
 /// Parses `#RRGGBB`.
 pub fn parse_hex(hex: &str) -> Option<(u8, u8, u8)> {
     let h = hex.strip_prefix('#')?;
-    if h.len() != 6 {
+    // Six bytes that aren't six ASCII characters ("#aé123") would be sliced
+    // through the middle of a character below.
+    if h.len() != 6 || !h.is_ascii() {
         return None;
     }
     let byte = |i: usize| u8::from_str_radix(&h[i..i + 2], 16).ok();
@@ -266,9 +268,12 @@ pub fn list(p: &Painter, vault: &Vault) -> String {
     let w = p.text_width();
     let mut out = vec![p.bold(
         &format!(
-            "{}TONIGHT'S GUESTS · {} creatures",
+            "{}TONIGHT'S GUESTS · {}",
             p.glyph("🎄"),
-            vault.creatures.len()
+            match vault.creatures.len() {
+                1 => "1 creature".to_string(),
+                n => format!("{n} creatures"),
+            }
         ),
         GOLD,
     )];
@@ -775,6 +780,57 @@ pub fn unlocks(p: &Painter, u: &Unlocks) -> String {
     out.join("\n") + "\n"
 }
 
+// ── Packs ──────────────────────────────────────────────────────────────────
+
+/// Every pack, built-in and community, and where to put your own.
+pub fn packs(p: &Painter, vault: &Vault, community_dir: Option<&std::path::Path>) -> String {
+    let w = p.text_width();
+    let mut out = vec![p.bold(
+        &format!("{}THE PACKS · {} packs", p.glyph("📦"), vault.packs.len()),
+        GOLD,
+    )];
+    for (pack, creatures) in vault.by_pack() {
+        out.push(String::new());
+        let count = match creatures.len() {
+            1 => "1 creature".to_string(),
+            n => format!("{n} creatures"),
+        };
+        out.push(format!(
+            "{}  {}",
+            p.bold(&format!("{} ({})", pack.name, pack.id), GREEN),
+            p.paint(&count, DIM)
+        ));
+        if !pack.description.is_empty() {
+            out.extend(p.wrap(&pack.description, w, |l| p.italic(l, DIM)));
+        }
+        let names: Vec<String> = creatures
+            .iter()
+            .map(|c| format!("{}{}", p.glyph(&c.emoji), c.name))
+            .collect();
+        out.extend(p.wrap(&names.join(" · "), w, |l| l.to_string()));
+        if pack.source != crate::creatures::BUILT_IN {
+            let path = crate::store::tilde(std::path::Path::new(&pack.source));
+            out.extend(p.wrap(&format!("A community pack, from {path}"), w, |l| {
+                p.paint(l, GOLD)
+            }));
+        }
+    }
+    out.push(String::new());
+    out.push(p.paint(
+        "Keep to some packs with --pack, e.g. terminal-of-tinsel quiz --pack nordic",
+        DIM,
+    ));
+    out.push(p.paint("Make your own: terminal-of-tinsel packs new <id>", DIM));
+    if let Some(dir) = community_dir {
+        out.extend(p.wrap(
+            &format!("Community packs live in {}", crate::store::tilde(dir)),
+            w,
+            |l| p.paint(l, DIM),
+        ));
+    }
+    out.join("\n") + "\n"
+}
+
 // ── Cards ──────────────────────────────────────────────────────────────────
 
 /// A boxed fact, introduced by a title and signed off by the host.
@@ -1164,6 +1220,16 @@ mod tests {
 
     fn colour() -> Painter {
         Painter::new(false, 80)
+    }
+
+    #[test]
+    fn colours_that_are_not_six_hex_digits_are_refused_safely() {
+        assert_eq!(parse_hex("#E63946"), Some((0xE6, 0x39, 0x46)));
+        for bad in [
+            "", "#", "E63946", "#E6394", "#E639467", "#GGGGGG", "#aé123", "#ééé", "#€€",
+        ] {
+            assert_eq!(parse_hex(bad), None, "{bad:?}");
+        }
     }
 
     #[test]

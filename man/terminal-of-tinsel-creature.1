@@ -1,0 +1,46 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH terminal-of-tinsel-creature 1  "creature " 
+.SH NAME
+terminal\-of\-tinsel\-creature \- Tune in to the Midwinter Special, or read one creature\*(Aqs page
+.SH SYNOPSIS
+\fBterminal\-of\-tinsel creature\fR [\fB\-\-json\fR] [\fB\-r\fR|\fB\-\-reveal\fR] [\fB\-\-no\-color\fR] [\fB\-x\fR|\fB\-\-explore\fR] [\fB\-a\fR|\fB\-\-all\fR] [\fB\-\-pack\fR] [\fB\-\-no\-intro\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fINAME\fR] 
+.SH DESCRIPTION
+With no name, opens the Midwinter Special: an interactive explorer of every creature, with a gallery, numbered sections, portraits and search. Press ? inside it for the keys.
+.PP
+With a name, prints that creature\*(Aqs page. Nicknames and parts of names work, and accents are optional. Add \-\-explore to open the explorer on that creature instead.
+.SH OPTIONS
+.TP
+\fB\-\-json\fR
+Print the command\*(Aqs data as JSON instead of drawing it (errors become a JSON object on stderr)
+.TP
+\fB\-r\fR, \fB\-\-reveal\fR
+Show the verdicts in Myth or Fact?
+.TP
+\fB\-\-no\-color\fR
+Plain output: no colour, no emoji, ASCII borders (also set by NO_COLOR, or by piping)
+.TP
+\fB\-x\fR, \fB\-\-explore\fR
+Open the explorer on the named creature instead of printing its page
+.TP
+\fB\-a\fR, \fB\-\-all\fR
+Open the explorer on the gallery of every creature
+.TP
+\fB\-\-pack\fR \fI<PACK>\fR
+Only use creatures from these packs, e.g. \-\-pack nordic,dickens
+.TP
+\fB\-\-no\-intro\fR
+Skip Channel 25 tuning in
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+[\fINAME\fR]
+The creature\*(Aqs name, nickname or part of one, e.g. krampus, "yule cat", nisse
+.SH EXTRA
+Examples:
+  terminal\-of\-tinsel creature
+  terminal\-of\-tinsel creature krampus
+  terminal\-of\-tinsel creature yule cat \-\-reveal
+  terminal\-of\-tinsel creature marley \-\-explore
+  terminal\-of\-tinsel creature marley \-\-json

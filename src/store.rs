@@ -55,6 +55,11 @@ pub fn dir() -> Result<PathBuf> {
         })
 }
 
+/// Where community packs live, in a config directory.
+pub fn packs_dir(dir: &Path) -> PathBuf {
+    dir.join("packs")
+}
+
 /// Where progress is saved, in a config directory.
 pub fn path_in(dir: &Path) -> PathBuf {
     dir.join(FILE)

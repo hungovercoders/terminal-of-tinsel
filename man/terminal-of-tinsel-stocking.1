@@ -1,0 +1,26 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH terminal-of-tinsel-stocking 1  "stocking " 
+.SH NAME
+terminal\-of\-tinsel\-stocking \- Look in your stocking: the creatures you\*(Aqve caught, your badges and records
+.SH SYNOPSIS
+\fBterminal\-of\-tinsel stocking\fR [\fB\-\-json\fR] [\fB\-\-no\-color\fR] [\fB\-\-pack\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fIsubcommands\fR]
+.SH DESCRIPTION
+Your stocking holds every creature you\*(Aqve caught by answering three questions about it, in the quiz or Guess the Guest, plus your badges and records. It\*(Aqs saved as JSON in your config directory; set TERMINAL_OF_TINSEL_HOME to keep it somewhere else.
+.SH OPTIONS
+.TP
+\fB\-\-json\fR
+Print the command\*(Aqs data as JSON instead of drawing it (errors become a JSON object on stderr)
+.TP
+\fB\-\-no\-color\fR
+Plain output: no colour, no emoji, ASCII borders (also set by NO_COLOR, or by piping)
+.TP
+\fB\-\-pack\fR \fI<PACK>\fR
+Only use creatures from these packs, e.g. \-\-pack nordic,dickens
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.SH SUBCOMMANDS
+.TP
+terminal\-of\-tinsel\-stocking\-reset(1)
+Empty your stocking and start again

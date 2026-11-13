@@ -60,6 +60,10 @@ fn every_command_runs() {
         vec!["stocking"],
         vec!["stocking", "--json"],
         vec!["stocking", "reset", "-y"],
+        vec!["packs"],
+        vec!["packs", "--json"],
+        vec!["completion", "bash"],
+        vec!["completions", "fish"],
         vec!["random"],
         vec!["random", "--daily"],
         vec!["countdown"],
@@ -360,6 +364,180 @@ fn a_broken_save_file_stops_the_stocking_but_not_a_game() {
         "{ not json"
     );
     let _ = std::fs::remove_dir_all(&home);
+}
+
+/// What the shell is offered for a half-typed command line, using the
+/// protocol fish speaks: the words so far, then the word being completed.
+fn completions_at(home: &Path, words: &[&str]) -> String {
+    let out = tinsel_at(home)
+        .env("COMPLETE", "fish")
+        .args(["--", "terminal-of-tinsel"])
+        .args(words)
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    String::from_utf8(out.stdout).unwrap()
+}
+
+#[test]
+fn tab_completes_commands_creatures_and_packs() {
+    let home = scratch("complete");
+    assert!(completions_at(&home, &["ma"]).starts_with("mash\t"));
+    assert_eq!(
+        completions_at(&home, &["creature", "yu"]),
+        "yule-cat\tThe Yule Cat\nyule-lads\tThe Yule Lads\n"
+    );
+    assert!(completions_at(&home, &["quiz", "mar"]).contains("marley\tMarley's Ghost"));
+    assert!(completions_at(&home, &["mash", "krampus", "gry"]).contains("gryla\t"));
+    assert_eq!(
+        completions_at(&home, &["list", "--pack", "no"]),
+        "nordic\tNordic Yule\n"
+    );
+    // The script the shell sources asks the program itself, so it's short.
+    let script = tinsel_at(&home)
+        .args(["completions", "bash"])
+        .output()
+        .unwrap();
+    let script = String::from_utf8(script.stdout).unwrap();
+    assert!(script.contains("COMPLETE=\"bash\""), "{script}");
+    assert!(script.contains("complete -o"), "{script}");
+}
+
+#[test]
+fn a_community_pack_can_be_made_and_joins_everything() {
+    let home = scratch("community");
+    let out = tinsel_at(&home)
+        .args(["packs", "new", "office-party", "--json"])
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let made: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(made["pack"], "office-party");
+    assert_eq!(made["creature"], "office-party-creature");
+    let dir = home.join("packs").join("office-party");
+    assert_eq!(Path::new(made["path"].as_str().unwrap()), dir);
+    for file in [
+        "pack.json",
+        "office-party-creature.json",
+        "office-party-creature.txt",
+    ] {
+        assert!(dir.join(file).is_file(), "{file}");
+    }
+
+    let json_at = |args: &[&str]| -> Value {
+        let out = tinsel_at(&home).args(args).arg("--json").output().unwrap();
+        assert!(out.status.success(), "{args:?}");
+        assert!(out.stderr.is_empty(), "a good pack loads without warnings");
+        serde_json::from_slice(&out.stdout).unwrap()
+    };
+    assert_eq!(json_at(&["list"]).as_array().unwrap().len(), 15);
+    let packs = json_at(&["packs"]);
+    let packs = packs.as_array().unwrap();
+    assert_eq!(packs.len(), 5);
+    assert_eq!(packs[0]["source"], "built-in");
+    assert_eq!(packs[4]["id"], "office-party");
+    assert_eq!(packs[4]["creatures"][0], "office-party-creature");
+    assert_eq!(Path::new(packs[4]["source"].as_str().unwrap()), dir);
+    assert_eq!(
+        json_at(&["creature", "office-party-creature"])["pack"],
+        "office-party"
+    );
+    assert_eq!(
+        json_at(&["list", "--pack", "office-party"])
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert!(
+        !json_at(&["quiz", "--pack", "office-party"])
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        json_at(&["mash", "office-party-creature", "krampus"])["a"]["name"],
+        "My office-party creature"
+    );
+    assert!(completions_at(&home, &["creature", "off"]).starts_with("office-party-creature\t"));
+    assert!(completions_at(&home, &["list", "--pack", "off"]).starts_with("office-party\t"));
+
+    tinsel_at(&home)
+        .arg("packs")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "My office-party pack (office-party)  1 creature",
+        ))
+        .stdout(predicate::str::contains("A community pack, from"))
+        .stdout(predicate::str::contains("Community packs live in"));
+
+    // The same id twice, a built-in id and a bad id are all refused.
+    for id in ["office-party", "nordic", "Office Party"] {
+        let out = tinsel_at(&home)
+            .args(["packs", "new", id, "--json"])
+            .output()
+            .unwrap();
+        assert!(!out.status.success(), "{id}");
+        let e: Value = serde_json::from_slice(&out.stderr).unwrap();
+        assert_eq!(e["error"]["code"], "usage", "{id}");
+    }
+    let _ = std::fs::remove_dir_all(&home);
+}
+
+#[test]
+fn a_broken_community_pack_warns_and_is_skipped() {
+    let home = scratch("badpack");
+    let dir = home.join("packs").join("attic");
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("typo.json"), "{ not json").unwrap();
+    std::fs::write(
+        dir.join("good.json"),
+        r#"{"name": "The Shelf Inspector", "description": "Checks for dust", "facts": ["It never blinks"]}"#,
+    )
+    .unwrap();
+    tinsel_at(&home)
+        .args(["list", "--pack", "attic"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("The Shelf Inspector"))
+        .stderr(predicate::str::contains(
+            "warning: community pack: pack \"attic\": typo.json:",
+        ));
+    // A completion must stay quiet, whatever is wrong on disk.
+    let out = tinsel_at(&home)
+        .env("COMPLETE", "fish")
+        .args(["--", "terminal-of-tinsel", "creature", "go"])
+        .output()
+        .unwrap();
+    assert!(out.stderr.is_empty());
+    assert_eq!(
+        String::from_utf8_lossy(&out.stdout),
+        "good\tThe Shelf Inspector\n"
+    );
+    let _ = std::fs::remove_dir_all(&home);
+}
+
+#[test]
+fn an_unknown_pack_lists_the_choices() {
+    let e = json_error(&["list", "--pack", "nordik"]);
+    assert_eq!(e["error"]["code"], "bad-pack");
+    assert!(
+        e["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("Did you mean nordic?")
+    );
+    assert!(
+        e["error"]["hint"]
+            .as_str()
+            .unwrap()
+            .starts_with("choose from: companions")
+    );
 }
 
 #[test]

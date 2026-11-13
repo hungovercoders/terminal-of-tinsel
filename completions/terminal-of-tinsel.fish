@@ -1,0 +1,1 @@
+complete --keep-order --exclusive --command terminal-of-tinsel --arguments "(COMPLETE=fish terminal-of-tinsel -- (commandline --current-process --tokenize --cut-at-cursor) (commandline --current-token))"

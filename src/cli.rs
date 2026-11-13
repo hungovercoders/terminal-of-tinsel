@@ -1,10 +1,9 @@
 //! The command line, defined with clap's derive API.
 
-use clap::builder::PossibleValuesParser;
 use clap::{Parser, Subcommand};
-use clap_complete::Shell;
+use clap_complete::{ArgValueCandidates, Shell};
 
-use crate::creatures::PACK_ORDER;
+use crate::complete;
 
 /// Channel 25's Midwinter Special: the creatures of Christmas folklore, live
 /// in your terminal.
@@ -34,7 +33,7 @@ pub struct Cli {
         global = true,
         value_delimiter = ',',
         value_name = "PACK",
-        value_parser = PossibleValuesParser::new(PACK_ORDER)
+        add = ArgValueCandidates::new(complete::packs)
     )]
     pub pack: Vec<String>,
 
@@ -59,7 +58,7 @@ optional. Add --explore to open the explorer on that creature instead.",
     )]
     Creature {
         /// The creature's name, nickname or part of one, e.g. krampus, "yule cat", nisse
-        #[arg(num_args = 0.., value_name = "NAME")]
+        #[arg(num_args = 0.., value_name = "NAME", add = ArgValueCandidates::new(complete::creatures))]
         name: Vec<String>,
 
         /// Show the verdicts in Myth or Fact?
@@ -104,7 +103,7 @@ quizzed only about that one.\n\nWith --json the questions are printed with their
     )]
     Quiz {
         /// Only ask about this creature
-        #[arg(num_args = 0.., value_name = "NAME")]
+        #[arg(num_args = 0.., value_name = "NAME", add = ArgValueCandidates::new(complete::creatures))]
         creature: Vec<String>,
 
         /// Number of questions
@@ -133,7 +132,7 @@ out one or both names for random contenders. Put a name of several words in quot
     )]
     Mash {
         /// Up to two creatures, e.g. krampus "yule cat"
-        #[arg(num_args = 0..=2, value_name = "NAME")]
+        #[arg(num_args = 0..=2, value_name = "NAME", add = ArgValueCandidates::new(complete::creatures))]
         creatures: Vec<String>,
 
         /// Skip the dramatic pauses
@@ -182,13 +181,41 @@ guest behind that night's advent door tops the bill."
         date: Option<String>,
     },
 
+    /// List the packs of creatures, or make your own
+    #[command(
+        long_about = "Creatures come in packs. Use --pack with any command to keep to some of them, \
+e.g. 'terminal-of-tinsel quiz --pack nordic'.\n\n\
+Community packs live in the 'packs' folder of your config directory and load automatically. \
+'packs new <id>' makes one with an example creature to edit. Broken files are skipped with a warning."
+    )]
+    Packs {
+        #[command(subcommand)]
+        action: Option<PacksAction>,
+    },
+
     /// Print a shell completion script
     #[command(
-        after_help = "For example, in ~/.zshrc:\n  source <(terminal-of-tinsel completions zsh)"
+        alias = "completion",
+        long_about = "Print the script that teaches your shell to complete terminal-of-tinsel: \
+commands, flags, creature names and pack ids, community packs included. The script asks the \
+program itself what to offer, so it never goes out of date.",
+        after_help = "For example, in ~/.zshrc:\n  source <(terminal-of-tinsel completions zsh)\n\nThen:\n  terminal-of-tinsel creature kra<TAB>"
     )]
     Completions {
         /// The shell to complete for
         shell: Shell,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum PacksAction {
+    /// Make a community pack with an example creature to edit
+    #[command(
+        after_help = "Example:\n  terminal-of-tinsel packs new office-party\n  terminal-of-tinsel list --pack office-party"
+    )]
+    New {
+        /// The new pack's id: lowercase letters, numbers and dashes
+        id: String,
     },
 }
 
@@ -261,6 +288,19 @@ mod tests {
     }
 
     #[test]
+    fn packs_can_be_listed_and_made() {
+        let cli = Cli::try_parse_from(["t", "packs"]).unwrap();
+        assert!(matches!(cli.command, Some(Command::Packs { action: None })));
+        let cli = Cli::try_parse_from(["t", "packs", "new", "office-party"]).unwrap();
+        assert!(matches!(
+            cli.command,
+            Some(Command::Packs { action: Some(PacksAction::New { ref id }) }) if id == "office-party"
+        ));
+        // Cobra calls it "completion"; both spellings work.
+        assert!(Cli::try_parse_from(["t", "completion", "bash"]).is_ok());
+    }
+
+    #[test]
     fn the_stocking_has_a_reset() {
         let cli = Cli::try_parse_from(["t", "stocking"]).unwrap();
         assert!(matches!(
@@ -280,6 +320,7 @@ mod tests {
     fn packs_are_comma_separated_and_global() {
         let cli = Cli::try_parse_from(["t", "list", "--pack", "nordic,dickens"]).unwrap();
         assert_eq!(cli.pack, ["nordic", "dickens"]);
-        assert!(Cli::try_parse_from(["t", "list", "--pack", "elves"]).is_err());
+        // Any id parses: community packs aren't known until the vault loads.
+        assert!(Cli::try_parse_from(["t", "list", "--pack", "elves"]).is_ok());
     }
 }

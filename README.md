@@ -248,7 +248,28 @@ terminal-of-tinsel random                      # or just any old fact
 | **Midwinter Europe** (`midwinter`) | 🐴 The Mari Lwyd · 🧶 Frau Perchta · 🌳 The Kallikantzaroi · 🪵 Tió de Nadal |
 | **A Christmas Carol** (`dickens`) | 👻 Marley's Ghost · ⌛ The Ghost of Christmas Yet to Come |
 
-Use `--pack` with any command to keep to some packs: `terminal-of-tinsel list --pack nordic,dickens`.
+## 📦 Packs
+
+Creatures come in packs. Use `--pack` with any command to choose which ones come out to play:
+
+```bash
+terminal-of-tinsel packs                        # every pack
+terminal-of-tinsel quiz --pack nordic           # a Nordic-only quiz
+terminal-of-tinsel guess --pack companions      # who's at the window? Probably Krampus
+terminal-of-tinsel creature --pack nordic,dickens
+```
+
+### 🎁 Make your own
+
+Build your own creatures without writing any Rust:
+
+```bash
+terminal-of-tinsel packs new office-party
+```
+
+This creates `~/.config/terminal-of-tinsel/packs/office-party/` (or your system's equivalent, or `$TERMINAL_OF_TINSEL_HOME/packs`) with an example creature to edit and a portrait to draw over. Every pack there loads automatically, and its creatures join the explorer, the quiz, Guess the Guest, the Showdown and everything else.
+
+Only `name`, `description` and `facts` are required; everything else gets a sensible default. A file that's broken, a creature that's incomplete or an id that's already taken is skipped with a warning, and never stops the show. Portraits must be printable ASCII. Community creatures stay out of the advent calendar, whose doors are hand-picked.
 
 ## 🤖 For scripts
 
@@ -266,7 +287,14 @@ terminal-of-tinsel stocking --json | jq '.captured | keys'
 
 Output is plain (no colour, no emoji, ASCII borders) when piped, with `--no-color`, or when `NO_COLOR` is set. Set `TERMINAL_OF_TINSEL_SEED` to a number to make every random choice repeatable: the questions, the portraits, the showdowns, `random` and the host's lines.
 
-**Tab completion:** `source <(terminal-of-tinsel completions zsh)` (also `bash`, `fish`, `powershell` and `elvish`).
+**Tab completion** for commands, flags, creature names and pack ids, your own packs included:
+
+```bash
+source <(terminal-of-tinsel completions zsh)     # also bash, fish, powershell and elvish
+terminal-of-tinsel creature kra<TAB>             # krampus  Krampus
+```
+
+Put that line in your shell's startup file to keep it. The script asks the program itself what to offer, so it never goes out of date. The release archives carry the same scripts under `completions/` and a man page per command under `man/` (`man -l man/terminal-of-tinsel.1`).
 
 ## 🛠️ Build it
 
@@ -279,6 +307,8 @@ cargo clippy --all-targets -- -D warnings
 Or with [Task](https://taskfile.dev): `task check`, `task run -- creature krampus`. The explorer is drawn with [ratatui](https://ratatui.rs); `DUMP=1 cargo test dump_screens -- --nocapture` prints sample screens without a terminal.
 
 ### Releasing
+
+The man pages and completion scripts in `man/` and `completions/` are generated from the command tree and committed, because cargo-dist copies files into the archives but can't generate them. `cargo test` fails if they're stale; `UPDATE_SHELLDOCS=1 cargo test shell_docs` rewrites them. Do that after changing a command or a flag, and when the version changes.
 
 Releases are built by [cargo-dist](https://opensource.axo.dev/cargo-dist/) for macOS, Linux and Windows on Intel and ARM. Pushing a `v*` tag runs `.github/workflows/release.yml`, which builds the archives and installers, creates the GitHub release and pushes a formula to `hungovercoders/homebrew-tap`. That last step needs a `HOMEBREW_TAP_TOKEN` secret with write access to the tap. Run `dist plan` to preview a release.
 

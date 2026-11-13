@@ -1,0 +1,33 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH terminal-of-tinsel-random 1  "random " 
+.SH NAME
+terminal\-of\-tinsel\-random \- A random creature fact, or with \-\-daily the Fact of the Night
+.SH SYNOPSIS
+\fBterminal\-of\-tinsel random\fR [\fB\-d\fR|\fB\-\-daily\fR] [\fB\-\-json\fR] [\fB\-\-date\fR] [\fB\-\-no\-color\fR] [\fB\-\-pack\fR] [\fB\-h\fR|\fB\-\-help\fR] 
+.SH DESCRIPTION
+A random creature fact, or with \-\-daily the Fact of the Night
+.SH OPTIONS
+.TP
+\fB\-d\fR, \fB\-\-daily\fR
+Show the Fact of the Night (the same all day)
+.TP
+\fB\-\-json\fR
+Print the command\*(Aqs data as JSON instead of drawing it (errors become a JSON object on stderr)
+.TP
+\fB\-\-date\fR \fI<YYYY\-MM\-DD>\fR
+Show the Fact of the Night for another date (YYYY\-MM\-DD)
+.TP
+\fB\-\-no\-color\fR
+Plain output: no colour, no emoji, ASCII borders (also set by NO_COLOR, or by piping)
+.TP
+\fB\-\-pack\fR \fI<PACK>\fR
+Only use creatures from these packs, e.g. \-\-pack nordic,dickens
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help
+.SH EXTRA
+With \-\-daily you get the Fact of the Night: the same for everyone all day. From 1 to 24 December it\*(Aqs about the guest behind that night\*(Aqs advent door.
+
+Add it to your shell\*(Aqs startup file:
+  echo \*(Aqterminal\-of\-tinsel random \-\-daily\*(Aq >> ~/.zshrc
