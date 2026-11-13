@@ -384,27 +384,20 @@ fn run(cli: Cli) -> Result<()> {
 
         Some(Command::Tonight { date, shuffle }) => {
             let today = calendar::parse_date(date.as_deref())?;
-            if vault.creatures.len() < 2 {
-                return Err(TinselError::new(
-                    Code::Usage,
-                    "a double bill needs at least two creatures",
-                )
-                .with_hint("try a different --pack"));
-            }
-            let mut rng = if shuffle {
-                Rng::from_env_or_clock()
-            } else {
-                Rng::new(calendar::daily_seed(today) * 25)
+            let too_few = || {
+                TinselError::new(Code::Usage, "a double bill needs at least two creatures")
+                    .with_hint("try a different --pack")
             };
-            let mut bill: Vec<&creatures::Creature> = vault.creatures.iter().collect();
-            rng.shuffle(&mut bill);
-            let (mut first, mut second) = (bill[0], bill[1]);
-            if !shuffle && let Some((_, guest, _)) = calendar::advent_guest(today, &vault) {
-                // Advent: tonight's guest tops the bill, and the support act
-                // is still the night's draw.
-                second = if first.id == guest.id { second } else { first };
-                first = guest;
+            if vault.creatures.len() < 2 {
+                return Err(too_few());
             }
+            let (first, second) = if shuffle {
+                let mut bill: Vec<&creatures::Creature> = vault.creatures.iter().collect();
+                Rng::from_env_or_clock().shuffle(&mut bill);
+                (bill[0], bill[1])
+            } else {
+                calendar::double_bill(today, &vault).ok_or_else(too_few)?
+            };
             let notes = calendar::notes(today, &vault.creatures);
             if json {
                 return print_json(&TonightJson {

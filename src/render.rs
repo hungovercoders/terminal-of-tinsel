@@ -925,10 +925,8 @@ pub fn countdown(p: &Painter, vault: &Vault, today: Date) -> String {
 
     if let Some((night, c, fact)) = calendar::advent_guest(today, vault) {
         out.push(p.heading(&format!("ADVENT · DOOR {}", night.night), GREEN));
-        out.push(p.bold(
-            &format!("Tonight's guest: {}{}", p.glyph(&c.emoji), c.name),
-            &c.theme.primary,
-        ));
+        let guest = format!("Tonight's guest: {}{}", p.glyph(&c.emoji), c.name);
+        out.extend(p.wrap(&guest, w, |l| p.bold(l, &c.theme.primary)));
         out.extend(p.wrap(&night.note, w, |l| p.italic(l, GOLD)));
         out.extend(p.wrap(&fact, w, |l| p.paint(l, SNOW)));
         out.push(String::new());
@@ -968,15 +966,13 @@ pub fn countdown(p: &Painter, vault: &Vault, today: Date) -> String {
     }
     out.push(String::new());
     let moon = calendar::moon(today);
-    out.push(p.italic(
-        &format!(
-            "{}Tonight's moon: {} ({:.0}% lit)",
-            p.glyph(moon.emoji),
-            moon.name,
-            moon.illumination * 100.0
-        ),
-        GREEN,
-    ));
+    let moon_line = format!(
+        "{}Tonight's moon: {} ({:.0}% lit)",
+        p.glyph(moon.emoji),
+        moon.name,
+        moon.illumination * 100.0
+    );
+    out.extend(p.wrap(&moon_line, w, |l| p.italic(l, GREEN)));
     if let Some(night) = calendar::next_special_night(today, &vault.creatures) {
         let glyph = p.glyph(if night.creature.is_some() {
             "🎬"
@@ -1041,32 +1037,32 @@ pub fn ticket(p: &Painter, today: Date, first: &Creature, second: &Creature) -> 
         lines
     };
     let perforation = p.paint(&"- ".repeat(inner / 2), DIM);
-    let mut lines = vec![
-        p.bold(
-            &format!("{}{} PRESENTS", p.glyph("📺"), host::CHANNEL.to_uppercase()),
-            GOLD,
-        ),
-        p.bold("TONIGHT'S CHRISTMAS DOUBLE BILL", RED),
-        p.italic(
-            &format!(
-                "{} · {}{}",
-                today.strftime("%A %-d %B %Y"),
-                p.glyph(moon.emoji),
-                moon.name
-            ),
-            GREEN,
-        ),
-        perforation.clone(),
-    ];
+    let mut lines = vec![p.bold(
+        &format!("{}{} PRESENTS", p.glyph("📺"), host::CHANNEL.to_uppercase()),
+        GOLD,
+    )];
+    // Everything inside the ticket is wrapped to its width: a row that ran
+    // over would push the border out on a 40-column terminal.
+    lines.extend(p.wrap("TONIGHT'S CHRISTMAS DOUBLE BILL", inner, |l| p.bold(l, RED)));
+    let dateline = format!(
+        "{} · {}{}",
+        today.strftime("%A %-d %B %Y"),
+        p.glyph(moon.emoji),
+        moon.name
+    );
+    lines.extend(p.wrap(&dateline, inner, |l| p.italic(l, GREEN)));
+    lines.push(perforation.clone());
     lines.extend(feature(FIRST_FEATURE, first));
     lines.push(String::new());
     lines.extend(feature(SECOND_FEATURE, second));
     lines.push(perforation);
-    lines.push(format!(
-        "{}{}",
-        p.bold("ADMIT ONE", GOLD),
-        p.paint("  ·  No refunds if the Yule Cat gets you", DIM)
-    ));
+    let small_print = "ADMIT ONE · No refunds if the Yule Cat gets you";
+    lines.extend(textwrap::wrap(small_print, inner.max(10)).iter().map(|l| {
+        match l.strip_prefix("ADMIT ONE") {
+            Some(rest) => format!("{}{}", p.bold("ADMIT ONE", GOLD), p.paint(rest, DIM)),
+            None => p.paint(l, DIM),
+        }
+    }));
     p.framed(&lines, inner, GOLD, true)
 }
 
@@ -1168,6 +1164,28 @@ mod tests {
 
     fn colour() -> Painter {
         Painter::new(false, 80)
+    }
+
+    #[test]
+    fn the_ticket_and_the_countdown_fit_a_forty_column_terminal() {
+        let v = Vault::load();
+        for plain in [true, false] {
+            let p = Painter::new(plain, 40);
+            let mut d = date(2026, 11, 1);
+            while d < date(2027, 1, 10) {
+                let (first, second) = calendar::double_bill(d, &v).unwrap();
+                let ticket = ticket(&p, d, first, second);
+                let widths: Vec<usize> = ticket.lines().map(visible_width).collect();
+                assert!(
+                    widths.iter().all(|w| *w == widths[0] && *w <= 40),
+                    "{d}, plain {plain}: a ragged ticket {widths:?}\n{ticket}"
+                );
+                for line in countdown(&p, &v, d).lines() {
+                    assert!(visible_width(line) <= 40, "{d}, plain {plain}: {line}");
+                }
+                d = d.tomorrow().unwrap();
+            }
+        }
     }
 
     #[test]
