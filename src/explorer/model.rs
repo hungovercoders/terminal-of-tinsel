@@ -166,7 +166,7 @@ impl<'a> Model<'a> {
             seen: BTreeSet::new(),
             frame: 0,
             greeting: greeting.to_string(),
-            notes: calendar::notes(opts.today)
+            notes: calendar::notes(opts.today, &vault.creatures)
                 .into_iter()
                 .map(|n| format!("{} {}", n.emoji, n.text))
                 .collect(),

@@ -452,6 +452,20 @@ fn tab_content(m: &Model, tab: Tab, c: &Creature, p: &Palette, width: usize) -> 
                     width,
                     p.body,
                 ));
+                let credits = [
+                    (
+                        "Released",
+                        f.released().map(|d| d.strftime("%-d %B %Y").to_string()),
+                    ),
+                    ("Studio", f.studio.clone()),
+                    ("Make-up", f.makeup.clone()),
+                    ("Sound", f.silent.then(|| "a silent picture".to_string())),
+                ];
+                for (label, value) in credits {
+                    if let Some(value) = value {
+                        out.extend(wrap(&format!("{label}: {value}"), width, p.body));
+                    }
+                }
                 if let Some(note) = &f.note {
                     out.push(Line::default());
                     out.extend(wrap(note, width, meta));

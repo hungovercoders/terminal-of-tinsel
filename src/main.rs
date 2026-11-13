@@ -167,7 +167,7 @@ fn run(cli: Cli) -> Result<()> {
                 }
             };
             let notes = if daily {
-                calendar::notes(today)
+                calendar::notes(today, &vault.creatures)
             } else {
                 Vec::new()
             };
@@ -382,6 +382,44 @@ fn run(cli: Cli) -> Result<()> {
             );
         }
 
+        Some(Command::Tonight { date, shuffle }) => {
+            let today = calendar::parse_date(date.as_deref())?;
+            let too_few = || {
+                TinselError::new(Code::Usage, "a double bill needs at least two creatures")
+                    .with_hint("try a different --pack")
+            };
+            if vault.creatures.len() < 2 {
+                return Err(too_few());
+            }
+            let (first, second) = if shuffle {
+                let mut bill: Vec<&creatures::Creature> = vault.creatures.iter().collect();
+                Rng::from_env_or_clock().shuffle(&mut bill);
+                (bill[0], bill[1])
+            } else {
+                calendar::double_bill(today, &vault).ok_or_else(too_few)?
+            };
+            let notes = calendar::notes(today, &vault.creatures);
+            if json {
+                return print_json(&TonightJson {
+                    date: today.to_string(),
+                    features: [
+                        FeatureJson::new(render::FIRST_FEATURE, first),
+                        FeatureJson::new(render::SECOND_FEATURE, second),
+                    ],
+                    notes: notes.into_iter().map(|n| n.text).collect(),
+                });
+            }
+            print(&render::ticket(&painter, today, first, second));
+            print(&render::fact_card(
+                &painter,
+                "FROM THE HOST",
+                first,
+                &host::intro(first),
+                &notes,
+                "",
+            ));
+        }
+
         Some(Command::Countdown { date }) => {
             let today = calendar::parse_date(date.as_deref())?;
             if json {
@@ -399,7 +437,13 @@ fn run(cli: Cli) -> Result<()> {
                     }),
                     twelve_days: calendar::twelve_days(today),
                     yule_lads_in_town: calendar::yule_lads_in_town(today),
-                    notes: calendar::notes(today).into_iter().map(|n| n.text).collect(),
+                    moon: calendar::moon(today).into(),
+                    next_special_night: calendar::next_special_night(today, &vault.creatures)
+                        .map(Into::into),
+                    notes: calendar::notes(today, &vault.creatures)
+                        .into_iter()
+                        .map(|n| n.text)
+                        .collect(),
                 });
             }
             print(&render::countdown(&painter, &vault, today));
@@ -499,8 +543,82 @@ struct CountdownJson<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     twelve_days: Option<u8>,
     yule_lads_in_town: u8,
+    moon: MoonJson,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    next_special_night: Option<SpecialNightJson>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     notes: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct MoonJson {
+    name: &'static str,
+    emoji: &'static str,
+    /// From 0 (new) to 1 (full), to two decimal places.
+    illumination: f64,
+}
+
+impl From<calendar::Moon> for MoonJson {
+    fn from(m: calendar::Moon) -> Self {
+        Self {
+            name: m.name,
+            emoji: m.emoji,
+            illumination: (m.illumination * 100.0).round() / 100.0,
+        }
+    }
+}
+
+#[derive(Serialize)]
+struct SpecialNightJson {
+    name: String,
+    date: String,
+    sleeps: i64,
+    /// The creature whose film has its anniversary, if it's one of those.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    creature: Option<String>,
+}
+
+impl From<calendar::SpecialNight> for SpecialNightJson {
+    fn from(n: calendar::SpecialNight) -> Self {
+        Self {
+            name: n.name,
+            date: n.date.to_string(),
+            sleeps: n.sleeps,
+            creature: n.creature,
+        }
+    }
+}
+
+/// Tonight's double bill as `--json` prints it.
+#[derive(Serialize)]
+struct TonightJson<'a> {
+    date: String,
+    features: [FeatureJson<'a>; 2],
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    notes: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct FeatureJson<'a> {
+    time: &'static str,
+    creature: &'a str,
+    name: &'a str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    film: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    year: Option<i32>,
+}
+
+impl<'a> FeatureJson<'a> {
+    fn new(time: &'static str, c: &'a creatures::Creature) -> Self {
+        Self {
+            time,
+            creature: &c.id,
+            name: &c.name,
+            film: c.film.as_ref().map(|f| f.title.as_str()),
+            year: c.film.as_ref().map(|f| f.year),
+        }
+    }
 }
 
 #[derive(Serialize)]

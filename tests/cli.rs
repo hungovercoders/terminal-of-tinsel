@@ -63,6 +63,9 @@ fn every_command_runs() {
         vec!["random"],
         vec!["random", "--daily"],
         vec!["countdown"],
+        vec!["tonight"],
+        vec!["tonight", "--shuffle"],
+        vec!["tonight", "--date", "2026-12-24", "--json"],
         vec!["advent"],
         vec!["completions", "zsh"],
     ] {
@@ -380,6 +383,89 @@ fn countdown_json() {
 }
 
 #[test]
+fn countdown_json_has_the_moon_and_the_next_special_night() {
+    let v = json(&["countdown", "--date", "2026-11-12"]);
+    assert!(v["moon"]["name"].is_string() && v["moon"]["emoji"].is_string());
+    let lit = v["moon"]["illumination"].as_f64().unwrap();
+    assert!((0.0..=1.0).contains(&lit));
+    assert_eq!(v["nextSpecialNight"]["name"], "Krampusnacht");
+    assert_eq!(v["nextSpecialNight"]["date"], "2026-12-05");
+    assert_eq!(v["nextSpecialNight"]["sleeps"], 23);
+    assert_eq!(v["notes"][0], "43 sleeps until Christmas.");
+    // A film anniversary names its creature.
+    let v = json(&["countdown", "--date", "2027-01-06"]);
+    assert_eq!(v["nextSpecialNight"]["creature"], "marley");
+    // Without Dickens there is no film, so the next feast it is.
+    let v = json(&["countdown", "--date", "2027-01-06", "--pack", "nordic"]);
+    assert_eq!(v["nextSpecialNight"]["name"], "Krampusnacht");
+}
+
+#[test]
+fn countdown_shows_the_moon_and_what_is_next() {
+    tinsel()
+        .args(["countdown", "--date", "2026-11-12"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Tonight's moon: "))
+        .stdout(predicate::str::contains("% lit)"))
+        .stdout(predicate::str::contains(
+            "Next special night: Krampusnacht on 5 December (23 sleeps)",
+        ))
+        // The big number already says it; the note would only repeat it.
+        .stdout(predicate::str::contains("43 sleeps until Christmas.").not());
+}
+
+#[test]
+fn tonight_is_the_same_all_day_and_follows_advent() {
+    let a = json(&["tonight", "--date", "2026-11-12"]);
+    assert_eq!(a, json(&["tonight", "--date", "2026-11-12"]));
+    assert_ne!(
+        a["features"],
+        json(&["tonight", "--date", "2026-11-13"])["features"]
+    );
+    let features = a["features"].as_array().unwrap();
+    assert_eq!(features.len(), 2);
+    assert_eq!(features[0]["time"], "7:00 PM");
+    assert_eq!(features[1]["time"], "8:45 PM");
+    assert_ne!(features[0]["creature"], features[1]["creature"]);
+
+    // The advent guest tops the bill: Krampus on the 5th, Marley on the 19th.
+    let v = json(&["tonight", "--date", "2026-12-05"]);
+    assert_eq!(v["features"][0]["creature"], "krampus");
+    assert_ne!(v["features"][1]["creature"], "krampus");
+    let v = json(&["tonight", "--date", "2026-12-19"]);
+    assert_eq!(v["features"][0]["film"], "Scrooge");
+    assert_eq!(v["features"][0]["year"], 1951);
+    // Every night of advent has two different features.
+    for day in 1..=24 {
+        let v = json(&["tonight", "--date", &format!("2026-12-{day:02}")]);
+        assert_ne!(
+            v["features"][0]["creature"], v["features"][1]["creature"],
+            "{day} December"
+        );
+    }
+}
+
+#[test]
+fn tonight_prints_a_ticket() {
+    tinsel()
+        .args(["tonight", "--date", "2026-12-19"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("CHANNEL 25 PRESENTS"))
+        .stdout(predicate::str::contains("TONIGHT'S CHRISTMAS DOUBLE BILL"))
+        .stdout(predicate::str::contains("Saturday 19 December 2026"))
+        .stdout(predicate::str::contains("SCROOGE (1951)"))
+        .stdout(predicate::str::contains("with Michael Hordern"))
+        .stdout(predicate::str::contains("ADMIT ONE"))
+        .stdout(predicate::str::contains("FROM THE HOST"))
+        .stdout(predicate::str::contains("A Christmas Carol was published"))
+        .stdout(predicate::str::contains("\u{1b}[").not());
+    // The smallest built-in pack has two creatures: just enough for a bill.
+    json(&["tonight", "--pack", "dickens"]);
+}
+
+#[test]
 fn advent_json_has_24_doors() {
     let v = json(&["advent", "--date", "2026-12-10"]);
     let doors = v["doors"].as_array().unwrap();
@@ -401,6 +487,10 @@ fn errors_have_stable_codes() {
     );
     assert_eq!(
         json_error(&["countdown", "--date", "soon"])["error"]["code"],
+        "bad-date"
+    );
+    assert_eq!(
+        json_error(&["tonight", "--date", "25/12/2026"])["error"]["code"],
         "bad-date"
     );
     assert_eq!(

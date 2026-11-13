@@ -121,10 +121,16 @@ impl Painter {
 
     /// Draws lines inside a rounded box.
     fn boxed(&self, lines: &[String], inner: usize, hex: &str) -> String {
-        let (tl, tr, bl, br, h, v) = if self.plain {
-            ("+", "+", "+", "+", "-", "|")
-        } else {
-            ("╭", "╮", "╰", "╯", "─", "│")
+        self.framed(lines, inner, hex, false)
+    }
+
+    /// Draws lines inside a box: rounded, or double-ruled like a ticket.
+    fn framed(&self, lines: &[String], inner: usize, hex: &str, double: bool) -> String {
+        let (tl, tr, bl, br, h, v) = match (self.plain, double) {
+            (true, false) => ("+", "+", "+", "+", "-", "|"),
+            (true, true) => ("+", "+", "+", "+", "=", "|"),
+            (false, false) => ("╭", "╮", "╰", "╯", "─", "│"),
+            (false, true) => ("╔", "╗", "╚", "╝", "═", "║"),
         };
         let edge = h.repeat(inner + 2);
         let mut out = vec![self.paint(&format!("{tl}{edge}{tr}"), hex)];
@@ -239,6 +245,7 @@ pub fn welcome(p: &Painter, vault: &Vault, today: Date, greeting: &str) -> Strin
         ("creature krampus", "read a creature's page"),
         ("quiz", "pull a cracker: the Christmas Cracker Quiz"),
         ("stocking", "what you've caught, and your badges"),
+        ("tonight", "tonight's Christmas double bill"),
         ("random --daily", "the Fact of the Night"),
         ("countdown", "sleeps until Christmas"),
         ("advent", "open the advent calendar"),
@@ -383,11 +390,25 @@ pub fn creature(p: &Painter, c: &Creature, pack_name: &str, reveal: bool) -> Str
             "{} ({}), directed by {}, with {} as {}.",
             f.title, f.year, f.director, f.star, c.name
         );
+        if let Some(released) = f.released() {
+            text.push_str(&format!(
+                " It opened on {}.",
+                released.strftime("%-d %B %Y")
+            ));
+        }
         if let Some(note) = &f.note {
             text.push(' ');
             text.push_str(note);
         }
         out.extend(p.wrap(&text, w, |l| l.to_string()));
+        let credits: Vec<String> = [("Studio", &f.studio), ("Make-up", &f.makeup)]
+            .iter()
+            .filter_map(|(label, value)| Some(format!("{label}: {}", value.as_deref()?)))
+            .chain(f.silent.then(|| "A silent picture".to_string()))
+            .collect();
+        if !credits.is_empty() {
+            out.extend(p.wrap(&credits.join(" · "), w, |l| p.paint(l, DIM)));
+        }
     }
 
     out.push(String::new());
@@ -904,10 +925,8 @@ pub fn countdown(p: &Painter, vault: &Vault, today: Date) -> String {
 
     if let Some((night, c, fact)) = calendar::advent_guest(today, vault) {
         out.push(p.heading(&format!("ADVENT · DOOR {}", night.night), GREEN));
-        out.push(p.bold(
-            &format!("Tonight's guest: {}{}", p.glyph(&c.emoji), c.name),
-            &c.theme.primary,
-        ));
+        let guest = format!("Tonight's guest: {}{}", p.glyph(&c.emoji), c.name);
+        out.extend(p.wrap(&guest, w, |l| p.bold(l, &c.theme.primary)));
         out.extend(p.wrap(&night.note, w, |l| p.italic(l, GOLD)));
         out.extend(p.wrap(&fact, w, |l| p.paint(l, SNOW)));
         out.push(String::new());
@@ -935,13 +954,116 @@ pub fn countdown(p: &Painter, vault: &Vault, today: Date) -> String {
         ));
         out.push(String::new());
     }
-    for n in calendar::notes(today) {
-        out.extend(p.wrap(&p.note(&n), w, |l| p.paint(l, DIM)));
+    // The big number already says how many sleeps are left.
+    for n in calendar::notes(today, &vault.creatures)
+        .iter()
+        .filter(|n| !n.text.ends_with("until Christmas."))
+    {
+        out.extend(p.wrap(&p.note(n), w, |l| p.paint(l, DIM)));
     }
     while out.last().is_some_and(|l| l.is_empty()) {
         out.pop();
     }
+    out.push(String::new());
+    let moon = calendar::moon(today);
+    let moon_line = format!(
+        "{}Tonight's moon: {} ({:.0}% lit)",
+        p.glyph(moon.emoji),
+        moon.name,
+        moon.illumination * 100.0
+    );
+    out.extend(p.wrap(&moon_line, w, |l| p.italic(l, GREEN)));
+    if let Some(night) = calendar::next_special_night(today, &vault.creatures) {
+        let glyph = p.glyph(if night.creature.is_some() {
+            "🎬"
+        } else {
+            "✨"
+        });
+        let sleeps = if night.sleeps == 1 {
+            "1 sleep".to_string()
+        } else {
+            format!("{} sleeps", night.sleeps)
+        };
+        let text = format!(
+            "{glyph}Next special night: {} on {} ({sleeps})",
+            night.name,
+            night.date.strftime("%-d %B")
+        );
+        out.extend(p.wrap(&text, w, |l| p.italic(l, GREEN)));
+    }
     out.join("\n") + "\n"
+}
+
+// ── Tonight's double bill ──────────────────────────────────────────────────
+
+/// When the two features start.
+pub const FIRST_FEATURE: &str = "7:00 PM";
+pub const SECOND_FEATURE: &str = "8:45 PM";
+
+/// A cinema ticket for tonight's Channel 25 double bill.
+pub fn ticket(p: &Painter, today: Date, first: &Creature, second: &Creature) -> String {
+    let inner = p.text_width().saturating_sub(4).min(64);
+    let moon = calendar::moon(today);
+    let feature = |at: &str, c: &Creature| -> Vec<String> {
+        let (title, credit) = match &c.film {
+            Some(f) => {
+                let silent = if f.silent { " · silent" } else { "" };
+                (
+                    format!("{} ({})", f.title.to_uppercase(), f.year),
+                    format!(
+                        "Directed by {} · with {} as {}{silent}",
+                        f.director,
+                        f.star,
+                        quiz::mid_sentence(&c.name)
+                    ),
+                )
+            }
+            None => (c.name.to_uppercase(), format!("A tale from {}", c.origin)),
+        };
+        let room = inner.saturating_sub(10);
+        let mut lines = vec![format!(
+            "{}{}",
+            p.bold(&format!("{at:<10}"), GOLD),
+            p.bold(
+                &truncate(&format!("{}{title}", p.glyph(&c.emoji)), room),
+                &c.theme.primary
+            )
+        )];
+        lines.extend(
+            p.wrap(&credit, room, |l| p.paint(l, DIM))
+                .into_iter()
+                .map(|l| format!("{}{l}", " ".repeat(10))),
+        );
+        lines
+    };
+    let perforation = p.paint(&"- ".repeat(inner / 2), DIM);
+    let mut lines = vec![p.bold(
+        &format!("{}{} PRESENTS", p.glyph("📺"), host::CHANNEL.to_uppercase()),
+        GOLD,
+    )];
+    // Everything inside the ticket is wrapped to its width: a row that ran
+    // over would push the border out on a 40-column terminal.
+    lines.extend(p.wrap("TONIGHT'S CHRISTMAS DOUBLE BILL", inner, |l| p.bold(l, RED)));
+    let dateline = format!(
+        "{} · {}{}",
+        today.strftime("%A %-d %B %Y"),
+        p.glyph(moon.emoji),
+        moon.name
+    );
+    lines.extend(p.wrap(&dateline, inner, |l| p.italic(l, GREEN)));
+    lines.push(perforation.clone());
+    lines.extend(feature(FIRST_FEATURE, first));
+    lines.push(String::new());
+    lines.extend(feature(SECOND_FEATURE, second));
+    lines.push(perforation);
+    let small_print = "ADMIT ONE · No refunds if the Yule Cat gets you";
+    lines.extend(textwrap::wrap(small_print, inner.max(10)).iter().map(|l| {
+        match l.strip_prefix("ADMIT ONE") {
+            Some(rest) => format!("{}{}", p.bold("ADMIT ONE", GOLD), p.paint(rest, DIM)),
+            None => p.paint(l, DIM),
+        }
+    }));
+    p.framed(&lines, inner, GOLD, true)
 }
 
 // ── The advent calendar ────────────────────────────────────────────────────
@@ -1045,6 +1167,28 @@ mod tests {
     }
 
     #[test]
+    fn the_ticket_and_the_countdown_fit_a_forty_column_terminal() {
+        let v = Vault::load();
+        for plain in [true, false] {
+            let p = Painter::new(plain, 40);
+            let mut d = date(2026, 11, 1);
+            while d < date(2027, 1, 10) {
+                let (first, second) = calendar::double_bill(d, &v).unwrap();
+                let ticket = ticket(&p, d, first, second);
+                let widths: Vec<usize> = ticket.lines().map(visible_width).collect();
+                assert!(
+                    widths.iter().all(|w| *w == widths[0] && *w <= 40),
+                    "{d}, plain {plain}: a ragged ticket {widths:?}\n{ticket}"
+                );
+                for line in countdown(&p, &v, d).lines() {
+                    assert!(visible_width(line) <= 40, "{d}, plain {plain}: {line}");
+                }
+                d = d.tomorrow().unwrap();
+            }
+        }
+    }
+
+    #[test]
     fn a_catch_reads_the_same_for_one_creature_or_thirteen() {
         let v = Vault::load();
         let p = Painter::new(true, 80);
@@ -1121,7 +1265,7 @@ mod tests {
             "FACT OF THE NIGHT",
             c,
             &c.facts[0],
-            &calendar::notes(date(2026, 12, 24)),
+            &calendar::notes(date(2026, 12, 24), &[]),
             "Festive!",
         );
         let widths: Vec<usize> = card.lines().map(visible_width).collect();
@@ -1166,7 +1310,7 @@ mod tests {
 
     #[test]
     fn plain_notes_lose_their_emoji() {
-        let n = &calendar::notes(date(2026, 12, 13))[0];
+        let n = &calendar::notes(date(2026, 12, 13), &[])[0];
         assert_eq!(plain().note(n), "2 Yule Lads are in town.");
         assert_eq!(colour().note(n), "🥄 2 Yule Lads are in town.");
     }
