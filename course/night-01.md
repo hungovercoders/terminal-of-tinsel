@@ -103,9 +103,8 @@ cargo run
 ```
 
 ```
-   Compiling terminal-of-tinsel v0.1.0 (/home/you/terminal-of-tinsel)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.42s
-     Running `/tmp/claude-0/-home-user-terminal-of-tinsel/3b4da507-e117-5adc-8b28-dde3c1d52d17/scratchpad/targets/01/debug/terminal-of-tinsel`
+     Running `target/debug/terminal-of-tinsel`
 🎄 The tree is lit.
 ```
 

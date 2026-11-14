@@ -36,9 +36,9 @@ Here is a whole section of a creature's page:
     }
 ```
 
-It reads a creature and a width, and returns lines. It does not know where on the screen it will go, how tall the terminal is, or whether a terminal exists. Three things follow from that shape:
+It reads a creature and a width, and returns lines. It does not know where on the screen it will go, or whether a terminal exists. Three things follow:
 
-- **It can be measured.** `lines.len()` is the page's height. Scrolling needs that number, and with widgets drawn straight to the screen you would have to work it out some other way.
+- **It can be measured.** `lines.len()` is the page's height, which scrolling needs.
 - **It can be combined.** A function that takes lines and returns lines can put a box round them or set them beside a portrait.
 - **It can be tested.** Call it and look at what comes back.
 
@@ -83,7 +83,7 @@ pub fn body_lines(m: &Model) -> Lines {
 }
 ```
 
-`boxed` takes lines and returns them inside a rounded border. `beside` takes two blocks of lines and joins them row by row, padding the left one to a fixed width. Both live in `tui.rs`, and both are possible only because a page is data. The text is asked for at a *narrower* width, `w - plate_width - 3`, so it wraps to the space that is left.
+`boxed` takes lines and returns them inside a rounded border. `beside` takes two blocks of lines and joins them row by row, padding the left one to a fixed width. Both are possible only because a page is data. The text is asked for at a *narrower* width, `w - plate_width - 3`, so it wraps to the space that is left.
 
 ## Scrolling
 
@@ -131,7 +131,7 @@ The keys only change the number. Down adds one, `End` sets it to `usize::MAX / 2
     }
 ```
 
-`saturating_sub` is subtraction that stops at zero: a page shorter than the screen has a maximum scroll of 0. `clamp_scroll` runs after every key and after every change of size, so no key handler has to know where the end is. The model is asking the view how long the page is, which it can do because the page is a function it can call.
+`saturating_sub` is subtraction that stops at zero: a page shorter than the screen has a maximum scroll of 0. `clamp_scroll` runs after a key and after every change of size, so no key handler has to know where the end is. The model asks the view how long the page is, which it can do because the page is a function.
 
 ## Onto the frame
 
@@ -151,7 +151,7 @@ Only the last few lines of `view.rs` touch the frame. By then there are three bl
     Paragraph::new(footer).render(place(area.height - foot, foot), buf);
 ```
 
-A `Rect` is a rectangle of the screen: x, y, width, height. `Paragraph` is a widget that draws lines into one. Every height is capped with `.min(...)` before it is subtracted from anything, so the sums hold on a terminal one row tall.
+A `Rect` is a rectangle of the screen: x, y, width, height. `Paragraph` is a widget that draws lines into one. Every height is capped with `.min(...)` before it is subtracted from anything.
 
 ratatui also has a `Layout` type that splits an area by constraints. The explorer does not use it: its header is as tall as its lines happen to be at this width, so the heights are known before anything is placed, and three rectangles are quickly worked out by hand.
 
@@ -179,7 +179,7 @@ pub fn snapshot(app: &mut impl App, width: u16, height: u16) -> String {
 }
 ```
 
-The buffer is one long list of cells, so `chunks(width)` cuts it into rows. With that (wrapped in a helper called `screen`), and a helper `press` that calls `on_key`, the tests in [`src/explorer/tests.rs`](../src/explorer/tests.rs) drive the explorer as a player would:
+The buffer is one long list of cells, and `chunks` cuts it into rows. With that (wrapped in a helper called `screen`), and a helper `press` that calls `on_key`, the tests in [`src/explorer/tests.rs`](../src/explorer/tests.rs) drive the explorer as a player would:
 
 ```rust
 #[test]
@@ -209,7 +209,7 @@ fn every_page_draws_at_every_size() {
 
 Every section of every creature, at six sizes, scrolled to the end. At the small sizes it asserts nothing about the text: the test is that drawing returns at all. A subtraction below zero or an index past the end of a vector panics, and a panic fails the test. The `(1, 1)` terminal is there to find exactly those.
 
-To see screens instead of checking them, one test prints samples when asked:
+One test prints sample screens when asked:
 
 ```bash
 DUMP=1 cargo test dump_screens -- --nocapture
@@ -243,7 +243,7 @@ Festive Facts
 q quit
 ```
 
-That is Krampus at 70 columns by 24 rows: a squeezed header, short tab names, the keys wrapped onto two rows, and a marker where there is more to read.
+That is Krampus at 70 columns by 24 rows: a squeezed header, short tab names, and the keys wrapped onto two rows.
 
 ## Try it
 

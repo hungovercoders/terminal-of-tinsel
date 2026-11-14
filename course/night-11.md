@@ -44,7 +44,7 @@ A terminal normally works a line at a time. It waits for Enter before your progr
 - **Raw mode**: every key arrives at once, unechoed, including the arrows and Ctrl+C.
 - **The alternate screen**: a second, blank screen that the terminal swaps in. When the program leaves it, the shell's history is back exactly as it was.
 
-Both must be undone on the way out, however the program leaves. A terminal left in raw mode is a miserable thing to hand back. Here is how the repository does it:
+Both must be undone on the way out, however the program leaves. Here is how the repository does it:
 
 ```rust
 /// Takes over the terminal and runs the app until it quits. `what` names
@@ -63,7 +63,7 @@ pub fn run(app: &mut impl App, what: &str) -> Result<()> {
 
 `ratatui::try_init()` enables raw mode, enters the alternate screen and returns a `Terminal` to draw on. `ratatui::restore()` reverses both. Look at the order of the last three lines. There is no `?` on the `event_loop` line: the result is kept in a variable, the terminal is restored, and only then is the error passed up. With a `?` there, a failure would return early and skip the restore.
 
-`try_init` also installs a panic hook that restores the terminal before the panic message is printed, so even a bug leaves the shell usable and the message readable.
+`try_init` also installs a panic hook that restores the terminal before a panic message is printed, so even a bug leaves the shell usable.
 
 `lost` is a closure, a function written in place that can use the variables around it (here, `what`). It turns an `io::Error` into the `TinselError` you met on Night 7.
 
@@ -131,7 +131,7 @@ fn event_loop(terminal: &mut DefaultTerminal, app: &mut impl App) -> io::Result<
 
 That is the whole engine. Each time round:
 
-1. **Measure and draw.** The app is told the terminal's size, then asked to draw. `terminal.draw` hands the closure a `Frame`, and the app paints the *entire* screen onto it, every time. This is called immediate mode: there are no widgets that live between frames and need updating, only a function from the state to a picture. It is not as wasteful as it sounds, because ratatui keeps the previous frame and sends the terminal only the cells that changed.
+1. **Measure and draw.** The app is told the terminal's size, then asked to draw. `terminal.draw` hands the closure a `Frame`, and the app paints the *entire* screen onto it, every time. This is called immediate mode: there are no widgets that live between frames and need updating, only a function from the state to a picture. ratatui keeps the previous frame and sends the terminal only the cells that changed.
 
 2. **Wait.** `event::read()` blocks until something happens. A still screen (`tick_every()` is `None`) goes straight to it and sleeps there, using no processor at all. An animated screen first calls `event::poll` with the time left until its next tick, which returns `true` if an event arrived in that time and `false` if the time ran out.
 
@@ -194,7 +194,7 @@ error: the Midwinter Special needs a terminal to play on (stdout or stdin is not
 hint: use --json for the data, name a creature to print its page, or tune in from a shell
 ```
 
-The exit code is 1. `Code::NoTerminal` is one of the stable codes from Night 7, spelled `no-terminal` when an error is printed as JSON. The hint says what a script should do instead, and it is true: in `main.rs` the `--json` branch returns the data before `require_terminal` is ever reached, so `creature --json` works in a pipe. 
+The exit code is 1. `Code::NoTerminal` is one of the stable codes from Night 7, spelled `no-terminal` when an error is printed as JSON. The hint says what a script should do instead, and it is true: in `main.rs` the `--json` branch returns the data before `require_terminal` is ever reached, so `creature --json` works in a pipe.
 
 ## Try it
 

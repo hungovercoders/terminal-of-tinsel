@@ -155,7 +155,8 @@ Press the right arrow on Krampus's legend and you would expect the next guest's 
     }
 ```
 
-`bool::then` turns a condition into an `Option`: `Some(the tab)` if we were already on a page, `None` if we came from the gallery. After the creature changes, `position` searches the new creature's tabs for the same variant. `and_then` runs that search only if there was a previous tab, and `unwrap_or(0)` falls back to Facts, which every creature has. 
+`bool::then` turns a condition into an `Option`: `Some(the tab)` if we were already on a page, `None` if we came from the gallery. After the creature changes, `position` searches the new creature's tabs for the same variant. `and_then` runs that search only if there was a previous tab, and `unwrap_or(0)` falls back to Facts, which every creature has.
+
 This is the reason `Tab` is an enum and not a number: `x == t` compares meanings.
 
 ## The tab bar
@@ -244,7 +245,7 @@ pub struct Model<'a> {
 }
 ```
 
-The model does not own the creatures. It borrows the `Vault` that `main` loaded, and `'a` is the name of that borrow. Writing it on the struct tells the compiler that a `Model` must not outlive the vault it points into. In return, `current()` can hand out a `&'a Creature` that stays valid however the model changes. `pub(super)` makes a field visible to the parent module, `explorer`, so the view and the tests can read it and the rest of the program cannot.
+The model does not own the creatures. It borrows the `Vault` that `main` loaded, and `'a` is the name of that borrow. Writing it on the struct tells the compiler that a `Model` must not outlive the vault it points into. `pub(super)` makes a field visible to the parent module, `explorer`, so the view and the tests can read it and the rest of the program cannot.
 
 ## Try it
 

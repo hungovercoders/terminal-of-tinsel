@@ -36,13 +36,13 @@ The course has a sister. [Count Cathode's Night School](https://github.com/hungo
 | [9](night-09.md) | Deck the Terminal | Colour, boxes, wrapping, terminal width, plain mode |
 | [10](night-10.md) | Every Creature in Its Colours | Themes, the creature page, ASCII portraits, `--json` |
 | [11](night-11.md) | Channel 25 Tunes In | ratatui: raw mode, an event loop, drawing a frame |
-| [12](night-12.md) | Fitting the Screen | Layout, wrapping, scrolling, testing screens without a terminal |
+| [12](night-12.md) | Fitting the Screen | Dividing the screen, wrapping, scrolling, testing screens without a terminal |
 
 ### Week 3 · The Midwinter Special: the explorer and the games
 
 | Night | Lesson | You'll learn |
 |-------|--------|--------------|
-| [13](night-13.md) | St Lucy's Night: Turn the Page | Sections and tabs, enums for state, a gallery with a cursor |
+| [13](night-13.md) | St Lucy's Night: Turn the Page | Sections and tabs, enums for state, lifetimes, a gallery with a cursor |
 | [14](night-14.md) | Whispers in the Snow | Search mode: text input, folding accents, snippets |
 | [15](night-15.md) | Your Host, Auntie Aerial | Ticks, TV static, snow with no state, typewriter text |
 | [16](night-16.md) | Writing the Crackers | Generating quiz questions from data, hiding the answer, distractors |
