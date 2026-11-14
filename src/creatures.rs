@@ -54,6 +54,11 @@ pub struct Creature {
     /// Filled in from the directory the creature was loaded from.
     #[serde(default)]
     pub pack: String,
+    /// Whether it came from a community pack. The Fact of the Night, the
+    /// double bill and the badges keep to the built-in roster, so adding a
+    /// pack doesn't change them.
+    #[serde(skip)]
+    pub community: bool,
 }
 
 impl Creature {
@@ -253,6 +258,15 @@ impl Vault {
             let source = path.display().to_string();
             let (pack, members, problems) = read_pack(&OnDisk(path), &name, &source);
             warnings.extend(problems.iter().map(|p| format!("pack {name:?}: {p}")));
+            // A pack id is typed after --pack, split on commas and offered
+            // by tab completion, so it has to be a plain slug too.
+            if !is_slug(&pack.id) {
+                warnings.push(format!(
+                    "pack {:?}: the id won't do: pack ids use lowercase letters, numbers and dashes",
+                    pack.id
+                ));
+                continue;
+            }
             if self.packs.iter().any(|p| p.id == pack.id) {
                 warnings.push(format!(
                     "pack {:?}: a pack with that id already exists",
@@ -276,14 +290,22 @@ impl Vault {
                         pack.id, c.id
                     ));
                 } else {
-                    if !is_plain_art(&c.ascii) {
+                    if let Some(problem) = art_problem(&c.ascii) {
                         warnings.push(format!(
-                            "pack {:?}: {:?}: the portrait must be printable ASCII, so it's left out",
+                            "pack {:?}: {:?}: the portrait {problem}, so it's left out",
                             pack.id, c.id
                         ));
                         c.ascii.clear();
                     }
+                    if !c.emoji.is_empty() && !is_tidy_emoji(&c.emoji) {
+                        warnings.push(format!(
+                            "pack {:?}: {:?}: the emoji {:?} isn't two columns wide, so the default is used",
+                            pack.id, c.id, c.emoji
+                        ));
+                        c.emoji.clear();
+                    }
                     apply_defaults(&mut c);
+                    c.community = true;
                     self.creatures.push(c);
                 }
             }
@@ -403,6 +425,15 @@ impl Vault {
     }
 }
 
+/// Whether an id is a plain slug: lowercase letters, numbers and dashes,
+/// starting with a letter or a number.
+pub fn is_slug(id: &str) -> bool {
+    id.starts_with(|c: char| c.is_ascii_lowercase() || c.is_ascii_digit())
+        && id
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+}
+
 /// What a pack's `source` says when it was compiled in.
 pub const BUILT_IN: &str = "built-in";
 
@@ -494,9 +525,22 @@ fn read_pack(files: &dyn PackFiles, dir: &str, source: &str) -> (Pack, Vec<Creat
                 if c.id.is_empty() {
                     c.id = stem.clone();
                 }
+                // The id becomes a file name and a lookup key, so it must be
+                // a plain slug: "../../secret" would read a file outside the
+                // pack, and "Yule Cat" could never be looked up or completed.
+                if !is_slug(&c.id) {
+                    problems.push(format!(
+                        "{stem}.json: the id {:?} won't do: ids use lowercase letters, numbers and dashes",
+                        c.id
+                    ));
+                    continue;
+                }
                 c.pack = pack.id.clone();
+                // The portrait sits beside the file, named for the id or,
+                // failing that, for the file itself.
                 c.ascii = files
                     .read(&format!("{}.txt", c.id))
+                    .or_else(|| files.read(&format!("{stem}.txt")))
                     .map(|art| tidy_art(&art))
                     .unwrap_or_default();
                 // Two files can declare the same id. The first keeps it:
@@ -541,6 +585,33 @@ fn is_plain_art(art: &str) -> bool {
         .all(|ch| ch == '\n' || (' '..='~').contains(&ch))
 }
 
+/// The most a portrait may measure: the explorer and Guess the Guest lay
+/// their screens out round this.
+pub const ART_COLUMNS: usize = 46;
+pub const ART_LINES: usize = 20;
+
+/// What stops a community portrait being used, if anything. An empty one is
+/// simply no portrait.
+fn art_problem(art: &str) -> Option<&'static str> {
+    if art.is_empty() {
+        None
+    } else if !is_plain_art(art) {
+        Some("must be printable ASCII")
+    } else if art.trim().is_empty() {
+        Some("is blank")
+    } else if art.lines().count() > ART_LINES || art.lines().any(|l| l.len() > ART_COLUMNS) {
+        Some("is bigger than 46 columns by 20 lines")
+    } else {
+        None
+    }
+}
+
+/// Whether an emoji is two columns wide with no variation selector, as the
+/// boxes and the gallery assume.
+fn is_tidy_emoji(emoji: &str) -> bool {
+    !emoji.contains('\u{FE0F}') && unicode_width::UnicodeWidthStr::width(emoji) == 2
+}
+
 /// What a community creature is missing to be playable.
 fn validate(c: &Creature) -> Vec<&'static str> {
     let mut problems = Vec::new();
@@ -550,7 +621,7 @@ fn validate(c: &Creature) -> Vec<&'static str> {
     if c.description.trim().is_empty() {
         problems.push("needs a description");
     }
-    if c.facts.is_empty() {
+    if c.facts.iter().all(|f| f.trim().is_empty()) {
         problems.push("needs at least one fact");
     }
     if c.stats.labelled().iter().any(|(_, v)| *v > 10) {
@@ -561,6 +632,10 @@ fn validate(c: &Creature) -> Vec<&'static str> {
 
 /// Fills in the optional fields, so a community creature works everywhere.
 fn apply_defaults(c: &mut Creature) {
+    c.facts.retain(|f| !f.trim().is_empty());
+    if c.legend.trim().is_empty() {
+        c.legend = c.description.clone();
+    }
     if c.emoji.is_empty() {
         c.emoji = "🎁".to_string();
     }
@@ -754,9 +829,12 @@ mod tests {
                 "{id}: portraits use printable ASCII only"
             );
             let lines: Vec<&str> = c.ascii.lines().collect();
-            assert!(lines.len() <= 20, "{id}: portrait is over 20 lines");
+            assert!(lines.len() <= ART_LINES, "{id}: portrait is over 20 lines");
+            assert!(is_slug(id), "{id}: ids are lowercase slugs");
             assert!(
-                lines.iter().all(|l| l.len() <= 46 && !l.ends_with(' ')),
+                lines
+                    .iter()
+                    .all(|l| l.len() <= ART_COLUMNS && !l.ends_with(' ')),
                 "{id}: portrait lines are at most 46 columns, with no trailing spaces"
             );
         }
@@ -994,7 +1072,7 @@ mod tests {
             "skipping \"empty\": needs a name; needs a description; needs at least one fact",
             "skipping \"strong\": stats must be between 0 and 10",
             "skipping \"krampus\": a creature with that id already exists",
-            "\"emoji\": the portrait must be printable ASCII",
+            "\"emoji\": the portrait must be printable ASCII, so it's left out",
             "pack \"nordic\": a pack with that id already exists",
         ] {
             assert!(
@@ -1058,6 +1136,126 @@ mod tests {
             assert_eq!(c.theme.primary, crate::render::GOLD, "{id}");
             assert_eq!(c.theme.accent, crate::render::GREEN, "{id}");
         }
+    }
+
+    #[test]
+    fn ids_that_are_not_slugs_are_refused_before_any_file_is_read() {
+        let dir = Community::new("slugs");
+        // A secret beside the packs, which a traversing id would reach.
+        dir.write("secret.txt", "do not read me");
+        dir.write(
+            "attic/trav.json",
+            &ELF.replace('{', r#"{"id": "../secret", "#),
+        );
+        dir.write(
+            "attic/shout.json",
+            &ELF.replace('{', r#"{"id": "Big One", "#),
+        );
+        dir.write("attic/fine.json", ELF);
+        dir.write("My Pack/guest.json", ELF);
+        dir.write("commas/pack.json", r#"{"id": "a,b"}"#);
+        dir.write("commas/other.json", ELF);
+        let mut v = vault();
+        let warnings = v.add_community(&dir.0).join("\n");
+        assert!(
+            warnings.contains("trav.json: the id \"../secret\" won't do"),
+            "{warnings}"
+        );
+        assert!(
+            warnings.contains("shout.json: the id \"Big One\" won't do"),
+            "{warnings}"
+        );
+        assert!(
+            warnings.contains("pack \"My Pack\": the id won't do"),
+            "{warnings}"
+        );
+        assert!(
+            warnings.contains("pack \"a,b\": the id won't do"),
+            "{warnings}"
+        );
+        assert!(
+            v.creatures
+                .iter()
+                .all(|c| !c.ascii.contains("do not read me"))
+        );
+        let community: Vec<&str> = v
+            .creatures
+            .iter()
+            .filter(|c| c.community)
+            .map(|c| c.id.as_str())
+            .collect();
+        assert_eq!(community, ["fine"]);
+        assert!(v.creatures.iter().filter(|c| !c.community).count() >= 14);
+    }
+
+    #[test]
+    fn a_portrait_is_found_by_file_name_and_held_to_the_size_limit() {
+        let dir = Community::new("art");
+        dir.write(
+            "attic/stem.json",
+            &ELF.replace('{', r#"{"id": "renamed", "#),
+        );
+        dir.write("attic/stem.txt", " /\\\n/__\\\n");
+        dir.write(
+            "attic/wide.json",
+            &ELF.replace("The Shelf Inspector", "Wide"),
+        );
+        dir.write("attic/wide.txt", &"x".repeat(47));
+        dir.write(
+            "attic/tall.json",
+            &ELF.replace("The Shelf Inspector", "Tall"),
+        );
+        dir.write("attic/tall.txt", &"x\n".repeat(21));
+        dir.write(
+            "attic/blank.json",
+            &ELF.replace("The Shelf Inspector", "Blank"),
+        );
+        dir.write("attic/blank.txt", "   \n  \n");
+        let mut v = vault();
+        let warnings = v.add_community(&dir.0).join("\n");
+        assert_eq!(v.get("renamed").unwrap().ascii, " /\\\n/__\\");
+        for id in ["wide", "tall", "blank"] {
+            assert!(v.get(id).unwrap().ascii.is_empty(), "{id}");
+        }
+        assert_eq!(
+            warnings
+                .matches("bigger than 46 columns by 20 lines")
+                .count(),
+            2,
+            "{warnings}"
+        );
+        assert!(
+            warnings.contains("\"blank\": the portrait is blank"),
+            "{warnings}"
+        );
+    }
+
+    #[test]
+    fn blank_facts_a_missing_legend_and_an_odd_emoji_are_put_right() {
+        let dir = Community::new("gaps");
+        dir.write(
+            "attic/a.json",
+            r#"{"name": "A", "description": "Has a tale", "facts": ["", "  ", "One real fact"], "emoji": "hello"}"#,
+        );
+        dir.write(
+            "attic/b.json",
+            r#"{"name": "B", "description": "No facts", "facts": ["", " "]}"#,
+        );
+        let mut v = vault();
+        let warnings = v.add_community(&dir.0).join("\n");
+        let a = v.get("a").unwrap();
+        assert_eq!(a.facts, ["One real fact"]);
+        assert_eq!(a.legend, "Has a tale");
+        assert_eq!(a.emoji, "🎁");
+        assert!(
+            warnings.contains("the emoji \"hello\" isn't two columns wide"),
+            "{warnings}"
+        );
+        assert!(
+            warnings.contains("skipping \"b\": needs at least one fact"),
+            "{warnings}"
+        );
+        assert!(v.get("b").is_none());
     }
 
     #[test]

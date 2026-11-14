@@ -75,7 +75,11 @@ fn run(cli: Cli) -> Result<()> {
     let mut everything = Vault::load();
     // Community packs: anything broken is reported and skipped, never fatal.
     if let Ok(dir) = store::dir() {
-        for warning in everything.add_community(&store::packs_dir(&dir)) {
+        let warnings = everything.add_community(&store::packs_dir(&dir));
+        // Under --json, stderr is kept for the one error object a script
+        // parses; and a completion script is sourced on every new shell.
+        let quiet = cli.json || matches!(cli.command, Some(Command::Completions { .. }));
+        for warning in warnings.iter().filter(|_| !quiet) {
             eprintln!("warning: community pack: {warning}");
         }
     }
@@ -186,7 +190,18 @@ fn run(cli: Cli) -> Result<()> {
             let (c, fact) = match calendar::advent_guest(today, &vault).filter(|_| daily) {
                 Some((_, c, fact)) => (c, fact),
                 None => {
-                    let c = rng.pick(&vault.creatures);
+                    // The Fact of the Night is drawn from the built-in
+                    // creatures, so it's the same for everyone whatever
+                    // packs they have added. Any other fact can be anyone's.
+                    let pool: Vec<&creatures::Creature> = vault
+                        .creatures
+                        .iter()
+                        .filter(|c| !(daily && c.community))
+                        .collect();
+                    let c = match pool.is_empty() {
+                        true => rng.pick(&vault.creatures),
+                        false => pool[rng.below(pool.len())],
+                    };
                     (c, rng.pick(&c.facts).clone())
                 }
             };

@@ -252,7 +252,14 @@ pub fn double_bill(d: Date, vault: &Vault) -> Option<(&Creature, &Creature)> {
         return None;
     }
     // The running order is fixed, so the schedule is the same for everyone.
-    let mut order: Vec<usize> = (0..vault.creatures.len()).collect();
+    // It keeps to the built-in creatures while there are two of them, so
+    // adding a community pack doesn't change tonight's bill.
+    let mut order: Vec<usize> = (0..vault.creatures.len())
+        .filter(|i| !vault.creatures[*i].community)
+        .collect();
+    if order.len() < 2 {
+        order = (0..vault.creatures.len()).collect();
+    }
     Rng::new(25).shuffle(&mut order);
     let (first, second) = bill(d, vault, &order, 0);
     Some((&vault.creatures[first], &vault.creatures[second]))

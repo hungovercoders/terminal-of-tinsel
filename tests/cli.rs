@@ -514,6 +514,23 @@ fn a_broken_community_pack_warns_and_is_skipped() {
         .stderr(predicate::str::contains(
             "warning: community pack: pack \"attic\": typo.json:",
         ));
+    // Under --json stderr is kept for the error object, so warnings stay off it.
+    let out = tinsel_at(&home)
+        .args(["list", "--pack", "nope", "--json"])
+        .output()
+        .unwrap();
+    let e: Value = serde_json::from_slice(&out.stderr).expect("stderr is one JSON object");
+    assert_eq!(e["error"]["code"], "bad-pack");
+    // The daily picks keep to the built-in creatures, so a community pack
+    // changes neither the Fact of the Night nor tonight's bill.
+    for args in [
+        vec!["random", "--date", "2026-11-14"],
+        vec!["tonight", "--date", "2026-11-14"],
+    ] {
+        let with_pack = tinsel_at(&home).args(&args).arg("--json").output().unwrap();
+        let without = tinsel().args(&args).arg("--json").output().unwrap();
+        assert_eq!(with_pack.stdout, without.stdout, "{args:?}");
+    }
     // A completion must stay quiet, whatever is wrong on disk.
     let out = tinsel_at(&home)
         .env("COMPLETE", "fish")
