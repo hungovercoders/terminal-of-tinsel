@@ -87,6 +87,7 @@ pub fn shell(page: &Page, base: &str) -> String {
     <a href="{root}index.html"{home}>Tonight</a>
     <a href="{root}creatures/index.html"{creatures}>The Roster</a>
     <a href="{root}advent.html"{advent}>Advent</a>
+    <a href="{root}night-school/index.html"{school}>Night School</a>
     <a href="{REPO}" rel="noopener">GitHub</a>
   </nav>
 </header>
@@ -108,6 +109,7 @@ pub fn shell(page: &Page, base: &str) -> String {
         home = current("home"),
         creatures = current("creatures"),
         advent = current("advent"),
+        school = current("school"),
         body = page.body,
         sign_off = esc(sign_off),
         host = host::NAME,

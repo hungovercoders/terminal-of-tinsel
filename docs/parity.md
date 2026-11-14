@@ -213,9 +213,9 @@ Badge emoji will be checked against the two-column rule before they land.
 | [ ] | README: programme table, keys, games, badges, rituals, roster by pack, command reference | grow with each phase | P1 to P7 |
 | [ ] | slopstopper: `.slopstopper.yml` (profile `ui`), `Taskfile.ss.yml`, `ss-*.yml`, `.githooks/pre-push`, the `slopstopper-cli` pin, two Claude skills | the same installer: profile `library` in P7, switched to `ui` when the website lands | P7, P8 |
 | [ ] | `package.json`, `.markdownlint.json`, `.zap/`, `public/_headers`, `wrangler.jsonc` | website tooling, with the website | P8 |
-| [ ] | website: a Go generator, a page per monster, the course, Cloudflare Workers Builds | a Rust generator, a page per creature, Cloudflare: see [website-plan.md](website-plan.md) | P8 |
-| [ ] | Count Cathode's Night School, 31 nights | Auntie Aerial's Night School, 24 nights; stretch goal; ask first | stretch |
-| [ ] | `TUTORIAL.md` pointing at the course | only with the course | stretch |
+| [x] | website: a Go generator, a page per monster, the course, Cloudflare Workers Builds | a Rust generator in `site/`, a page per creature, the course; not deployed yet: see [website-plan.md](website-plan.md) | P8 |
+| [x] | Count Cathode's Night School, 31 nights | Auntie Aerial's Night School in `course/`, 24 nights, one per advent door | stretch |
+| [x] | `TUTORIAL.md` pointing at the course | the same | stretch |
 | [x] | no equivalent | `docs/go-to-rust.md`, updated every phase | ongoing |
 
 The decisions taken, the dependencies vetted and the phases are in [roadmap.md](roadmap.md).

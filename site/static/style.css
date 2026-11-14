@@ -359,6 +359,33 @@ body.engraving, .card.engraving { --primary: #D9B98A; --accent: #B89B74; }
 .door-guest { font-family: var(--display); font-size: 1.15rem; }
 .door.tonight { box-shadow: 0 0 0 3px var(--gold); }
 
+/* Night School lessons, rendered from Markdown */
+
+.lesson h1 { font-size: clamp(2rem, 5vw, 3rem); }
+.lesson pre {
+  margin: 0.75rem 0 1.25rem;
+  padding: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #081210;
+}
+.lesson pre code { font-size: 0.88rem; line-height: 1.6; }
+.lesson blockquote {
+  margin: 1.5rem 0;
+  padding: 0.9rem 1.2rem;
+  border-left: 3px solid var(--gold);
+  background: var(--panel);
+  font-family: var(--display);
+  font-size: 1.1rem;
+}
+.lesson blockquote p { margin: 0; }
+.lesson table { width: 100%; margin: 1rem 0 1.5rem; border-collapse: collapse; display: block; overflow-x: auto; }
+.lesson th, .lesson td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.lesson thead th { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.lesson li { margin: 0.25rem 0; }
+.lesson hr { border: 0; border-top: 1px solid var(--line); margin: 2rem 0; }
+
 /* Tables */
 
 .commands { width: 100%; border-collapse: collapse; }

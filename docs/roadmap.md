@@ -36,8 +36,8 @@ Settled with the maintainer on 12 November 2026.
    badge names above.
 7. **Order:** as numbered.
 
-Still to ask: the Night School course (a stretch goal), and for the website a domain name and the
-go-ahead to connect Cloudflare.
+The Night School course went ahead and is in `course/`. Still to ask, for the website: a domain name
+and the go-ahead to connect Cloudflare.
 
 ## Phases
 
