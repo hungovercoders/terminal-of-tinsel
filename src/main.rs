@@ -87,7 +87,11 @@ fn run(cli: Cli) -> Result<()> {
     let mut everything = Vault::load();
     // Community packs: anything broken is reported and skipped, never fatal.
     if let Ok(dir) = store::dir() {
-        for warning in everything.add_community(&store::packs_dir(&dir)) {
+        let warnings = everything.add_community(&store::packs_dir(&dir));
+        // Under --json, stderr is kept for the one error object a script
+        // parses; and a completion script is sourced on every new shell.
+        let quiet = cli.json || matches!(cli.command, Some(Command::Completions { .. }));
+        for warning in warnings.iter().filter(|_| !quiet) {
             eprintln!("warning: community pack: {warning}");
         }
     }
@@ -199,6 +203,8 @@ impl Show {
             "the Midwinter Special",
             "use --json for the data, name a creature to print its page, or tune in from a shell",
         )?;
+        // Badges for a night are judged by when play began.
+        let started = calendar::now();
         let visit = explorer::run(
             &self.vault,
             explorer::Options {
@@ -215,8 +221,16 @@ impl Show {
             let text = format!("{}{line}", self.painter.glyph("📺"));
             print(&(self.painter.italic(&text, render::DIM) + "\n"));
         }
-        if !visit.seen.is_empty() {
-            let mut outcome = Outcome::new(Kind::Explore, calendar::now());
+        let met = visit.seen.len();
+        if met > 0 {
+            // "guests" follows the size of the guest list, not how many
+            // were met.
+            let text = match self.vault.creatures.len() {
+                1 => "You met tonight's only guest.".to_string(),
+                all => format!("You met {met} of tonight's {all} guests."),
+            };
+            print(&(self.painter.paint(&text, render::DIM) + "\n"));
+            let mut outcome = Outcome::new(Kind::Explore, started);
             outcome.seen = visit.seen;
             self.record(&outcome);
         }
@@ -237,7 +251,7 @@ impl Show {
         let (c, fact) = match calendar::advent_guest(today, &self.vault).filter(|_| daily) {
             Some((_, c, fact)) => (c, fact),
             None => {
-                let c = rng.pick(&self.vault.creatures);
+                let c = self.fact_teller(daily, &mut rng);
                 (c, rng.pick(&c.facts).clone())
             }
         };
@@ -273,6 +287,22 @@ impl Show {
         Ok(())
     }
 
+    /// Who tells a fact. The Fact of the Night is drawn from the built-in
+    /// creatures, so it's the same for everyone whatever packs they have
+    /// added. Any other fact can be anyone's.
+    fn fact_teller(&self, daily: bool, rng: &mut Rng) -> &creatures::Creature {
+        let pool: Vec<&creatures::Creature> = self
+            .vault
+            .creatures
+            .iter()
+            .filter(|c| !(daily && c.community))
+            .collect();
+        match pool.is_empty() {
+            true => rng.pick(&self.vault.creatures),
+            false => pool[rng.below(pool.len())],
+        }
+    }
+
     fn quiz(&self, creature: &str, questions: usize) -> Result<()> {
         if questions == 0 {
             return Err(TinselError::new(
@@ -299,12 +329,13 @@ impl Show {
             "the Christmas Cracker Quiz",
             "use --json for the questions and answers, or play from a shell",
         )?;
+        let started = calendar::now();
         let mut app = games::QuizApp::new(quiz, rng, self.colour);
         tui::run(&mut app, "the Christmas Cracker Quiz")?;
         let result = app.into_result();
         print(&render::quiz_summary(&self.painter, &result));
         if result.score().1 > 0 {
-            let mut outcome = Outcome::new(Kind::Quiz, calendar::now());
+            let mut outcome = Outcome::new(Kind::Quiz, started);
             outcome.correct = result.correct_by();
             outcome.score = result.percent() as u32;
             outcome.total = result.questions.len() as u32;
@@ -338,12 +369,13 @@ impl Show {
             "Guess the Guest",
             "use --json for the rounds and answers, or play from a shell",
         )?;
+        let started = calendar::now();
         let mut app = games::GuessApp::new(game, rng, self.colour);
         tui::run(&mut app, "Guess the Guest")?;
         let result = app.into_result();
         print(&render::guess_summary(&self.painter, &result));
         if result.played() > 0 {
-            let mut outcome = Outcome::new(Kind::Guess, calendar::now());
+            let mut outcome = Outcome::new(Kind::Guess, started);
             outcome.correct = result.correct_by();
             outcome.score = result.score() as u32;
             outcome.total = result.rounds.len() as u32;
@@ -610,7 +642,8 @@ impl Show {
         });
         match saved {
             Ok(unlocks) => print(&render::unlocks(&self.painter, &unlocks)),
-            Err(e) => eprintln!("warning: this session wasn't saved: {}", e.message),
+            // With the hint, so a broken save file comes with its way out.
+            Err(e) => eprintln!("warning: this session wasn't saved: {e}"),
         }
     }
 }

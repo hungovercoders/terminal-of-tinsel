@@ -219,8 +219,9 @@ the quiz, the games, completion and the man pages picked them up without a chang
   14. Most now ask the vault how many there are. The ones that still say 22 are end-to-end tests of the
   shipped roster, where a surprise is worth a failure.
 - **Embedding is a build step.** `include_dir!` and `//go:embed` both read the files at compile time, so
-  a new JSON file needs a rebuild to appear. Cargo notices the change because `include_dir` tracks the
-  directory; with `go:embed` the Go build cache does the same.
+  a new JSON file needs a rebuild to appear. Go's build cache notices a new file under an embedded
+  directory. With `include_dir` on stable Rust, Cargo is only told about the files that were there at
+  the last build, so if a new creature doesn't show up, touch `src/creatures.rs` or run `cargo clean`.
 
 ## Phase 7: repo polish
 

@@ -45,7 +45,7 @@ powershell -ExecutionPolicy Bypass -c "irm https://github.com/hungovercoders/ter
 **With Rust 1.88+**, from source:
 
 ```bash
-cargo install --git https://github.com/hungovercoders/terminal-of-tinsel
+cargo install --locked --git https://github.com/hungovercoders/terminal-of-tinsel
 ```
 
 ## 🌟 Your first night

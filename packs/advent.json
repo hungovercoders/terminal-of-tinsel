@@ -23,7 +23,7 @@
     {"night": 19, "id": "marley", "note": "A Christmas Carol was published on this day in 1843."},
     {"night": 20, "id": "hans-trapp", "note": "The Alsace Christmas markets are busy, and someone is lurking behind the stalls."},
     {"night": 21, "id": "wild-hunt", "note": "The longest night of the year. If you hear horns overhead, don't look up."},
-    {"night": 22, "id": "ghost-of-christmas-past", "note": "Two nights to go. Somebody is about to be shown his schooldays."},
+    {"night": 22, "id": "ghost-of-christmas-past", "note": "Three nights to go. Somebody is about to be shown his schooldays."},
     {"night": 23, "id": "ghost-of-christmas-present", "note": "Tomorrow night is Scrooge's night. The second spirit only has until midnight."},
     {"night": 24, "id": "yule-cat", "note": "It's Christmas Eve. Hope you got new clothes."}
   ]

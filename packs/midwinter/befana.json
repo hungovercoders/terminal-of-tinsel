@@ -8,7 +8,7 @@
   "debut": {"medium": "folklore", "title": "Italian Epiphany tradition", "era": "a legend usually traced to medieval Italy, with older roots proposed"},
   "legend": "On the night of 5 January, the eve of Epiphany, La Befana flies over Italy on her broomstick and comes down the chimneys, which is why she's always covered in soot. Good children find their stockings filled with sweets. Naughty ones get coal, or in some tellings onions and garlic. In the best-known legend, the Magi stopped at her house on their way to Bethlehem and invited her to come and see the child. She said she was too busy sweeping. Later she changed her mind and set out after them with gifts, but never caught up, and she has been searching ever since, leaving something for every child in case. Where she really comes from is debated: pre-Christian, Christian and mixed origins have all been proposed.",
   "myths": [
-    {"claim": "La Befana comes on Christmas Eve.", "true": false, "explanation": "Her night is 5 January, the eve of Epiphany, twelve days after Christmas."},
+    {"claim": "La Befana comes on Christmas Eve.", "true": false, "explanation": "Her night is 5 January, the eve of Epiphany and the twelfth night of Christmas."},
     {"claim": "Her name comes from the word Epiphany.", "true": true, "explanation": "Befana is usually explained as a worn-down form of Epifania."},
     {"claim": "Naughty children get coal from her.", "true": true, "explanation": "Coal is the traditional threat. These days it's usually carbone dolce, a black sugar sweet."},
     {"claim": "Scholars agree on where she came from.", "true": false, "explanation": "They don't. Pre-Christian, Christian and mixed origins have all been argued for."}

@@ -14,8 +14,12 @@ fn scratch(name: &str) -> PathBuf {
     dir
 }
 
+/// The scratch home the tests share when they don't care what's saved. It
+/// is made once: clearing it on every call would pull it out from under a
+/// command another test is running.
 fn tinsel() -> Command {
-    tinsel_at(&scratch("shared"))
+    static SHARED: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+    tinsel_at(SHARED.get_or_init(|| scratch("shared")))
 }
 
 fn tinsel_at(home: &Path) -> Command {
@@ -365,7 +369,9 @@ fn a_broken_save_file_stops_the_stocking_but_not_a_game() {
         .stdout(predicate::str::contains("WINNER:"))
         .stderr(predicate::str::contains(
             "warning: this session wasn't saved",
-        ));
+        ))
+        // The warning says how to mend it.
+        .stderr(predicate::str::contains("stocking reset"));
     // The broken file is left for its owner to mend.
     assert_eq!(
         std::fs::read_to_string(home.join("stocking.json")).unwrap(),
@@ -529,6 +535,23 @@ fn a_broken_community_pack_warns_and_is_skipped() {
         .stderr(predicate::str::contains(
             "warning: community pack: pack \"attic\": typo.json:",
         ));
+    // Under --json stderr is kept for the error object, so warnings stay off it.
+    let out = tinsel_at(&home)
+        .args(["list", "--pack", "nope", "--json"])
+        .output()
+        .unwrap();
+    let e: Value = serde_json::from_slice(&out.stderr).expect("stderr is one JSON object");
+    assert_eq!(e["error"]["code"], "bad-pack");
+    // The daily picks keep to the built-in creatures, so a community pack
+    // changes neither the Fact of the Night nor tonight's bill.
+    for args in [
+        vec!["random", "--date", "2026-11-14"],
+        vec!["tonight", "--date", "2026-11-14"],
+    ] {
+        let with_pack = tinsel_at(&home).args(&args).arg("--json").output().unwrap();
+        let without = tinsel().args(&args).arg("--json").output().unwrap();
+        assert_eq!(with_pack.stdout, without.stdout, "{args:?}");
+    }
     // A completion must stay quiet, whatever is wrong on disk.
     let out = tinsel_at(&home)
         .env("COMPLETE", "fish")
@@ -655,7 +678,7 @@ fn tonight_prints_a_ticket() {
         .stdout(predicate::str::contains("TONIGHT'S CHRISTMAS DOUBLE BILL"))
         .stdout(predicate::str::contains("Saturday 19 December 2026"))
         .stdout(predicate::str::contains("SCROOGE (1951)"))
-        .stdout(predicate::str::contains("with Michael Hordern"))
+        .stdout(predicate::str::contains("Directed by Brian Desmond Hurst"))
         .stdout(predicate::str::contains("ADMIT ONE"))
         .stdout(predicate::str::contains("FROM THE HOST"))
         .stdout(predicate::str::contains("A Christmas Carol was published"))

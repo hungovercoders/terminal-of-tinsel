@@ -25,11 +25,7 @@ pub fn example_id(pack: &str) -> String {
 /// Creates `<packs_dir>/<id>/` with a `pack.json`, an example creature and
 /// its portrait, and returns the directory.
 pub fn scaffold(vault: &Vault, packs_dir: &Path, id: &str) -> Result<PathBuf> {
-    let well_formed = id.starts_with(|c: char| c.is_ascii_lowercase() || c.is_ascii_digit())
-        && id
-            .chars()
-            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
-    if !well_formed {
+    if !crate::creatures::is_slug(id) {
         return Err(
             TinselError::new(Code::Usage, format!("{id:?} won't do as a pack id")).with_hint(
                 "pack ids use lowercase letters, numbers and dashes, e.g. 'office-party'",

@@ -642,7 +642,7 @@ pub fn mash_round(p: &Painter, bout: &Bout, round: &Round) -> String {
     let w = p.text_width();
     let mut out = vec![p.bold(&format!("Round {} · {}", round.number, round.stat), GOLD)];
     let rolls = format!(
-        "{} rolls {} · {} rolls {}",
+        "{} rolled {} · {} rolled {}",
         bout.a.name, round.roll_a, bout.b.name, round.roll_b
     );
     out.extend(p.wrap(&rolls, w, |l| p.paint(l, DIM)));
@@ -1050,7 +1050,7 @@ pub fn countdown(p: &Painter, vault: &Vault, today: Date) -> String {
     // The big number already says how many sleeps are left.
     for n in calendar::notes(today, &vault.creatures)
         .iter()
-        .filter(|n| !n.text.ends_with("until Christmas."))
+        .filter(|n| !n.sleeps)
     {
         out.extend(p.wrap(&p.note(n), w, |l| p.paint(l, DIM)));
     }
@@ -1095,7 +1095,8 @@ pub const SECOND_FEATURE: &str = "8:45 PM";
 
 /// A cinema ticket for tonight's Channel 25 double bill.
 pub fn ticket(p: &Painter, today: Date, first: &Creature, second: &Creature) -> String {
-    let inner = p.text_width().saturating_sub(4).min(64);
+    // The same width as the host's card printed under it.
+    let inner = p.width.saturating_sub(2).min(66).saturating_sub(4).max(20);
     let moon = calendar::moon(today);
     let feature = |at: &str, c: &Creature| -> Vec<String> {
         let (title, credit) = match &c.film {
@@ -1111,7 +1112,8 @@ pub fn ticket(p: &Painter, today: Date, first: &Creature, second: &Creature) -> 
                     ),
                 )
             }
-            None => (c.name.to_uppercase(), format!("A tale from {}", c.origin)),
+            // The origin as written: not every one reads well after "from".
+            None => (c.name.to_uppercase(), c.origin.clone()),
         };
         let room = inner.saturating_sub(10);
         let mut lines = vec![format!(
@@ -1413,8 +1415,8 @@ mod tests {
 
     #[test]
     fn plain_notes_lose_their_emoji() {
-        let n = &calendar::notes(date(2026, 12, 13), &[])[0];
-        assert_eq!(plain().note(n), "2 Yule Lads are in town.");
-        assert_eq!(colour().note(n), "🥄 2 Yule Lads are in town.");
+        let n = &calendar::notes(date(2026, 12, 14), &[])[0];
+        assert_eq!(plain().note(n), "3 Yule Lads are in town.");
+        assert_eq!(colour().note(n), "🥄 3 Yule Lads are in town.");
     }
 }
