@@ -7,7 +7,7 @@
 
 ### 📺 Channel 25's Midwinter Special, live in your terminal
 
-![Creatures](https://img.shields.io/badge/creatures-14-52B788)
+![Creatures](https://img.shields.io/badge/creatures-22-52B788)
 ![Made with Rust](https://img.shields.io/badge/made%20with-rust-E63946)
 ![Advent](https://img.shields.io/badge/advent%20doors-24-E9C46A)
 
@@ -188,7 +188,7 @@ terminal-of-tinsel stocking reset   # tip it out and start again (-y skips the q
 | 🌟 Twelfth Nighter | Play a game on Twelfth Night, 5 January |
 | 🎬 Matinee Regular | Capture every creature with a classic film |
 | 🎁 Saint's Shadow | Capture every companion of St Nicholas |
-| 🌍 Midwinter Wanderer | Capture 5 from Midwinter Europe, or all it has |
+| 🌍 Midwinter Wanderer | Capture 5 creatures from Midwinter Europe |
 | 🐈 Friend of the Yule Cat | Capture every creature of the Nordic Yule |
 | 📖 Dickensian | Capture every spirit of *A Christmas Carol* |
 | 👑 Keeper of the Stocking | Capture every creature |
@@ -243,10 +243,10 @@ terminal-of-tinsel random                      # or just any old fact
 
 | Pack | Creatures |
 |------|-----------|
-| **St Nicholas's Companions** (`companions`) | 😈 Krampus · 🧥 Belsnickel · 🖤 Père Fouettard · 🌾 Hans Trapp |
-| **Nordic Yule** (`nordic`) | 🐈 The Yule Cat · 👹 Grýla · 🥄 The Yule Lads · 🥣 The Tomte |
-| **Midwinter Europe** (`midwinter`) | 🐴 The Mari Lwyd · 🧶 Frau Perchta · 🌳 The Kallikantzaroi · 🪵 Tió de Nadal |
-| **A Christmas Carol** (`dickens`) | 👻 Marley's Ghost · ⌛ The Ghost of Christmas Yet to Come |
+| **St Nicholas's Companions** (`companions`) | 😈 Krampus · 🧥 Belsnickel · 🖤 Père Fouettard · 🌾 Hans Trapp · 🧔 Knecht Ruprecht · 👿 Čert |
+| **Nordic Yule** (`nordic`) | 🐈 The Yule Cat · 👹 Grýla · 🥄 The Yule Lads · 🥣 The Tomte · 🐐 The Yule Goat · 🌑 Lussi |
+| **Midwinter Europe** (`midwinter`) | 🐴 The Mari Lwyd · 🧶 Frau Perchta · 🌳 The Kallikantzaroi · 🪵 Tió de Nadal · 🧹 La Befana · 🐎 The Wild Hunt |
+| **A Christmas Carol** (`dickens`) | 👻 Marley's Ghost · ✨ The Ghost of Christmas Past · 🌿 The Ghost of Christmas Present · ⌛ The Ghost of Christmas Yet to Come |
 
 ## 📦 Packs
 

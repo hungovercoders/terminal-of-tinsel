@@ -120,7 +120,7 @@ pub const BADGES: [Badge; 17] = [
         "midwinter-wanderer",
         "🌍",
         "Midwinter Wanderer",
-        "Capture 5 from Midwinter Europe, or all it has",
+        "Capture 5 creatures from Midwinter Europe",
     ),
     badge(
         "friend-of-the-yule-cat",
@@ -443,7 +443,7 @@ mod tests {
             ["stocking-filler", "friend-of-the-yule-cat"]
         );
         assert_eq!(capture(&mut p, "companions"), ["saints-shadow"]);
-        // Midwinter Europe has four creatures today, so all four earn it.
+        // Midwinter Europe has six creatures, and five are enough.
         assert_eq!(capture(&mut p, "midwinter"), ["midwinter-wanderer"]);
         // Marley is the only creature with a film, and Dickens completes the set.
         assert_eq!(

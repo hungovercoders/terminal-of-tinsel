@@ -794,7 +794,7 @@ mod tests {
         let v = Vault::load();
         for (width, height) in [(1, 1), (20, 6), (40, 12), (60, 40), (80, 24), (200, 60)] {
             let mut quiz = quiz_app(&v, 4);
-            let mut guess = guess_app(&v, 14);
+            let mut guess = guess_app(&v, 99);
             for step in 0..40 {
                 snapshot(&mut quiz, width, height);
                 snapshot(&mut guess, width, height);
@@ -816,9 +816,9 @@ mod tests {
     #[test]
     fn options_sit_beside_the_window_when_there_is_room() {
         let v = Vault::load();
-        let mut app = guess_app(&v, 14);
+        let mut app = guess_app(&v, 99);
         // Every creature gets a turn, so the widest portrait is tried too.
-        for _ in 0..14 {
+        for _ in 0..v.creatures.len() {
             let wide = snapshot(&mut app, 120, 40);
             assert!(
                 wide.lines()
@@ -842,8 +842,8 @@ mod tests {
         let v = Vault::load();
         // Every portrait at 80 by 24, the size a terminal opens at: the
         // tallest ones don't fit above the choices, and must not push them off.
-        let mut app = guess_app(&v, 14);
-        for _ in 0..14 {
+        let mut app = guess_app(&v, 99);
+        for _ in 0..v.creatures.len() {
             let options = app.result.rounds[app.i].options.clone();
             let text = snapshot(&mut app, 80, 24);
             assert!(text.contains("GUESS THE GUEST"), "the title stays:\n{text}");

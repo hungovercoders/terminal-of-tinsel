@@ -180,7 +180,10 @@ fn all_opens_on_the_gallery() {
     );
     assert_eq!(m.screen, Screen::Gallery);
     let text = screen(&mut m, 80, 40);
-    assert!(text.contains("14 guests tonight"), "{text}");
+    assert!(
+        text.contains(&format!("{} guests tonight", vault.creatures.len())),
+        "{text}"
+    );
     assert!(text.contains("── Nordic Yule ──"), "{text}");
     assert!(text.contains("▶ 😈 Krampus"), "{text}");
 }

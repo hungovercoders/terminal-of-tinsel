@@ -1016,7 +1016,7 @@ mod tests {
             !v.packs.iter().any(|p| p.id == "hollow"),
             "an empty pack isn't listed"
         );
-        assert_eq!(v.creatures.iter().filter(|c| c.pack == "nordic").count(), 4);
+        assert_eq!(v.creatures.iter().filter(|c| c.pack == "nordic").count(), 6);
     }
 
     #[test]
@@ -1077,7 +1077,7 @@ mod tests {
     fn pack_filter_keeps_only_those_packs() {
         let v = vault().only_packs(&["nordic".into()]).unwrap();
         assert!(v.creatures.iter().all(|c| c.pack == "nordic"));
-        assert_eq!(v.creatures.len(), 4);
+        assert_eq!(v.creatures.len(), 6);
         let e = vault().only_packs(&["elves".into()]).unwrap_err();
         assert_eq!(e.code, Code::BadPack);
     }
