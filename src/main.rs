@@ -1,26 +1,12 @@
 //! Terminal of Tinsel: Channel 25's Midwinter Special, live in your terminal.
 
-mod calendar;
-mod cli;
-mod complete;
-mod creatures;
-mod error;
-mod explorer;
-mod games;
-mod guess;
-mod host;
-mod mash;
-mod packs;
-mod plain;
-mod quiz;
-mod render;
-mod rng;
-mod search;
 #[cfg(test)]
 mod shelldocs;
-mod stocking;
-mod store;
-mod tui;
+
+use terminal_of_tinsel::{
+    calendar, cli, creatures, error, explorer, games, guess, host, mash, packs, quiz, render, rng,
+    stocking, store, tui,
+};
 
 use std::io::{self, IsTerminal, Write};
 use std::process::ExitCode;
