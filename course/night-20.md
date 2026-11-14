@@ -35,7 +35,7 @@ pub fn dir() -> Result<PathBuf> {
 
 On Linux that is `~/.config/terminal-of-tinsel`, on macOS `~/Library/Application Support/terminal-of-tinsel`, and on Windows a folder under `AppData\Roaming`. `HOME_ENV` is `TERMINAL_OF_TINSEL_HOME`. The override exists for tests first: the end-to-end tests set it to a scratch directory on every command, so `cargo test` never touches your real stocking.
 
-`ProjectDirs::from` returns an `Option`, because a machine may have no home directory. `ok_or_else` turns `None` into an error with a hint the player can act on.
+`ProjectDirs::from` returns an `Option`, because a machine may have no home directory, and `ok_or_else` turns `None` into an error with a hint.
 
 ## What is kept
 
@@ -220,7 +220,7 @@ Awarding goes through one method, so no badge can be given twice:
     }
 ```
 
-That `&& let` in the middle of a condition is a let chain: two tests and a pattern match in one `if`.
+That `&& let` is a let chain: two tests and a pattern match in one `if`.
 
 One last detail. `record` passes `self.everything.creatures`, not `self.vault.creatures`. `--pack nordic` narrows the creatures in play, and the badges count every built-in creature whatever was in play, so that playing with one pack cannot earn "Keeper of the Stocking" by capturing six creatures.
 

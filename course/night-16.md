@@ -60,7 +60,7 @@ Every step draws from the same `Rng`. Change the order of the steps and the same
 
 ## Hiding the name
 
-"Which creature is this about? *Krampus* carries birch switches" is not a question. `mask` replaces the creature's names with `▒▒▒▒`. It is done by hand, without a regular expression crate, because the house rule is to keep dependencies few and the job is small enough.
+`mask` replaces the creature's names with `▒▒▒▒`. It is done by hand, without a regular expression crate, because the house rule is to keep dependencies few and the job is small enough.
 
 First it gathers the terms to hide:
 
@@ -222,7 +222,7 @@ The poem's title, *Tomten*, was hidden as a compound of the name.
 
 ## Try it
 
-- Run `cargo run -- quiz yule cat --json -n 3`. Every `creatureId` is `yule-cat`, and the quota gives way so that you still get three.
+- Run `cargo run -- quiz yule cat --json -n 3`. Every `creatureId` is `yule-cat`.
 - Run `cargo run -- quiz --pack dickens --json -n 50` and look for a `"fact"`. There isn't one.
 - In `generate`, change `limit` to `n` and run `cargo test quiz::`. One test fails, and its name says what you broke. Put it back.
 

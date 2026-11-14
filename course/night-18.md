@@ -102,7 +102,7 @@ The portrait's lines are different lengths, so each row is padded with spaces to
     }
 ```
 
-At stage 0 the slice is the first 15% of `order`. At stage 1 it is the first 30%, which contains the first 15%. A longer prefix always includes a shorter one, so a cleared cell stays clear, with no bookkeeping. `frosted` takes `&self` and changes nothing: ask for stage 2 twice and you get the same grid twice, which is what a screen that redraws on every key needs.
+At stage 0 the slice is the first 15% of `order`. At stage 1 it is the first 30%, which contains the first 15%. A longer prefix always includes a shorter one, so a cleared cell stays clear, with no bookkeeping. `frosted` takes `&self` and changes nothing: ask for stage 2 twice and you get the same grid twice.
 
 The result is a grid of `Option<char>`: `Some('/')` where the glass is clear, `None` where it is frosted. `then_some` is a method on `bool` that makes that in one step: `true.then_some(x)` is `Some(x)` and `false.then_some(x)` is `None`. Returning `Option` keeps this module ignorant of what frost looks like. That is the screen's business.
 
@@ -235,13 +235,13 @@ The test uses seed 25. After two presses of space, the top of the screen is:
 │ ░▒ -░░▒*░  \_/░░▒*░ ░--░░░   ░ │   by a poem of 1932
 ```
 
-Two pointed ears, and a legend made famous by a poem of 1932. `guess --json` prints the rounds with their answers, as the quiz does, through a small `RoundJson` struct that leaves the grid and the order out.
+Two pointed ears, and a legend made famous by a poem of 1932. `guess --json` prints the rounds with their answers through a small `RoundJson` struct that leaves the grid and the order out.
 
 ## Try it
 
 - Play `cargo run -- guess -n 3`, and guess one round without pressing space.
 - Play `cargo run -- guess --no-color` and watch the `?` thin out.
-- Run `cargo run -- guess --pack dickens`. Four creatures are enough. Then read `too_few_creatures_is_no_game` to see what happens with two.
+- Read `too_few_creatures_is_no_game` to see what happens with two creatures.
 
 ## 🎄 Festive fact
 
