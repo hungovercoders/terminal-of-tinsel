@@ -100,11 +100,19 @@ fn questions_about(rng: &mut Rng, c: &Creature, all: &[Creature]) -> Vec<Questio
     // the same tradition is left out: a fact about A Christmas Carol fits
     // both of its ghosts, and a decree about the Yule Lads fits their mother
     // too, so offering both would give two right answers.
-    let others: Vec<&str> = all
-        .iter()
-        .filter(|o| o.id != c.id && o.origin != c.origin)
-        .map(|o| o.name.as_str())
-        .collect();
+    let names = |same_tradition: &dyn Fn(&Creature) -> bool| -> Vec<&str> {
+        all.iter()
+            .filter(|o| o.id != c.id && !same_tradition(o))
+            .map(|o| o.name.as_str())
+            .collect()
+    };
+    // Creatures of the same pack share too much as well (Krampus and Čert
+    // both rattle chains), so they are left out while there are enough
+    // creatures from other packs to choose from.
+    let mut others = names(&|o| o.origin == c.origin || o.pack == c.pack);
+    if others.len() < 3 {
+        others = names(&|o| o.origin == c.origin);
+    }
     let question = |kind, prompt: String, clue: Option<String>, explanation: String| Question {
         kind,
         prompt,
@@ -264,13 +272,28 @@ const MASK: &str = "▒▒▒▒";
 /// and accents don't matter, a possessive goes too ("Marley's"), and a
 /// single-word name also hides its compounds ("Krampusnacht").
 pub fn mask(text: &str, c: &Creature) -> String {
-    let mut terms: Vec<Vec<char>> = std::iter::once(c.name.as_str())
+    let folded_term = |t: &str| t.chars().map(fold).collect::<Vec<char>>();
+    // The whole name and each alias, which may hide a compound...
+    let mut terms: Vec<(Vec<char>, bool)> = std::iter::once(c.name.as_str())
         .chain(c.name.strip_prefix("The "))
         .chain(c.aliases.iter().map(String::as_str))
-        .map(|t| t.chars().map(fold).collect::<Vec<char>>())
-        .filter(|t| t.len() >= 3)
+        .map(|t| (folded_term(t), false))
         .collect();
-    terms.sort_by_key(|t| std::cmp::Reverse(t.len()));
+    // ...and each telling word of the name on its own, since facts say "the
+    // Mari", "the Lads" and "the cat". These only match as whole words, so
+    // "cat" doesn't take "catch" with it.
+    const SMALL_WORDS: [&str; 10] = [
+        "the", "of", "de", "la", "le", "to", "and", "yet", "come", "frau",
+    ];
+    terms.extend(
+        c.name
+            .split(|ch: char| !ch.is_alphanumeric())
+            .map(folded_term)
+            .filter(|w| !SMALL_WORDS.iter().any(|s| s.chars().eq(w.iter().copied())))
+            .map(|w| (w, true)),
+    );
+    terms.retain(|(t, _)| t.len() >= 3);
+    terms.sort_by_key(|(t, _)| std::cmp::Reverse(t.len()));
 
     let chars: Vec<char> = text.chars().collect();
     let folded: Vec<char> = chars.iter().copied().map(fold).collect();
@@ -281,13 +304,18 @@ pub fn mask(text: &str, c: &Creature) -> String {
         let at_word_start = i == 0 || !word(folded[i - 1]);
         let hit = at_word_start
             .then(|| {
-                terms.iter().find_map(|term| {
+                terms.iter().find_map(|(term, whole_word)| {
                     let mut end = i + term.len();
                     if !folded[i..].starts_with(term) {
                         return None;
                     }
-                    if term.contains(&' ') {
-                        // A phrase must end at a word boundary.
+                    if *whole_word || term.contains(&' ') {
+                        // A plural goes too ("the Lads", "two goats").
+                        if *whole_word && folded.get(end) == Some(&'s') {
+                            end += 1;
+                        }
+                        // A phrase, or a word of the name, must end at a
+                        // word boundary.
                         if folded.get(end).is_some_and(|ch| word(*ch)) {
                             return None;
                         }
@@ -360,10 +388,16 @@ mod tests {
             if !matches!(q.kind, Kind::Fact | Kind::Quote) {
                 continue;
             }
-            let clue = q.clue.as_deref().unwrap().to_lowercase();
+            let clue = q.clue.as_deref().unwrap();
             let name = q.correct().to_lowercase();
             let name = name.strip_prefix("the ").unwrap_or(&name);
-            assert!(!clue.contains(name), "{name} is named in: {clue}");
+            assert!(
+                !clue.to_lowercase().contains(name),
+                "{name} is named in: {clue}"
+            );
+            // Nor any telling word of it: masking the clue again finds nothing.
+            let c = v.get(&q.creature_id).unwrap();
+            assert_eq!(mask(clue, c), clue, "{} is hinted at", c.name);
         }
     }
 
@@ -381,9 +415,14 @@ mod tests {
             }
             asked += 1;
             let answer = origin(q.correct());
+            let pack = |name: &str| {
+                let c = v.creatures.iter().find(|c| c.name == name).unwrap();
+                c.pack.as_str()
+            };
             for (i, option) in q.options.iter().enumerate() {
                 assert!(
-                    i == q.answer || origin(option) != answer,
+                    i == q.answer
+                        || (origin(option) != answer && pack(option) != pack(q.correct())),
                     "{option} could also be right: {q:?}"
                 );
             }
@@ -458,8 +497,20 @@ mod tests {
             mask("Grýla lives in a cave.", gryla),
             "▒▒▒▒ lives in a cave."
         );
-        // Only whole words: "scat" keeps its cat.
+        // Only whole words: "scat" keeps its cat, and "catch" its catch.
         assert_eq!(mask("scat", cat), "scat");
+        assert_eq!(
+            mask("to catch a cat, or two cats", cat),
+            "to catch a ▒▒▒▒, or two ▒▒▒▒"
+        );
+        // The short forms that facts really use.
+        let mari = v.get("mari-lwyd").unwrap();
+        assert_eq!(
+            mask("the Mari comes in for food", mari),
+            "the ▒▒▒▒ comes in for food"
+        );
+        let lads = v.get("yule-lads").unwrap();
+        assert_eq!(mask("for the Lads to fill", lads), "for the ▒▒▒▒ to fill");
     }
 
     #[test]

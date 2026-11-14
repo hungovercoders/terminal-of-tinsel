@@ -41,15 +41,14 @@ pub fn is_christmas(d: Date) -> bool {
 /// Sleeps until Christmas: 1 on Christmas Eve, 0 on Christmas Day, and from
 /// Boxing Day the count starts again for next year.
 pub fn sleeps_until_christmas(d: Date) -> i64 {
-    let this_year = date(d.year(), 12, 25);
-    let target = if d <= this_year {
-        this_year
-    } else {
-        date(d.year() + 1, 12, 25)
-    };
-    d.until(target)
-        .map(|span| i64::from(span.get_days()))
-        .unwrap_or_default()
+    // `Date::new` rather than `date`, which panics: after Christmas in the
+    // year 9999 there is no next year to count to, and the answer is 0.
+    let christmas = |year: i16| Date::new(year, 12, 25).ok();
+    christmas(d.year())
+        .filter(|this_year| d <= *this_year)
+        .or_else(|| christmas(d.year().checked_add(1)?))
+        .and_then(|target| d.until(target).ok())
+        .map_or(0, |span| i64::from(span.get_days()))
 }
 
 /// The advent calendar door for this date (1 to 24 December), if any.
@@ -180,7 +179,8 @@ const FEASTS: [(i8, i8, &str); 11] = [
     (12, 8, "the Tió de Nadal's homecoming"),
     (12, 13, "St Lucy's Night"),
     (12, 19, "the anniversary of A Christmas Carol"),
-    (12, 21, "the winter solstice"),
+    // The solstice falls on the 21st or the 22nd, depending on the year.
+    (12, 21, "the winter solstice, give or take a day"),
     (12, 24, "Christmas Eve"),
     (12, 25, "Christmas Day"),
     (12, 26, "Boxing Day"),
@@ -271,8 +271,8 @@ fn drawn_bill(d: Date, vault: &Vault, order: &[usize]) -> (usize, usize) {
     let first = order[at];
     // The support act is 1 to n-1 places further on, moving on each lap.
     let second = order[(at + 1 + (day / n) % (n - 1)) % n];
-    let guest = advent_guest(d, vault)
-        .and_then(|(_, guest, _)| vault.creatures.iter().position(|c| c.id == guest.id));
+    let guest = advent_night(d, vault)
+        .and_then(|night| vault.creatures.iter().position(|c| c.id == night.id));
     match guest {
         Some(guest) if guest == first => (guest, second),
         Some(guest) => (guest, first),
@@ -301,9 +301,12 @@ fn bill(d: Date, vault: &Vault, order: &[usize], depth: usize) -> (usize, usize)
     (drawn.0, other.copied().unwrap_or(drawn.1))
 }
 
-/// Whether a date falls within a day of the full moon.
+/// Whether the moon is full on a date: the middle eighth of the lunar month,
+/// a little under two days either side of the moment itself.
 pub fn is_full_moon(d: Date) -> bool {
-    (moon_age(d) - SYNODIC_MONTH / 2.0).abs() < 1.0
+    // The same test the moon's name uses, so a night never has a full moon
+    // in one line and not in the next.
+    moon(d).name == "Full Moon"
 }
 
 /// Whether it's Krampusnacht, the eve of St Nicholas Day.
@@ -321,12 +324,16 @@ pub fn is_twelfth_night(d: Date) -> bool {
 pub struct Note {
     pub emoji: &'static str,
     pub text: String,
+    /// Whether this is the count of sleeps until Christmas, which the
+    /// countdown leaves out because its big number already says it.
+    pub sleeps: bool,
 }
 
 fn note(emoji: &'static str, text: impl Into<String>) -> Note {
     Note {
         emoji,
         text: text.into(),
+        sleeps: false,
     }
 }
 
@@ -379,11 +386,17 @@ pub fn notes(d: Date, creatures: &[Creature]) -> Vec<Note> {
     }
     for a in anniversaries(d, creatures) {
         if let Some(film) = &a.creature.film {
+            // The year comes from the same date the count does.
+            let years = match a.years {
+                1 => "a year".to_string(),
+                n => format!("{n} years"),
+            };
             out.push(note(
                 "🎬",
                 format!(
-                    "On this day in {}, {} was released: {} years ago tonight.",
-                    film.year, film.title, a.years
+                    "On this day in {}, {} was released: {years} ago tonight.",
+                    d.year() - a.years,
+                    film.title
                 ),
             ));
         }
@@ -416,7 +429,10 @@ pub fn notes(d: Date, creatures: &[Creature]) -> Vec<Note> {
     let sleeps = sleeps_until_christmas(d);
     if (1..=60).contains(&sleeps) {
         let noun = if sleeps == 1 { "sleep" } else { "sleeps" };
-        out.push(note("🎄", format!("{sleeps} {noun} until Christmas.")));
+        out.push(Note {
+            sleeps: true,
+            ..note("🎄", format!("{sleeps} {noun} until Christmas."))
+        });
     }
     out
 }
@@ -635,6 +651,37 @@ mod note_tests {
         let (a, b) = double_bill(date(2026, 11, 13), &v).unwrap();
         let (c, e) = double_bill(date(2026, 11, 13), &v).unwrap();
         assert_eq!((&a.id, &b.id), (&c.id, &e.id));
+    }
+
+    #[test]
+    fn the_far_end_of_the_calendar_does_not_panic() {
+        let v = Vault::load();
+        for d in [
+            date(9999, 12, 24),
+            date(9999, 12, 26),
+            date(9999, 12, 31),
+            date(-9999, 1, 1),
+        ] {
+            assert!(sleeps_until_christmas(d) >= 0, "{d}");
+            notes(d, &v.creatures);
+            next_special_night(d, &v.creatures);
+            double_bill(d, &v);
+            moon(d);
+        }
+        assert_eq!(sleeps_until_christmas(date(9999, 12, 26)), 0);
+    }
+
+    #[test]
+    fn the_full_moon_note_and_the_moons_name_agree() {
+        let v = Vault::load();
+        let mut d = date(2026, 1, 1);
+        while d < date(2028, 1, 1) {
+            let named = moon(d).name == "Full Moon";
+            let noted = notes(d, &v.creatures).iter().any(|n| n.emoji == "🌕");
+            assert_eq!(named, noted, "{d}");
+            assert_eq!(named, is_full_moon(d), "{d}");
+            d = d.tomorrow().unwrap();
+        }
     }
 
     #[test]
