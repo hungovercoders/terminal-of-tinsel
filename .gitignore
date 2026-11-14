@@ -24,3 +24,6 @@ node_modules/
 !.claude/skills/
 !.claude/skills/**
 # slopstopper end
+
+# Frames left behind if a demo recording is interrupted.
+docs/demos/.frames/

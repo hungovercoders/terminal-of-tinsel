@@ -698,6 +698,17 @@ fn advent_json_has_24_doors() {
 }
 
 #[test]
+fn an_empty_name_is_an_unknown_creature_not_no_name_at_all() {
+    for command in ["creature", "quiz"] {
+        assert_eq!(
+            json_error(&[command, ""])["error"]["code"],
+            "unknown-creature",
+            "{command}"
+        );
+    }
+}
+
+#[test]
 fn errors_have_stable_codes() {
     assert_eq!(
         json_error(&["creature", "rudolph"])["error"]["code"],

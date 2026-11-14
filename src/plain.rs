@@ -5,27 +5,45 @@
 
 use ratatui::buffer::Buffer;
 
+/// Each drawing character the pages use, with its ASCII stand-in.
+const STAND_INS: [(&str, &str); 29] = [
+    ("╭", "+"),
+    ("╮", "+"),
+    ("╰", "+"),
+    ("╯", "+"),
+    ("╔", "+"),
+    ("╗", "+"),
+    ("╚", "+"),
+    ("╝", "+"),
+    ("─", "-"),
+    ("═", "="),
+    ("│", "|"),
+    ("║", "|"),
+    ("█", "#"),
+    ("▀", "#"),
+    ("▄", "#"),
+    ("▓", "#"),
+    ("▒", "%"),
+    ("░", ":"),
+    ("▌", "_"),
+    ("▶", ">"),
+    ("▲", "^"),
+    ("↑", "^"),
+    ("▼", "v"),
+    ("↓", "v"),
+    ("←", "<"),
+    ("→", ">"),
+    ("•", "-"),
+    ("✔", "*"),
+    ("✘", "x"),
+];
+
 /// The ASCII stand-in for a drawing character, if it is one.
 pub fn ascii(symbol: &str) -> Option<&'static str> {
-    Some(match symbol {
-        "╭" | "╮" | "╰" | "╯" | "╔" | "╗" | "╚" | "╝" => "+",
-        "─" => "-",
-        "═" => "=",
-        "│" | "║" => "|",
-        "█" | "▀" | "▄" | "▓" => "#",
-        "▒" => "%",
-        "░" => ":",
-        "▌" => "_",
-        "▶" => ">",
-        "▲" | "↑" => "^",
-        "▼" | "↓" => "v",
-        "←" => "<",
-        "→" => ">",
-        "•" => "-",
-        "✔" => "*",
-        "✘" => "x",
-        _ => return None,
-    })
+    STAND_INS
+        .iter()
+        .find(|(drawn, _)| *drawn == symbol)
+        .map(|(_, plain)| *plain)
 }
 
 /// Swaps every drawing character on the screen for its ASCII stand-in.

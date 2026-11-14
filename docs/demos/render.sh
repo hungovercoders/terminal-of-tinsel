@@ -9,9 +9,11 @@
 # fontconfig's emoji font.
 # Set TTYD=/path/to/ttyd to pick a specific ttyd binary.
 #
-# Recordings use a fixed TERMINAL_OF_TINSEL_SEED (DEMO_SEED, default 25) and
-# a fixed date (DEMO_DATE, default 2026-12-13) where a tape passes one, so
-# re-recording gives the same questions, portraits and showdowns every time.
+# Recordings use a fixed TERMINAL_OF_TINSEL_SEED (DEMO_SEED, default 25), the
+# tapes that take a date pass one, and every tape starts from the same saved
+# stocking, so re-recording gives the same questions, portraits and showdowns.
+# Two things still follow the real clock: the hero tape's intro (its
+# greeting and notes), and any badge a game earns for the night it's played.
 #
 # Two workarounds live here rather than in the tapes:
 #  - ttyd's browser terminal defaults to Unicode 6 widths, which draws emoji
@@ -26,7 +28,8 @@ cd "$root"
 demos=docs/demos
 assets=docs/assets
 work=$(mktemp -d)
-trap 'rm -rf "$work"' EXIT
+# vhs writes its frames under docs/demos/.frames; clear them however this ends.
+trap 'rm -rf "$work" "$root/$demos/.frames"' EXIT
 
 # Stills keep only their final frame, as a PNG.
 stills=" list random countdown tonight advent stocking "
@@ -76,7 +79,9 @@ chmod +x "$work/bin/bash"
 cargo build --release --quiet
 cp target/release/terminal-of-tinsel "$work/bin/"
 
-# A stocking with some history, so the screenshot has something to show.
+# A stocking with some history, so the screenshot has something to show. It
+# is put back before every tape: the games save to it as they are played.
+seed_stocking() {
 cat > "$config/stocking.json" <<'JSON'
 {
   "version": 1,
@@ -103,6 +108,7 @@ cat > "$config/stocking.json" <<'JSON'
   "mashesPlayed": 6
 }
 JSON
+}
 
 # vhs moves its frames into place with a plain rename, which fails silently
 # across filesystems or into a missing directory, so keep its temp files
@@ -123,6 +129,7 @@ fi
 
 for name in "${names[@]}"; do
   echo "🎬 $name"
+  seed_stocking
   frames="$demos/.frames/$name"
   rm -rf "$frames"
   # Fill in the shared theme, so theme.json is the only place it lives.

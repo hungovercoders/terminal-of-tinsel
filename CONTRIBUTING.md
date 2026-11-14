@@ -124,10 +124,10 @@ Releases are built by [cargo-dist](https://opensource.axo.dev/cargo-dist/) when 
 3. **Update CHANGELOG.md.** [git-cliff](https://git-cliff.org) turns the conventional commits since the last tag into a new section:
 
    ```bash
-   git cliff --unreleased --tag v0.2.0 --prepend CHANGELOG.md
+   git cliff --unreleased --tag v0.2.0 --strip all
    ```
 
-   Then edit it so it reads well for players, not only for developers.
+   CHANGELOG.md is written by hand, so don't let git-cliff edit it. Rename its `## [Unreleased]` heading to the new version and date, check the list git-cliff printed for anything the section has missed, and make sure it reads well for players, not only for developers.
 4. **Commit** (`chore(release): prepare for v0.2.0`) and merge it into `main`.
 5. **Tag** from an up-to-date `main`:
 

@@ -106,7 +106,8 @@ fn run(cli: Cli) -> Result<()> {
 }
 
 impl Show {
-    /// The commands that show something.
+    /// Runs the command. One flat match, so that a new `Command` variant
+    /// fails to compile until it has an arm here.
     fn dispatch(&self, command: Option<Command>) -> Result<()> {
         match command {
             None => self.welcome(),
@@ -117,33 +118,20 @@ impl Show {
                 explore,
                 all,
                 no_intro,
-            }) => self.creature(&name.join(" "), reveal, explore || all, all, no_intro),
+            }) => self.creature(spoken(&name).as_deref(), reveal, explore, all, no_intro),
             Some(Command::Random { daily, date }) => self.random(daily, date.as_deref()),
+            Some(Command::Quiz {
+                creature,
+                questions,
+            }) => self.quiz(spoken(&creature).as_deref(), questions),
+            Some(Command::Guess { rounds }) => self.guess(rounds),
+            Some(Command::Mash { creatures, fast }) => self.mash(&creatures, fast),
+            Some(Command::Stocking { action }) => self.stocking(action),
             Some(Command::Tonight { date, shuffle }) => self.tonight(date.as_deref(), shuffle),
             Some(Command::Countdown { date }) => self.countdown(date.as_deref()),
             Some(Command::Advent { date }) => self.advent(date.as_deref()),
-            Some(other) => self.play_or_keep(other),
-        }
-    }
-
-    /// The games, and the commands that look after what's kept on disk.
-    fn play_or_keep(&self, command: Command) -> Result<()> {
-        match command {
-            Command::Quiz {
-                creature,
-                questions,
-            } => self.quiz(&creature.join(" "), questions),
-            Command::Guess { rounds } => self.guess(rounds),
-            Command::Mash { creatures, fast } => self.mash(&creatures, fast),
-            Command::Stocking { action } => self.stocking(action),
-            Command::Packs { action } => self.packs(action),
-            Command::Completions { shell } => complete_script(shell).map(|s| print(&s)),
-            // Every other command is handled in `dispatch`, which sends only
-            // these here. Looping back would never end if one were missed.
-            _ => Err(TinselError::new(
-                Code::Usage,
-                "that command isn't wired up yet",
-            )),
+            Some(Command::Packs { action }) => self.packs(action),
+            Some(Command::Completions { shell }) => complete_script(shell).map(|s| print(&s)),
         }
     }
 
@@ -178,15 +166,17 @@ impl Show {
     /// A creature's page, or with no name (or when asked to) the explorer.
     fn creature(
         &self,
-        name: &str,
+        name: Option<&str>,
         reveal: bool,
         explore: bool,
         gallery: bool,
         no_intro: bool,
     ) -> Result<()> {
+        // The gallery is a screen of the explorer, so asking for it opens it.
+        let explore = explore || gallery;
         let named = match name {
-            "" => None,
-            name => Some(self.vault.find(name)?),
+            None => None,
+            Some(name) => Some(self.vault.find(name)?),
         };
         if self.json {
             return match named {
@@ -303,7 +293,7 @@ impl Show {
         }
     }
 
-    fn quiz(&self, creature: &str, questions: usize) -> Result<()> {
+    fn quiz(&self, creature: Option<&str>, questions: usize) -> Result<()> {
         if questions == 0 {
             return Err(TinselError::new(
                 Code::BadFlag,
@@ -311,8 +301,8 @@ impl Show {
             ));
         }
         let focus = match creature {
-            "" => None,
-            name => Some(self.vault.find(name)?.id.as_str()),
+            None => None,
+            Some(name) => Some(self.vault.find(name)?.id.as_str()),
         };
         let mut rng = Rng::from_env_or_clock();
         let quiz = quiz::generate(&mut rng, &self.vault.creatures, questions, focus);
@@ -646,6 +636,13 @@ impl Show {
             Err(e) => eprintln!("warning: this session wasn't saved: {e}"),
         }
     }
+}
+
+/// A name given as several words, joined up, or nothing if no word was
+/// given. An empty word is still a name: `creature ""` asks for a creature
+/// called nothing, which is an error, not a request for the explorer.
+fn spoken(words: &[String]) -> Option<String> {
+    (!words.is_empty()).then(|| words.join(" "))
 }
 
 /// Asks before emptying the stocking. Without a terminal to ask on, it

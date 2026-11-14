@@ -2,9 +2,7 @@
   "name": "terminal-of-tinsel",
   "private": true,
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.1",
-    "@lhci/cli": "^0.14.0",
-    "@playwright/test": "^1.40.0",
     "markdownlint-cli": "^0.47.0"
-  }
+  },
+  "description": "Tooling for slopstopper's checks"
 }

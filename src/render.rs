@@ -352,7 +352,7 @@ pub fn creature(p: &Painter, c: &Creature, pack_name: &str, reveal: bool) -> Str
 
 /// Myth or Fact?: the claims, and with `reveal` their verdicts.
 fn creature_myths(p: &Painter, c: &Creature, w: usize, reveal: bool) -> Vec<String> {
-    let (_, accent) = (c.theme.primary.as_str(), c.theme.accent.as_str());
+    let accent = c.theme.accent.as_str();
     let mut out = Vec::new();
     if !c.myths.is_empty() {
         out.push(String::new());
@@ -387,7 +387,7 @@ fn creature_myths(p: &Painter, c: &Creature, w: usize, reveal: bool) -> Vec<Stri
 
 /// From the Page: lines from public-domain sources.
 fn creature_quotes(p: &Painter, c: &Creature, w: usize) -> Vec<String> {
-    let (_, accent) = (c.theme.primary.as_str(), c.theme.accent.as_str());
+    let accent = c.theme.accent.as_str();
     let mut out = Vec::new();
     if !c.quotes.is_empty() {
         out.push(String::new());
@@ -410,7 +410,7 @@ fn creature_quotes(p: &Painter, c: &Creature, w: usize) -> Vec<String> {
 
 /// On Screen: the classic film, where there is one.
 fn creature_film(p: &Painter, c: &Creature, w: usize) -> Vec<String> {
-    let (_, accent) = (c.theme.primary.as_str(), c.theme.accent.as_str());
+    let accent = c.theme.accent.as_str();
     let mut out = Vec::new();
     if let Some(f) = &c.film {
         out.push(String::new());
@@ -475,7 +475,7 @@ fn creature_stats(p: &Painter, c: &Creature, w: usize) -> Vec<String> {
 
 /// Legacy: where the creature turns up today.
 fn creature_legacy(p: &Painter, c: &Creature, w: usize) -> Vec<String> {
-    let (_, accent) = (c.theme.primary.as_str(), c.theme.accent.as_str());
+    let accent = c.theme.accent.as_str();
     let b = p.bullet();
     let mut out = Vec::new();
     if !c.legacy.is_empty() {

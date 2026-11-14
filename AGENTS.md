@@ -87,7 +87,7 @@ DUMP=1 cargo test dump_ -- --nocapture   # print sample explorer and game screen
   and reading the screen back, at small and large sizes. Then try it in a real terminal.
 - **Adding a badge:** add it to `BADGES` in `src/stocking.rs` (the array's length is in its type), award
   it in `apply`, test it there, and add it to the README's badge table. Its emoji must be two columns wide.
-- **Adding a command:** add a variant to `Command` in `src/cli.rs`, handle it in `run` in `src/main.rs`
+- **Adding a command:** add a variant to `Command` in `src/cli.rs`, give it a method on `Show` and an arm in `dispatch` in `src/main.rs`
   (with `--json` output), draw it in `src/render.rs`, regenerate the man pages, and add it to the smoke test in `ci.yml` and to
   `every_command_runs` in `tests/cli.rs`.
 
