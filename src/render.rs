@@ -579,7 +579,7 @@ pub fn mash_round(p: &Painter, bout: &Bout, round: &Round) -> String {
     let w = p.text_width();
     let mut out = vec![p.bold(&format!("Round {} · {}", round.number, round.stat), GOLD)];
     let rolls = format!(
-        "{} rolls {} · {} rolls {}",
+        "{} rolled {} · {} rolled {}",
         bout.a.name, round.roll_a, bout.b.name, round.roll_b
     );
     out.extend(p.wrap(&rolls, w, |l| p.paint(l, DIM)));

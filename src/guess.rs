@@ -85,7 +85,10 @@ impl Round<'_> {
         if stage >= 3 {
             out.push(format!("Origin: {}", self.creature.origin));
         }
-        out
+        // A clue mustn't name the guest, any more than a quiz clue does.
+        out.iter()
+            .map(|clue| crate::quiz::mask(clue, self.creature))
+            .collect()
     }
 }
 
