@@ -26,9 +26,9 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [x] | `mash [a] [b]`, `--fast` | `mash [a] [b]`, `--fast`: the Snowball Showdown | done (P2) |
 | [x] | `crypt` | `stocking` | done (P3) |
 | [x] | `crypt reset`, `-y` / `--yes` | `stocking reset`, `-y` / `--yes` | done (P3) |
-| [ ] | `tonight`, `--shuffle`, `--date` | `tonight`: tonight's Christmas double bill | P4 |
+| [x] | `tonight`, `--shuffle`, `--date` | `tonight`: tonight's Christmas double bill | done (P4) |
 | [x] | `countdown`, `--date` | `countdown`, `--date` | done |
-| [ ] | `countdown` shows the moon and the next anniversary | add both to `countdown` | P4 |
+| [x] | `countdown` shows the moon and the next anniversary | add both to `countdown` | done (P4) |
 | [x] | no equivalent | `advent`, `--date` (Tinsel extra, kept) | done |
 | [ ] | `packs` | `packs` | P5 |
 | [ ] | `packs new <id>` | `packs new <id>` | P5 |
@@ -45,7 +45,7 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [ ] | `--pack` accepts community packs, with "did you mean" | today clap only accepts the four built-in ids; validate at run time instead | P5 |
 | [x] | `--no-color`, `NO_COLOR`, plain when piped | the same | done |
 | [x] | `TERMINAL_OF_TERROR_SEED` | `TERMINAL_OF_TINSEL_SEED` (only `random` and the welcome use it so far) | done |
-| [ ] | the seed fixes quiz, guess, mash, the explorer's host lines and `tonight --shuffle` | all but `tonight --shuffle` done (P1, P2) | P4 |
+| [x] | the seed fixes quiz, guess, mash, the explorer's host lines and `tonight --shuffle` | all but `tonight --shuffle` done (P1, P2) | done (P4) |
 | [x] | a seed that isn't a number warns on stderr and is ignored | check and match | done (P2) |
 | [x] | `TERMINAL_OF_TERROR_HOME` | `TERMINAL_OF_TINSEL_HOME`; otherwise the `directories` crate's config dir | done (P3) |
 
@@ -141,19 +141,19 @@ Badge emoji will be checked against the two-column rule before they land.
 | [x] | nights until Halloween | sleeps until Christmas | done |
 | [x] | 31 Nights of Fright (October), one monster a night | 24 Nights of Advent, one guest a door | done |
 | [x] | the night's monster also tells the Fact of the Night | the advent guest does | done |
-| [ ] | and headlines `tonight` | the advent guest headlines the double bill | P4 |
+| [x] | and headlines `tonight` | the advent guest headlines the double bill | done (P4) |
 | [x] | daily seed `YYYYMMDD` | the same | done |
 | [x] | notes: Halloween, Friday the 13th, anniversaries | notes: Krampusnacht, St Nicholas Day, the Tió, Carol anniversary, Christmas Eve, Boxing Day, Twelfth Night, Epiphany, Yule Lads, Twelve Days | done |
-| [ ] | moon phase (mean synodic month from the 6 January 2000 new moon; name, emoji, illumination) | the moon's age and the full-moon test arrived with the badges (P3); the name, emoji, illumination and `moon` in `countdown --json` to come | P4 |
-| [x] | full-moon note | full-moon note (December's is the Cold Moon) | P4 |
-| [ ] | "N nights until Halloween" note within 60 nights | "N sleeps until Christmas" note within 60 | P4 |
-| [ ] | film anniversaries from `film.releaseDate`: today's and the next | the "next special night": the nearer of the next film anniversary and the next dated feast | P4 |
-| [ ] | `tonight`: a ticket, two features at 9:00 PM and 10:45 PM, the host's intro, notes | a cinema ticket for Channel 25's double bill at 7:00 PM and 8:45 PM | P4 |
-| [ ] | `tonight --json`: `date`, `features[]`, `notes` | the same | P4 |
-| [ ] | `tonight` needs two creatures, else `usage` | the same | P4 |
+| [x] | moon phase (mean synodic month from the 6 January 2000 new moon; name, emoji, illumination) | the moon's age and the full-moon test arrived with the badges (P3); the name, emoji, illumination and `moon` in `countdown --json` to come | done (P4) |
+| [x] | full-moon note | full-moon note (December's is the Cold Moon) | done (P4) |
+| [x] | "N nights until Halloween" note within 60 nights | "N sleeps until Christmas" note within 60 | done (P4) |
+| [x] | film anniversaries from `film.releaseDate`: today's and the next | the "next special night": the nearer of the next film anniversary and the next dated feast | done (P4) |
+| [x] | `tonight`: a ticket, two features at 9:00 PM and 10:45 PM, the host's intro, notes | a cinema ticket for Channel 25's double bill at 7:00 PM and 8:45 PM | done (P4) |
+| [x] | `tonight --json`: `date`, `features[]`, `notes` | the same | done (P4) |
+| [x] | `tonight` needs two creatures, else `usage` | the same | done (P4) |
 | [x] | the explorer's intro shows tonight's notes | the same | done (P1) |
 | [~] | Friday the 13th | no Christmas twin; Krampusnacht takes its badge | - |
-| [ ] | no equivalent | winter solstice note on 21 December (a Tinsel extra, cheap with the moon work) | P4 |
+| [x] | no equivalent | winter solstice note on 21 December (a Tinsel extra, cheap with the moon work) | done (P4) |
 
 ## Data
 
@@ -161,14 +161,14 @@ Badge emoji will be checked against the two-column rule before they land.
 |-|--------|--------|-------|
 | [x] | `id`, `name`, `aliases`, `emoji`, `description`, `origin`, `debut`, `legend`, `myths`, `quotes`, `powers`, `weaknesses`, `stats`, `legacy`, `facts`, `hostIntro`, `theme`, `pack` | all present, same JSON names | done |
 | [x] | `film.title`, `year`, `director`, `star`, `note` | present | done |
-| [ ] | `film.releaseDate`, `studio`, `makeup`, `silent` | add all four as optional | P4 |
+| [x] | `film.releaseDate`, `studio`, `makeup`, `silent` | add all four as optional | done (P4) |
 | [x] | `ascii` from `<id>.txt`, with `\r\n` normalised | add; shown in `--json` as `ascii` | done (P1) |
 | [ ] | `Pack.Source`: "built-in" or a path | add | P5 |
 | [x] | lookup by id, name, alias, partial; ambiguity listed; "did you mean" by edit distance | present, and it folds accents too | done |
 | [x] | "did you mean" lists up to three names | Tinsel suggests one; match Terror | done (P1) |
 | [x] | data tests: every field, 5+ facts, stats 1 to 10, colours, emoji width, unique ids | present | done |
 | [x] | data test: portraits are single-width characters | add with the portraits | done (P1) |
-| [ ] | data test: `film` only where the pack allows | already a house rule; add the test | P4 |
+| [x] | data test: `film` only where the pack allows | Tinsel allows a film in any pack, so the test checks the credits are complete and `releaseDate` agrees with `year` | done (P4) |
 | [ ] | 55 monsters in 6 packs | 14 in 4 today; grow towards it | P6 |
 
 ## Community packs
@@ -287,7 +287,7 @@ and `cargo test` before every PR. Each phase updates the README, `CHANGELOG.md`,
 | 1 (done) | `feature/explorer` | ratatui explorer, portraits, `no-terminal`, search, `--all`, `--no-intro` | Bubble Tea's Elm loop against ratatui's immediate mode; who owns the event loop |
 | 2 (done) | `feature/games` | quiz, guess, mash, the seed everywhere | `math/rand` against a pinned generator; enums with data for question kinds |
 | 3 (done) | `feature/stocking` | store, captures, badges, reset | `os.UserConfigDir` against `directories`; maps of times in serde; atomic writes |
-| 4 | `feature/rituals` | `tonight`, the moon, anniversaries, new film fields | `time.Time` against jiff's civil dates |
+| 4 (done) | `feature/rituals` | `tonight`, the moon, anniversaries, new film fields | `time.Time` against jiff's civil dates |
 | 5 | `feature/packs` | `packs`, community packs, `packs new`, dynamic completion, man pages | `embed.FS` and `fs.FS` against `include_dir` plus `std::fs`; Cobra completion against `CompleteEnv` |
 | 6 | `feature/roster` | new creatures and portraits, advent doors refreshed | nothing new in code: the data tests as the reviewer |
 | 7 | `chore/polish` | tapes and GIFs, CONTRIBUTING, git-cliff, dependabot, .editorconfig, slopstopper | GoReleaser against cargo-dist, start to finish |

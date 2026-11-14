@@ -57,6 +57,7 @@ terminal-of-tinsel list              # meet tonight's guests
 terminal-of-tinsel creature krampus  # read a creature's page
 terminal-of-tinsel quiz              # pull a cracker: the Christmas Cracker Quiz
 terminal-of-tinsel random --daily    # the Fact of the Night
+terminal-of-tinsel tonight           # tonight's Christmas double bill
 terminal-of-tinsel countdown         # sleeps until Christmas
 terminal-of-tinsel advent            # open the advent calendar
 ```
@@ -196,13 +197,46 @@ terminal-of-tinsel stocking reset   # tip it out and start again (-y skips the q
 
 Progress is saved as JSON in your config directory (`~/.config/terminal-of-tinsel/stocking.json` on Linux). Set `TERMINAL_OF_TINSEL_HOME` to keep it somewhere else. The badges count every creature, whatever `--pack` you play with, and the moon is worked out offline.
 
-## 📅 The advent calendar
+## 🌙 Nightly rituals
 
-`advent` shows all 24 doors, opening as December goes on, with tonight's guest in full. `countdown` draws the tree and the sleeps until Christmas, tonight's door, and notes for the special nights: Krampusnacht, St Nicholas Day, the arrival of each Yule Lad, the anniversary of *A Christmas Carol*, the Twelve Days and Twelfth Night.
+Everything here is worked out offline: the moon, the feasts, the film anniversaries and the sleeps until Christmas.
+
+### 🎟️ Tonight's double bill
+
+A cinema ticket for tonight's Channel 25 double bill. The line-up changes every night, and from 1 to 24 December the guest behind that night's advent door tops the bill.
 
 ```bash
-terminal-of-tinsel advent --date 2026-12-12      # pretend it's another day
+terminal-of-tinsel tonight
+terminal-of-tinsel tonight --shuffle           # a different bill
+terminal-of-tinsel tonight --date 2026-12-24   # what's on for Christmas Eve?
+```
+
+### 🎄 The countdown
+
+`countdown` draws the tree and the sleeps until Christmas, tonight's advent door, tonight's moon and the next special night in the diary, with notes for the nights that matter: Krampusnacht, St Nicholas Day, the arrival of each Yule Lad, the anniversary of *A Christmas Carol*, the winter solstice, a full moon, the Twelve Days and Twelfth Night.
+
+```bash
+terminal-of-tinsel countdown
 terminal-of-tinsel countdown --date 2026-12-24
+```
+
+### 📅 The advent calendar
+
+`advent` shows all 24 doors, opening as December goes on, with tonight's guest in full. The same guest tells the Fact of the Night and tops tonight's bill, so every ritual agrees on who's at the door.
+
+```bash
+terminal-of-tinsel advent
+terminal-of-tinsel advent --date 2026-12-12      # pretend it's another day
+```
+
+### ✨ The Fact of the Night
+
+The same fact for everyone all day, and a new one tomorrow. It notices the special nights too: on 31 October it'll remind you that *Scrooge* opened in 1951.
+
+```bash
+terminal-of-tinsel random --daily
+terminal-of-tinsel random --date 2026-12-19
+terminal-of-tinsel random                      # or just any old fact
 ```
 
 ## 📜 The roster

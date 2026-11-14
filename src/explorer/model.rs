@@ -169,7 +169,7 @@ impl<'a> Model<'a> {
             seen: BTreeSet::new(),
             frame: 0,
             greeting: greeting.to_string(),
-            notes: calendar::notes(opts.today)
+            notes: calendar::notes(opts.today, &vault.creatures)
                 .into_iter()
                 // Plain mode has no emoji, here as everywhere.
                 .map(|n| match opts.colour {

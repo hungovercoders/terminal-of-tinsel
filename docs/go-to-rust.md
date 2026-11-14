@@ -153,3 +153,26 @@ Terror's crypt (`internal/crypt`, `internal/store`) becomes Tinsel's stocking (`
   process, where setting an environment variable is a data race (and `unsafe` since the 2024 edition),
   so `load`, `save` and `reset` take the directory as an argument and only `store::dir()` reads the
   environment. The end-to-end tests set the variable per child process, which is safe.
+
+## Phase 4: the rituals
+
+`tonight`, the moon and the anniversaries are ports of Terror's `internal/calendar` and its ticket.
+
+- **A date is not a moment.** Go has one type, `time.Time`, and Terror turns `--date 2026-10-31` into
+  9pm local time on that day so the moon sum has a moment to work with, then strips the time again with
+  a `dateOnly` helper wherever it compares days. jiff separates the two: Tinsel's calendar works in
+  `civil::Date`, which has no time zone and no time of day, so "is it Christmas?" can't be thrown by
+  an hour's difference. The moon sum adds the evening in by hand.
+- **Date arithmetic returns a `Result`.** `today.until(christmas)` and `Date::new(year, 2, 30)` can
+  fail in jiff, and the code has to say what happens then. Go's `time.Date` quietly normalises 30
+  February into March.
+- **Formatting.** Go formats a date by example (`"Monday 2 January 2006"`); jiff uses strftime
+  (`"%A %-d %B %Y"`). The Go way is easier to read and easier to get subtly wrong.
+- **`Option` instead of `(value, ok)`.** Terror's `NextAnniversary` returns three values, the last a
+  `bool`. Tinsel's `next_special_night` returns `Option<SpecialNight>`, and the caller can't forget to
+  look.
+- **Optional fields.** A missing `releaseDate` is the empty string in Go, tested with `== ""`. In
+  Rust it's `Option<String>`, and `#[serde(skip_serializing_if = "Option::is_none")]` keeps it out of
+  the JSON, which Go does with `omitempty`.
+- **Floats don't hash or compare exactly.** The moon's illumination is an `f64`, so `Moon` can't
+  derive `Eq`, only `PartialEq`. Go has no such distinction to trip over, or to be protected by.

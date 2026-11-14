@@ -9,6 +9,8 @@
   "film": {
     "title": "Scrooge",
     "year": 1951,
+    "releaseDate": "1951-10-31",
+    "studio": "Renown Pictures",
     "director": "Brian Desmond Hurst",
     "star": "Michael Hordern",
     "note": "Released in the US as A Christmas Carol, with Alastair Sim as Scrooge."

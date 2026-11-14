@@ -83,10 +83,27 @@ pub struct Debut {
 pub struct Film {
     pub title: String,
     pub year: i32,
+    /// When the film opened, as YYYY-MM-DD, for anniversaries.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub release_date: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub studio: Option<String>,
     pub director: String,
+    /// Who played the creature.
     pub star: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub makeup: Option<String>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub silent: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+}
+
+impl Film {
+    /// The day the film opened, if the data gives one.
+    pub fn released(&self) -> Option<jiff::civil::Date> {
+        self.release_date.as_deref()?.parse().ok()
+    }
 }
 
 /// A popular belief with a verdict and the real story.
@@ -499,6 +516,35 @@ mod tests {
             "A Christmas Carol, Charles Dickens (1843)"
         );
         assert!(!v.get("gryla").unwrap().first_appearance().is_empty());
+    }
+
+    #[test]
+    fn film_credits_are_complete_and_dated_consistently() {
+        for c in vault().creatures {
+            let Some(f) = &c.film else { continue };
+            let id = &c.id;
+            assert!(
+                !f.title.is_empty() && !f.director.is_empty() && !f.star.is_empty(),
+                "{id}: a film needs a title, a director and a star"
+            );
+            assert!(
+                (1888..=2100).contains(&f.year),
+                "{id}: film year {}",
+                f.year
+            );
+            if let Some(date) = &f.release_date {
+                let released = f.released();
+                assert!(
+                    released.is_some(),
+                    "{id}: releaseDate {date} isn't YYYY-MM-DD"
+                );
+                assert_eq!(
+                    i32::from(released.unwrap().year()),
+                    f.year,
+                    "{id}: releaseDate and year disagree"
+                );
+            }
+        }
     }
 
     #[test]
