@@ -101,7 +101,9 @@ pub fn fight<'a>(rng: &mut Rng, a: &'a Creature, b: &'a Creature) -> Bout<'a> {
     };
     for (n, &contest) in order.iter().take(3).enumerate() {
         let (stat, value, line) = CONTESTS[contest];
-        let (stat_a, stat_b) = (value(&a.stats), value(&b.stats));
+        // Stats are 1 to 10, but only the data tests say so: a pack could
+        // claim 255, which must neither overflow nor win by default.
+        let (stat_a, stat_b) = (value(&a.stats).min(10), value(&b.stats).min(10));
         let mut roll = || (stat_a + rng.die(), stat_b + rng.die());
         let (mut roll_a, mut roll_b) = roll();
         // Re-roll a tie a few times; if it won't break, the better stat wins.
@@ -125,7 +127,8 @@ pub fn fight<'a>(rng: &mut Rng, a: &'a Creature, b: &'a Creature) -> Bout<'a> {
             roll_b,
             winner,
             narration: fill(line, a, b, w, l),
-            signature: format!("{}'s signature move: {power}!", w.name),
+            // No possessive: "The Yule Lads's" would be wrong.
+            signature: format!("Signature move from {}: {power}!", mid_sentence(&w.name)),
         });
     }
     let wins_b = bout.rounds.iter().filter(|r| r.winner == 1).count();
@@ -201,7 +204,11 @@ mod tests {
             for r in &bout.rounds {
                 let higher = u8::from(r.roll_b > r.roll_a);
                 assert!(r.roll_a == r.roll_b || r.winner == higher, "{r:?}");
-                assert!(r.signature.starts_with(&bout.round_winner(r).name));
+                let winner = mid_sentence(&bout.round_winner(r).name);
+                assert!(
+                    r.signature
+                        .starts_with(&format!("Signature move from {winner}: "))
+                );
                 assert!(!r.narration.contains('{'), "{}", r.narration);
             }
             let loser = if bout.winner == 0 { b } else { a };

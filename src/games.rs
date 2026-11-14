@@ -43,10 +43,30 @@ fn pick_option(code: KeyCode, cursor: &mut usize, n: usize) -> Option<usize> {
         KeyCode::Down | KeyCode::Char('j') => *cursor = (*cursor + 1) % n,
         KeyCode::Enter => return Some(*cursor),
         KeyCode::Char(c @ '1'..='9') => return Some(c as usize - '1' as usize).filter(|i| *i < n),
-        KeyCode::Char(c @ 'a'..='d') => return Some(c as usize - 'a' as usize).filter(|i| *i < n),
+        // Caps Lock shouldn't stop a letter counting.
+        KeyCode::Char(c) => {
+            let c = c.to_ascii_lowercase();
+            return ('a'..='d')
+                .contains(&c)
+                .then(|| c as usize - 'a' as usize)
+                .filter(|i| *i < n);
+        }
         _ => {}
     }
     None
+}
+
+/// Whether a key was pressed with ctrl or alt, which is never an answer:
+/// ctrl+d must not lock in option 4.
+fn is_chord(key: KeyEvent) -> bool {
+    key.modifiers
+        .intersects(KeyModifiers::CONTROL | KeyModifiers::ALT)
+}
+
+/// The hint for choosing among `n` options: "1-4 or a-d", "1-2 or a-b".
+fn answer_keys(n: usize) -> String {
+    let last = char::from(b'a' + n.clamp(1, 4) as u8 - 1);
+    format!("1-{} or a-{last}", n.clamp(1, 4))
 }
 
 /// One multiple-choice option, marked right or wrong once the player has
@@ -263,11 +283,8 @@ impl QuizApp {
             out.push(Line::default());
             out.extend(keys(ink, &["enter next question", "q quit"], w));
         } else {
-            out.extend(keys(
-                ink,
-                &["1-4 or a-d answer", "↑/↓ + enter", "q quit"],
-                w,
-            ));
+            let answer = format!("{} answer", answer_keys(q.options.len()));
+            out.extend(keys(ink, &[&answer, "↑/↓ + enter", "q quit"], w));
         }
         out
     }
@@ -277,13 +294,14 @@ impl App for QuizApp {
     fn on_key(&mut self, key: KeyEvent) {
         if is_quit(key) || self.finished {
             self.quitting = true;
+        } else if is_chord(key) {
+            // Not an answer, whatever letter came with it.
         } else if self.answered {
             if is_next(key.code) {
                 self.answered = false;
                 self.cursor = 0;
                 if self.i + 1 == self.result.questions.len() {
                     self.finished = true;
-                    self.result.completed = true;
                 } else {
                     self.i += 1;
                 }
@@ -296,6 +314,9 @@ impl App for QuizApp {
             let options = self.result.questions[self.i].options.len();
             if let Some(n) = pick_option(code, &mut self.cursor, options) {
                 self.result.answers[self.i] = Some(n);
+                // The quiz is complete once the last question is answered,
+                // whether or not the player stays for the final score.
+                self.result.completed = self.i + 1 == self.result.questions.len();
                 self.answered = true;
                 self.cursor = n;
                 self.quip = host::quip(&mut self.rng);
@@ -410,6 +431,10 @@ impl<'a> GuessApp<'a> {
                         .enumerate()
                         .map(|(x, cell)| match cell {
                             Some(ch) => Span::styled(ch.to_string(), shown),
+                            // Plain mode has no colour to tell frost from
+                            // portrait, so the frost is one character that
+                            // no portrait is drawn with.
+                            None if !ink.colour => Span::raw("?"),
                             None => Span::styled(guess::frost(x, y).to_string(), ink.dim()),
                         })
                         .collect::<Vec<_>>(),
@@ -459,11 +484,9 @@ impl<'a> GuessApp<'a> {
             .options
             .iter()
             .map(|o| o.width() + 5)
-            .chain([
-                guess::status(guess::CLEAR, false).width(),
-                guess::status(guess::CLEAR, true).width(),
-                24,
-            ])
+            // The status line wraps, so it doesn't need the room; 24
+            // columns is the least that reads comfortably.
+            .chain([24])
             .max()
             .unwrap_or(24);
         let room = w.saturating_sub(window_width + 3);
@@ -536,7 +559,7 @@ impl<'a> GuessApp<'a> {
                 ink,
                 &[
                     "space clear the frost",
-                    "1-4 guess",
+                    &format!("{} guess", answer_keys(round.options.len())),
                     "↑/↓ + enter",
                     "q quit",
                 ],
@@ -551,11 +574,12 @@ impl App for GuessApp<'_> {
     fn on_key(&mut self, key: KeyEvent) {
         if is_quit(key) || self.finished {
             self.quitting = true;
+        } else if is_chord(key) {
+            // Not a guess, whatever letter came with it.
         } else if self.answered {
             if is_next(key.code) {
                 if self.i + 1 == self.result.rounds.len() {
                     self.finished = true;
-                    self.result.completed = true;
                 } else {
                     self.i += 1;
                     self.stage = 0;
@@ -570,6 +594,7 @@ impl App for GuessApp<'_> {
             if let Some(n) = pick_option(key.code, &mut self.cursor, round.options.len()) {
                 round.chosen = Some(n);
                 round.stage = self.stage;
+                self.result.completed = self.i + 1 == self.result.rounds.len();
                 self.answered = true;
                 self.cursor = n;
                 self.quip = host::quip(&mut self.rng);
@@ -876,6 +901,52 @@ mod tests {
                 press(&mut guess, code);
             }
         }
+    }
+
+    #[test]
+    fn a_game_is_complete_once_the_last_answer_is_in() {
+        let v = Vault::load();
+        let mut app = quiz_app(&v, 2);
+        press(&mut app, KeyCode::Char('1'));
+        assert!(!app.result.completed);
+        press(&mut app, KeyCode::Enter);
+        press(&mut app, KeyCode::Char('1'));
+        // Quitting on the last reveal, before the final score, still counts.
+        press(&mut app, KeyCode::Char('q'));
+        assert!(app.into_result().completed);
+        let mut app = guess_app(&v, 1);
+        press(&mut app, KeyCode::Char('1'));
+        press(&mut app, KeyCode::Char('q'));
+        assert!(app.into_result().completed);
+    }
+
+    #[test]
+    fn letters_ignore_caps_lock_and_chords_are_not_answers() {
+        let v = Vault::load();
+        let mut app = quiz_app(&v, 3);
+        app.on_key(KeyEvent::new(KeyCode::Char('d'), KeyModifiers::CONTROL));
+        app.on_key(KeyEvent::new(KeyCode::Char('a'), KeyModifiers::ALT));
+        assert!(!app.answered, "ctrl+d and alt+a are not answers");
+        app.on_key(KeyEvent::new(KeyCode::Char('A'), KeyModifiers::SHIFT));
+        assert!(app.answered, "a capital A is");
+        assert_eq!(app.result.answers[0], Some(0));
+        assert_eq!(answer_keys(4), "1-4 or a-d");
+        assert_eq!(answer_keys(2), "1-2 or a-b");
+    }
+
+    #[test]
+    fn plain_frost_is_one_character_no_portrait_uses() {
+        let v = Vault::load();
+        assert!(v.creatures.iter().all(|c| !c.ascii.contains('?')));
+        let mut rng = Rng::new(25);
+        let mut app = GuessApp::new(guess::rounds(&mut rng, &v.creatures, 1), rng, false);
+        let frosted = snapshot(&mut app, 100, 30).matches('?').count();
+        for _ in 0..4 {
+            press(&mut app, KeyCode::Char(' '));
+        }
+        // "Who's at the window?" keeps its own question mark.
+        assert!(frosted > 100, "{frosted}");
+        assert_eq!(snapshot(&mut app, 100, 30).matches('?').count(), 1);
     }
 
     /// `DUMP=1 cargo test dump_games -- --nocapture` prints sample screens.
