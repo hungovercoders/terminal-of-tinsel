@@ -312,6 +312,14 @@ The man pages and completion scripts in `man/` and `completions/` are generated 
 
 Releases are built by [cargo-dist](https://opensource.axo.dev/cargo-dist/) for macOS, Linux and Windows on Intel and ARM. Pushing a `v*` tag runs `.github/workflows/release.yml`, which builds the archives and installers, creates the GitHub release and pushes a formula to `hungovercoders/homebrew-tap`. That last step needs a `HOMEBREW_TAP_TOKEN` secret with write access to the tap. Run `dist plan` to preview a release.
 
+## 🤝 Contributing
+
+New creatures, packs and fixes are all welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for every creature field, how community packs work and how releases are cut.
+
+For any task not covered above, read [`docs/README.md`](./docs/README.md) for the routing table for every doc in this repo.
+
+See [CHANGELOG.md](CHANGELOG.md) for what's changed.
+
 ## 📜 Licence
 
 [CC0 1.0](LICENSE), like Terminal of Terror. Quotes come only from public-domain sources.

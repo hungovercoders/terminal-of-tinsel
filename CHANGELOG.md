@@ -56,6 +56,14 @@
   Lussi has the 13th, her own night, and the Wild Hunt the 21st, the longest.
 - Auntie Aerial has sign-off lines, and a special greeting on Christmas Eve and Christmas Day.
 
+### For contributors
+
+- CONTRIBUTING.md, with every creature field, community packs, the demo tapes and the release steps.
+- slopstopper's hygiene and security checks, with its pre-push hook and `task ss:*` tasks.
+- git-cliff for the changelog, dependabot for Cargo, npm and GitHub Actions, `.editorconfig` and
+  `.gitattributes`.
+- VHS tapes and a render script for the README demos, in `docs/demos/`.
+
 ### Changed
 
 - `--pack` accepts any pack that's loaded, and an unknown one gets a "did you mean" and the list to

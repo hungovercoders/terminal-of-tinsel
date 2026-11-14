@@ -4,7 +4,7 @@ Terminal of Tinsel is a Rust CLI about the creatures of Christmas folklore, pres
 Christmas TV host, Auntie Aerial, on Channel 25's Midwinter Special. It's the Rust sister project of
 Terminal of Terror (Go). It uses **clap** (commands), **serde** (data), **ratatui** with its crossterm backend (the
 interactive explorer), **owo-colors** and **textwrap** (printed output) and **jiff** (dates).
-[docs/parity.md](docs/parity.md) is the checklist of what Terror has and where Tinsel has got to.
+Before you add a feature Terror already has, read [docs/parity.md](docs/parity.md) for the checklist of what Terror has and the decisions taken.
 
 ## Layout
 
@@ -90,3 +90,13 @@ DUMP=1 cargo test dump_ -- --nocapture   # print sample explorer and game screen
 - **Adding a command:** add a variant to `Command` in `src/cli.rs`, handle it in `run` in `src/main.rs`
   (with `--json` output), draw it in `src/render.rs`, regenerate the man pages, and add it to the smoke test in `ci.yml` and to
   `every_command_runs` in `tests/cli.rs`.
+
+Before you add or edit a creature or a pack, read [CONTRIBUTING.md](CONTRIBUTING.md) for every creature field with a full example.
+Before you cut a release, read [CONTRIBUTING.md](CONTRIBUTING.md) "Releasing" for the git-cliff changelog and tagging steps.
+Before you change the explorer or a game screen, read [docs/ui.md](docs/ui.md) for the files, the screen tests and plain mode.
+For any task not covered above, read [`docs/README.md`](./docs/README.md) for the routing table for every doc in this repo.
+
+## Git
+
+Conventional commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`), one branch and pull request per piece of work.
+`task ss:hygiene:test` runs slopstopper's static checks, which are also the pre-push hook.

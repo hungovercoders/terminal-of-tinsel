@@ -6,7 +6,7 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 - `[x]` Tinsel has it already (v0.1.0)
 - `[ ]` to build, in the phase shown (P1 to P7)
 - `[~]` deliberately different, with the reason
-- `[?]` needs a decision: see [Decisions](#decisions)
+- `[?]` needs a decision: see [roadmap.md](roadmap.md)
 
 ## Commands
 
@@ -100,7 +100,7 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 
 | | Terror | Tinsel | Phase |
 |-|--------|--------|-------|
-| [x] | `progress.json` in the config dir, written atomically | `stocking.json`, written to a temp file and renamed | done (P3) |
+| [x] | a progress file in the config dir, written atomically | the stocking's JSON file, written to a temp file and renamed | done (P3) |
 | [x] | fields: `version`, `knowledge`, `captured`, `badges`, `seen`, games played and best scores | the same fields | done (P3) |
 | [x] | a monster is captured at 3 correct answers (quiz or guess) | a creature goes in the stocking at 3 | done (P3) |
 | [x] | games and the explorer record after play; unlocks are announced | the same | done (P3) |
@@ -195,7 +195,7 @@ Badge emoji will be checked against the two-column rule before they land.
 | [~] | a Release button (`workflow_dispatch`) that tags and publishes | cargo-dist owns `release.yml` and is tag-driven; left as it is | - |
 | [x] | CI: format, lint, tests on three systems, smoke test | present, plus MSRV 1.88 | done |
 | [x] | smoke test covers every command, `--json`, plain output, error codes, `packs new`, no-terminal refusals | the same | done (P1 to P5) |
-| [ ] | CI checks the release config (`goreleaser check`) | `dist plan` in CI | P7 |
+| [x] | CI checks the release config (`goreleaser check`) | cargo-dist's own `plan` job already runs `dist plan` on every pull request | done |
 | [x] | CI runs with the home variable pointed at a scratch directory | the same from P3 | done (P3) |
 
 ## Repo extras
@@ -204,91 +204,18 @@ Badge emoji will be checked against the two-column rule before they land.
 |-|--------|--------|-------|
 | [x] | `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`, `LICENSE` (CC0), `Taskfile.yml`, `mise.toml` | present | done |
 | [~] | README says MIT; the LICENSE file is CC0 | Tinsel says CC0 in both (Terror's badge looks like the slip, worth fixing there) | - |
-| [ ] | `CONTRIBUTING.md`: creature fields, community packs, demos, releasing, commits | write it | P7 |
-| [ ] | `.editorconfig`, `.gitattributes` | add, with Rust in place of Go | P7 |
-| [ ] | `.github/dependabot.yml`: gomod, npm, github-actions | cargo and github-actions | P7 |
-| [ ] | `cliff.toml` and the git-cliff release step | the same | P7 |
-| [ ] | VHS tapes, `render.sh`, `theme.json`; hero, quiz, guess and mash GIFs; list, random, countdown, tonight and crypt stills | the same set, plus advent and stocking; seed 25 | P7 |
-| [ ] | `docs/README.md` routing table, `docs/ui.md` | the same | P7 |
+| [x] | `CONTRIBUTING.md`: creature fields, community packs, demos, releasing, commits | write it | done (P7) |
+| [x] | `.editorconfig`, `.gitattributes` | add, with Rust in place of Go | done (P7) |
+| [x] | `.github/dependabot.yml`: gomod, npm, github-actions | cargo and github-actions | done (P7) |
+| [x] | `cliff.toml` and the git-cliff release step | the same | done (P7) |
+| [ ] | VHS tapes, a render script and a theme; hero, quiz, guess and mash GIFs; list, random, countdown, tonight and crypt stills | the tapes, the render script and the theme are in `docs/demos/` (P7); the GIFs and stills are not recorded yet, because that needs ttyd 1.7.7 or newer | P7, recording to do |
+| [x] | `docs/README.md` routing table, `docs/ui.md` | the same | done (P7) |
 | [ ] | README: programme table, keys, games, badges, rituals, roster by pack, command reference | grow with each phase | P1 to P7 |
 | [ ] | slopstopper: `.slopstopper.yml` (profile `ui`), `Taskfile.ss.yml`, `ss-*.yml`, `.githooks/pre-push`, the `slopstopper-cli` pin, two Claude skills | the same installer: profile `library` in P7, switched to `ui` when the website lands | P7, P8 |
 | [ ] | `package.json`, `.markdownlint.json`, `.zap/`, `public/_headers`, `wrangler.jsonc` | website tooling, with the website | P8 |
-| [ ] | website: a Go generator, a page per monster, the course, Cloudflare Workers Builds | a Rust generator, a page per creature, Cloudflare: see [The website](#the-website-phase-8) | P8 |
+| [ ] | website: a Go generator, a page per monster, the course, Cloudflare Workers Builds | a Rust generator, a page per creature, Cloudflare: see [website-plan.md](website-plan.md) | P8 |
 | [ ] | Count Cathode's Night School, 31 nights | Auntie Aerial's Night School, 24 nights; stretch goal; ask first | stretch |
 | [ ] | `TUTORIAL.md` pointing at the course | only with the course | stretch |
 | [x] | no equivalent | `docs/go-to-rust.md`, updated every phase | ongoing |
 
-## New dependencies to vet
-
-Each gets its default features and tree checked before it lands, and MSRV 1.88 must still pass.
-
-| Phase | Crate | Why |
-|-------|-------|-----|
-| P1, done | `ratatui` 0.30 (default features off, `crossterm` backend only; crossterm comes re-exported, so it isn't a direct dependency) | the explorer and the game screens. MSRV 1.88, the same as Tinsel's. About 45 more crates |
-| P3, done | `directories` 6.0 (no features; brings `dirs-sys` and `option-ext`, which is MPL-2.0) | the config dir |
-| P5, done | `clap_complete` feature `unstable-dynamic` (adds `shlex` and `is_executable`) | `CompleteEnv`; it's behind an unstable feature flag, so the committed scripts in `completions/` show any change |
-| P5, done | `clap_mangen` 0.3 as a dev-dependency (adds `roff`) | man pages; never in the shipped binary |
-
-No `regex` (the quiz's name masking is small enough to write by hand) and no `rand` (SplitMix64 stays, so
-seeded games never change between releases).
-
-## Decisions
-
-Settled with the maintainer on 12 November 2026.
-
-1. **`creature <name>` with a terminal** prints the static page; `--explore` (`-x`) opens the explorer on
-   that creature. Done in P1.
-2. **The Dickens pack is an engraving.** In. Done in P1.
-3. **Next anniversary** becomes the "next special night": the nearer of the next film anniversary and the
-   next dated feast. P4.
-4. **Man pages in the archives.** cargo-dist copies extra files into each archive but has no "run this
-   first" step, so the files must already exist. Plan: commit generated `man/` and `completions/`, with a
-   test that fails when they no longer match the command tree. The alternative, a hidden command run by a
-   hand-edited `release.yml`, was explained and not chosen; say so before P5 if you'd rather have it.
-5. **Slopstopper and the website.** The website is planned (P8), not a stretch goal. Slopstopper goes in
-   with profile `library` in P7 and moves to `ui` in P8. P7 needs read access to
-   `hungovercoders/slopstopper`.
-6. **Names:** the Christmas Cracker Quiz, Guess the Guest, the Snowball Showdown, the Stocking, and the
-   badge names above.
-7. **Order:** as numbered.
-
-Still to ask: the Night School course (a stretch goal), and for the website a domain name and the
-go-ahead to connect Cloudflare.
-
-## The website (phase 8)
-
-Terror's site is generated from the repository by `go run ./site` and published to Cloudflare by Workers
-Builds on every push to `main`. Tinsel's follows the same shape.
-
-| | Terror | Tinsel |
-|-|--------|--------|
-| [ ] | `site/` Go program reading `internal/monsters` | a `site` workspace member reading the same pack data as the CLI, which means moving the CLI's modules behind a `src/lib.rs`; cargo-dist keeps shipping only the CLI |
-| [ ] | `html/template` files, one per page kind plus a base | the same pages from a small template crate (to be vetted) or plain Rust |
-| [ ] | pages: home, roster, one per monster, privacy, 404 | home, roster, one per creature with its portrait and colours, the advent calendar (a Tinsel extra), privacy, 404 |
-| [ ] | course pages rendered from `course/` | only if the Night School stretch goal goes ahead |
-| [ ] | `sitemap.xml`, `robots.txt`, `llms.txt` generated | the same |
-| [ ] | no inline styles or scripts; CSP in `public/_headers`; per-monster colours as generated CSS classes | the same |
-| [ ] | self-hosted fonts with their licences | the same, in a Christmas-card pairing |
-| [ ] | README install, games and rituals copy repeated on the landing page | the same |
-| [ ] | hero GIF and screenshots from `docs/assets`; a social card | the same, from the P7 recordings |
-| [ ] | `go test ./site` builds the site and checks every internal link | a test that builds into a temp dir and checks every link |
-| [ ] | `wrangler.jsonc`, Workers Builds deploys `main` | the same, once a Cloudflare project and domain are agreed |
-| [ ] | slopstopper profile `ui`: smoke, e2e, accessibility, SEO, links, web vitals, DAST | switch the profile and set the production URL |
-| [ ] | `docs/website.md` | the same |
-
-## Phases
-
-One branch and one PR each, conventional commits, `cargo fmt`, `cargo clippy --all-targets -- -D warnings`
-and `cargo test` before every PR. Each phase updates the README, `CHANGELOG.md`, `AGENTS.md` and
-`docs/go-to-rust.md`.
-
-| Phase | Branch | Contents | go-to-rust.md teaches |
-|-------|--------|----------|-----------------------|
-| 1 (done) | `feature/explorer` | ratatui explorer, portraits, `no-terminal`, search, `--all`, `--no-intro` | Bubble Tea's Elm loop against ratatui's immediate mode; who owns the event loop |
-| 2 (done) | `feature/games` | quiz, guess, mash, the seed everywhere | `math/rand` against a pinned generator; enums with data for question kinds |
-| 3 (done) | `feature/stocking` | store, captures, badges, reset | `os.UserConfigDir` against `directories`; maps of times in serde; atomic writes |
-| 4 (done) | `feature/rituals` | `tonight`, the moon, anniversaries, new film fields | `time.Time` against jiff's civil dates |
-| 5 (done) | `feature/packs` | `packs`, community packs, `packs new`, dynamic completion, man pages | `embed.FS` and `fs.FS` against `include_dir` plus `std::fs`; Cobra completion against `CompleteEnv` |
-| 6 (done) | `feature/roster` | new creatures and portraits, advent doors refreshed | nothing new in code: the data tests as the reviewer |
-| 7 | `chore/polish` | tapes and GIFs, CONTRIBUTING, git-cliff, dependabot, .editorconfig, slopstopper | GoReleaser against cargo-dist, start to finish |
-| 8 | `feature/website` | the site generator, its pages and tests, Cloudflare hosting, slopstopper profile `ui` | `html/template` and `go run` against a workspace member; sharing code between a binary and a generator |
+The decisions taken, the dependencies vetted and the phases are in [roadmap.md](roadmap.md).
