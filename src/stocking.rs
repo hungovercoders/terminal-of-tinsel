@@ -210,52 +210,77 @@ impl Unlocks<'_> {
 /// Records an outcome in the progress and reports anything newly unlocked.
 /// `all` is every creature, whatever `--pack` says: the badges count them all.
 pub fn apply<'a>(p: &mut Progress, all: &'a [Creature], o: &Outcome) -> Unlocks<'a> {
-    let when = o.now.strftime("%Y-%m-%dT%H:%M:%S").to_string();
-    let mut unlocks = Unlocks::default();
-    let mut award = |p: &mut Progress, earned: bool, id: &str| {
+    let mut awards = Awards {
+        when: o.now.strftime("%Y-%m-%dT%H:%M:%S").to_string(),
+        unlocks: Unlocks::default(),
+    };
+    game_badges(p, o, &mut awards);
+    // Playing at a memorable time. Reading in the explorer isn't playing.
+    if o.kind != Kind::Explore {
+        night_badges(p, o, &mut awards);
+    }
+    learn(p, all, o, &mut awards);
+    collection_badges(p, all, &mut awards);
+    awards.unlocks
+}
+
+/// What one session has earned so far, and when.
+struct Awards<'a> {
+    when: String,
+    unlocks: Unlocks<'a>,
+}
+
+impl Awards<'_> {
+    /// Gives a badge, if it's earned and not already held.
+    fn give(&mut self, p: &mut Progress, earned: bool, id: &str) {
         if earned
             && !p.badges.contains_key(id)
             && let Some(b) = BADGES.iter().find(|b| b.id == id)
         {
-            p.badges.insert(id.to_string(), when.clone());
-            unlocks.badges.push(*b);
+            p.badges.insert(id.to_string(), self.when.clone());
+            self.unlocks.badges.push(*b);
         }
-    };
+    }
+}
 
-    // The game itself.
+/// The game itself: its records and its own badges.
+fn game_badges(p: &mut Progress, o: &Outcome, awards: &mut Awards) {
     let finished = o.completed && o.total > 0;
     match o.kind {
         Kind::Quiz if finished => {
             p.quizzes_played += 1;
             p.best_quiz_score = p.best_quiz_score.max(o.score);
-            award(p, true, "first-cracker");
-            award(p, o.score == 100 && o.total >= 5, "top-of-the-tree");
+            awards.give(p, true, "first-cracker");
+            awards.give(p, o.score == 100 && o.total >= 5, "top-of-the-tree");
         }
         Kind::Guess => {
             if finished {
                 p.guesses_played += 1;
                 p.best_guess_score = p.best_guess_score.max(o.score);
             }
-            award(p, o.frost_reader, "frost-reader");
+            awards.give(p, o.frost_reader, "frost-reader");
         }
         Kind::Mash => {
             p.mashes_played += 1;
-            award(p, true, "snowball-referee");
+            awards.give(p, true, "snowball-referee");
         }
         _ => {}
     }
+}
 
-    // Playing at a memorable time. Reading in the explorer isn't playing.
-    if o.kind != Kind::Explore {
-        let today = o.now.date();
-        award(p, o.now.hour() < 4, "up-past-bedtime");
-        award(p, calendar::is_full_moon(today), "cold-moon");
-        award(p, calendar::is_krampusnacht(today), "krampusnacht");
-        award(p, calendar::is_christmas(today), "christmas-spirit");
-        award(p, calendar::is_twelfth_night(today), "twelfth-nighter");
-    }
+/// Badges for playing on a memorable night.
+fn night_badges(p: &mut Progress, o: &Outcome, awards: &mut Awards) {
+    let today = o.now.date();
+    awards.give(p, o.now.hour() < 4, "up-past-bedtime");
+    awards.give(p, calendar::is_full_moon(today), "cold-moon");
+    awards.give(p, calendar::is_krampusnacht(today), "krampusnacht");
+    awards.give(p, calendar::is_christmas(today), "christmas-spirit");
+    awards.give(p, calendar::is_twelfth_night(today), "twelfth-nighter");
+}
 
-    // What was read and what was known.
+/// What was read and what was known, and any creature that tips into the
+/// stocking as a result.
+fn learn<'a>(p: &mut Progress, all: &'a [Creature], o: &Outcome, awards: &mut Awards<'a>) {
     for id in &o.seen {
         p.seen.insert(id.clone(), true);
     }
@@ -265,38 +290,41 @@ pub fn apply<'a>(p: &mut Progress, all: &'a [Creature], o: &Outcome) -> Unlocks<
     for c in all {
         let known = p.knowledge.get(&c.id).copied().unwrap_or(0);
         if known >= CAPTURE_AT && !p.captured.contains_key(&c.id) {
-            p.captured.insert(c.id.clone(), when.clone());
-            unlocks.captured.push(c);
+            p.captured.insert(c.id.clone(), awards.when.clone());
+            awards.unlocks.captured.push(c);
         }
     }
+}
 
-    // What the stocking holds now.
-    let held = |c: &&Creature| p.captured.contains_key(&c.id);
-    let every = |group: &dyn Fn(&Creature) -> bool| {
-        let members: Vec<&Creature> = all.iter().filter(|c| group(c)).collect();
-        !members.is_empty() && members.iter().all(held)
-    };
+/// Whether every creature in a group is in the stocking. An empty group
+/// earns nothing.
+fn holds_every(p: &Progress, all: &[Creature], group: impl Fn(&Creature) -> bool) -> bool {
+    let mut members = all.iter().filter(|c| group(c)).peekable();
+    members.peek().is_some() && members.all(|c| p.captured.contains_key(&c.id))
+}
+
+/// Badges for what the stocking holds and what has been read.
+fn collection_badges(p: &mut Progress, all: &[Creature], awards: &mut Awards) {
     let stocking_filler = !p.captured.is_empty();
     let scholar = !all.is_empty() && all.iter().all(|c| p.seen.contains_key(&c.id));
-    let matinee = every(&|c| c.film.is_some());
-    let midwinter: Vec<&Creature> = all.iter().filter(|c| c.pack == "midwinter").collect();
-    let wanderer = !midwinter.is_empty()
-        && midwinter.iter().filter(|c| held(c)).count() >= midwinter.len().min(5);
-    let packs: Vec<bool> = PACK_BADGES
-        .iter()
-        .map(|(pack, _)| every(&|c| c.pack == *pack))
-        .collect();
-    let keeper = every(&|_| true);
+    let matinee = holds_every(p, all, |c| c.film.is_some());
+    let midwinter = all.iter().filter(|c| c.pack == "midwinter");
+    let wandered = midwinter
+        .clone()
+        .filter(|c| p.captured.contains_key(&c.id))
+        .count();
+    let wanderer = wandered > 0 && wandered >= midwinter.count().min(5);
+    let packs = PACK_BADGES.map(|(pack, _)| holds_every(p, all, |c| c.pack == pack));
+    let keeper = holds_every(p, all, |_| true);
 
-    award(p, stocking_filler, "stocking-filler");
-    award(p, scholar, "fireside-scholar");
-    award(p, matinee, "matinee-regular");
-    award(p, wanderer, "midwinter-wanderer");
+    awards.give(p, stocking_filler, "stocking-filler");
+    awards.give(p, scholar, "fireside-scholar");
+    awards.give(p, matinee, "matinee-regular");
+    awards.give(p, wanderer, "midwinter-wanderer");
     for ((_, id), earned) in PACK_BADGES.iter().zip(packs) {
-        award(p, earned, id);
+        awards.give(p, earned, id);
     }
-    award(p, keeper, "keeper");
-    unlocks
+    awards.give(p, keeper, "keeper");
 }
 
 #[cfg(test)]

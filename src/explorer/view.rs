@@ -406,163 +406,202 @@ pub fn body_height(m: &Model) -> usize {
     h.saturating_sub(detail_header(m).len() + footer(m, DETAIL_KEYS).len() + 1)
 }
 
+/// One section of a creature's page, at a width.
+struct Page<'a> {
+    m: &'a Model<'a>,
+    c: &'a Creature,
+    p: &'a Palette,
+    width: usize,
+}
+
 fn tab_content(m: &Model, tab: Tab, c: &Creature, p: &Palette, width: usize) -> Lines {
-    let heading = |title: &str| {
+    let page = Page { m, c, p, width };
+    match tab {
+        Tab::Facts => page.facts(),
+        Tab::Legend => page.legend(),
+        Tab::Film => page.film(),
+        Tab::Myths => page.myths(),
+        Tab::Quotes => page.quotes(),
+        Tab::Stats => page.stats(),
+        Tab::Legacy => page.legacy(),
+    }
+}
+
+impl Page<'_> {
+    fn heading(&self, title: &str) -> Lines {
         vec![
-            Line::styled(title.to_string(), heading_style(m)),
+            Line::styled(title.to_string(), heading_style(self.m)),
             Line::default(),
         ]
-    };
-    let bullets = |items: &[String], style: Style| -> Lines {
+    }
+
+    fn bullets(&self, items: &[String], style: Style) -> Lines {
         items
             .iter()
-            .flat_map(|item| hanging("•", p.accent, item, width, style))
+            .flat_map(|item| hanging("•", self.p.accent, item, self.width, style))
             .collect()
-    };
-    let meta = fg(m, rgb(GREEN)).add_modifier(Modifier::ITALIC);
-    match tab {
-        Tab::Facts => {
-            let mut out = heading("Festive Facts");
-            out.extend(bullets(&c.facts, p.body));
+    }
+
+    /// The style of the small print: origins, dates, notes.
+    fn meta(&self) -> Style {
+        fg(self.m, rgb(GREEN)).add_modifier(Modifier::ITALIC)
+    }
+
+    fn facts(&self) -> Lines {
+        let mut out = self.heading("Festive Facts");
+        out.extend(self.bullets(&self.c.facts, self.p.body));
+        out.push(Line::default());
+        out.extend(wrap(
+            &format!("Origin: {}", self.c.origin),
+            self.width,
+            self.meta(),
+        ));
+        out.extend(wrap(
+            &format!("First appeared: {}", self.c.first_appearance()),
+            self.width,
+            self.meta(),
+        ));
+        out
+    }
+
+    fn legend(&self) -> Lines {
+        let mut out = self.heading("The Legend");
+        out.extend(wrap(&self.c.legend, self.width, self.p.body));
+        out
+    }
+
+    fn film(&self) -> Lines {
+        let mut out = self.heading("On Screen");
+        if let Some(f) = &self.c.film {
+            out.push(Line::styled(
+                format!("{} ({})", f.title, f.year),
+                self.p.primary.add_modifier(Modifier::BOLD),
+            ));
             out.push(Line::default());
-            out.extend(wrap(&format!("Origin: {}", c.origin), width, meta));
             out.extend(wrap(
-                &format!("First appeared: {}", c.first_appearance()),
-                width,
-                meta,
+                &format!("Directed by {}", f.director),
+                self.width,
+                self.p.body,
             ));
-            out
+            out.extend(wrap(
+                &format!("Starring {} as {}", f.star, self.c.name),
+                self.width,
+                self.p.body,
+            ));
+            let credits = [
+                (
+                    "Released",
+                    f.released().map(|d| d.strftime("%-d %B %Y").to_string()),
+                ),
+                ("Studio", f.studio.clone()),
+                ("Make-up", f.makeup.clone()),
+                ("Sound", f.silent.then(|| "a silent picture".to_string())),
+            ];
+            for (label, value) in credits {
+                if let Some(value) = value {
+                    out.extend(wrap(&format!("{label}: {value}"), self.width, self.p.body));
+                }
+            }
+            if let Some(note) = &f.note {
+                out.push(Line::default());
+                out.extend(wrap(note, self.width, self.meta()));
+            }
         }
-        Tab::Legend => {
-            let mut out = heading("The Legend");
-            out.extend(wrap(&c.legend, width, p.body));
-            out
-        }
-        Tab::Film => {
-            let mut out = heading("On Screen");
-            if let Some(f) = &c.film {
+        out
+    }
+
+    fn myths(&self) -> Lines {
+        let mut out = self.heading("Myth or Fact?");
+        for (i, myth) in self.c.myths.iter().enumerate() {
+            out.extend(hanging(
+                &format!("{}.", i + 1),
+                self.p.accent,
+                &myth.claim,
+                self.width,
+                self.p.body.add_modifier(Modifier::BOLD),
+            ));
+            if self.m.revealed {
+                let (verdict, colour) = if myth.is_true {
+                    ("✔ TRUE", GREEN)
+                } else {
+                    ("✘ FALSE", RED)
+                };
                 out.push(Line::styled(
-                    format!("{} ({})", f.title, f.year),
-                    p.primary.add_modifier(Modifier::BOLD),
-                ));
-                out.push(Line::default());
-                out.extend(wrap(&format!("Directed by {}", f.director), width, p.body));
-                out.extend(wrap(
-                    &format!("Starring {} as {}", f.star, c.name),
-                    width,
-                    p.body,
-                ));
-                let credits = [
-                    (
-                        "Released",
-                        f.released().map(|d| d.strftime("%-d %B %Y").to_string()),
-                    ),
-                    ("Studio", f.studio.clone()),
-                    ("Make-up", f.makeup.clone()),
-                    ("Sound", f.silent.then(|| "a silent picture".to_string())),
-                ];
-                for (label, value) in credits {
-                    if let Some(value) = value {
-                        out.extend(wrap(&format!("{label}: {value}"), width, p.body));
-                    }
-                }
-                if let Some(note) = &f.note {
-                    out.push(Line::default());
-                    out.extend(wrap(note, width, meta));
-                }
-            }
-            out
-        }
-        Tab::Myths => {
-            let mut out = heading("Myth or Fact?");
-            for (i, myth) in c.myths.iter().enumerate() {
-                out.extend(hanging(
-                    &format!("{}.", i + 1),
-                    p.accent,
-                    &myth.claim,
-                    width,
-                    p.body.add_modifier(Modifier::BOLD),
-                ));
-                if m.revealed {
-                    let (verdict, colour) = if myth.is_true {
-                        ("✔ TRUE", GREEN)
-                    } else {
-                        ("✘ FALSE", RED)
-                    };
-                    out.push(Line::styled(
-                        format!("    {verdict}"),
-                        fg(m, rgb(colour)).add_modifier(Modifier::BOLD),
-                    ));
-                    out.extend(hanging(
-                        "  ",
-                        Style::new(),
-                        &myth.explanation,
-                        width,
-                        dim(m),
-                    ));
-                }
-                out.push(Line::default());
-            }
-            let hint = if m.revealed {
-                "Press r to hide the verdicts."
-            } else {
-                "True or false? Make your guesses, then press r for the verdicts."
-            };
-            out.extend(wrap(hint, width, host_style(m)));
-            out
-        }
-        Tab::Quotes => {
-            let mut out = heading("From the Page");
-            for q in &c.quotes {
-                out.extend(hanging(
-                    "“",
-                    p.accent,
-                    &format!("{}”", q.text),
-                    width,
-                    p.body.add_modifier(Modifier::ITALIC),
+                    format!("    {verdict}"),
+                    fg(self.m, rgb(colour)).add_modifier(Modifier::BOLD),
                 ));
                 out.extend(hanging(
-                    " ",
+                    "  ",
                     Style::new(),
-                    &format!("{}, {}", q.speaker, q.source),
-                    width,
-                    dim(m),
+                    &myth.explanation,
+                    self.width,
+                    dim(self.m),
                 ));
-                out.push(Line::default());
-            }
-            out.pop();
-            out
-        }
-        Tab::Stats => {
-            let mut out = heading("Stat Card");
-            for (label, value) in c.stats.labelled() {
-                let v = usize::from(value.min(10));
-                out.push(Line::from(vec![
-                    Span::styled(format!("  {label:<9} "), p.body),
-                    Span::styled("█".repeat(v), p.primary),
-                    Span::styled("░".repeat(10 - v), dim(m)),
-                    Span::styled(format!(" {value:>2}"), p.body),
-                ]));
             }
             out.push(Line::default());
-            out.push(Line::styled(
-                "Powers",
-                fg(m, rgb(GREEN)).add_modifier(Modifier::BOLD),
+        }
+        let hint = if self.m.revealed {
+            "Press r to hide the verdicts."
+        } else {
+            "True or false? Make your guesses, then press r for the verdicts."
+        };
+        out.extend(wrap(hint, self.width, host_style(self.m)));
+        out
+    }
+
+    fn quotes(&self) -> Lines {
+        let mut out = self.heading("From the Page");
+        for q in &self.c.quotes {
+            out.extend(hanging(
+                "“",
+                self.p.accent,
+                &format!("{}”", q.text),
+                self.width,
+                self.p.body.add_modifier(Modifier::ITALIC),
             ));
-            out.extend(bullets(&c.powers, p.body));
+            out.extend(hanging(
+                " ",
+                Style::new(),
+                &format!("{}, {}", q.speaker, q.source),
+                self.width,
+                dim(self.m),
+            ));
             out.push(Line::default());
-            out.push(Line::styled(
-                "Weaknesses",
-                fg(m, rgb(RED)).add_modifier(Modifier::BOLD),
-            ));
-            out.extend(bullets(&c.weaknesses, p.body));
-            out
         }
-        Tab::Legacy => {
-            let mut out = heading("Legacy");
-            out.extend(bullets(&c.legacy, p.body));
-            out
+        out.pop();
+        out
+    }
+
+    fn stats(&self) -> Lines {
+        let mut out = self.heading("Stat Card");
+        for (label, value) in self.c.stats.labelled() {
+            let v = usize::from(value.min(10));
+            out.push(Line::from(vec![
+                Span::styled(format!("  {label:<9} "), self.p.body),
+                Span::styled("█".repeat(v), self.p.primary),
+                Span::styled("░".repeat(10 - v), dim(self.m)),
+                Span::styled(format!(" {value:>2}"), self.p.body),
+            ]));
         }
+        out.push(Line::default());
+        out.push(Line::styled(
+            "Powers",
+            fg(self.m, rgb(GREEN)).add_modifier(Modifier::BOLD),
+        ));
+        out.extend(self.bullets(&self.c.powers, self.p.body));
+        out.push(Line::default());
+        out.push(Line::styled(
+            "Weaknesses",
+            fg(self.m, rgb(RED)).add_modifier(Modifier::BOLD),
+        ));
+        out.extend(self.bullets(&self.c.weaknesses, self.p.body));
+        out
+    }
+
+    fn legacy(&self) -> Lines {
+        let mut out = self.heading("Legacy");
+        out.extend(self.bullets(&self.c.legacy, self.p.body));
+        out
     }
 }
 

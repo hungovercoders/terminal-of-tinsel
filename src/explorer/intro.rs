@@ -110,32 +110,51 @@ fn static_cell(seed: u64, x: usize, y: usize, frame: usize) -> char {
 
 /// Draws the intro for the model's current frame.
 pub fn draw(m: &Model, buf: &mut Buffer, area: Rect) {
+    if m.frame < TUNE_FRAMES {
+        return draw_static(m, buf, area);
+    }
+    draw_snow(m, buf, area);
+    let (w, h) = (usize::from(area.width), usize::from(area.height));
+    let (lines, greeting) = card(m, w);
+    let top = h.saturating_sub(lines.len() + 4) / 2;
+    for (i, line) in lines.iter().enumerate().take(h.saturating_sub(top)) {
+        let y = top + i;
+        if greeting.rows.contains(&i) {
+            // The greeting is a left-aligned block, centred as a whole.
+            let x = w.saturating_sub(greeting.width) / 2;
+            buf.set_line(area.x + x as u16, area.y + y as u16, line, area.width);
+        } else {
+            centred(buf, area, y, line);
+        }
+    }
+}
+
+/// The set warming up: a screen of static, then the station's name.
+fn draw_static(m: &Model, buf: &mut Buffer, area: Rect) {
+    let (w, h) = (usize::from(area.width), usize::from(area.height));
+    for y in 0..h {
+        let row: String = (0..w)
+            .map(|x| static_cell(m.snow_seed, x, y, m.frame))
+            .collect();
+        buf.set_string(area.x, area.y + y as u16, row, view::fg(m, rgb(DIM)));
+    }
+    if m.frame > TUNE_FRAMES / 2 {
+        let label = Line::styled(
+            format!(
+                " {}{} · MIDWINTER SPECIAL ",
+                view::icon(m, "📺"),
+                host::CHANNEL
+            ),
+            view::title_style(m),
+        );
+        centred(buf, area, h / 2, &label);
+    }
+}
+
+/// Snow keeps falling behind the title for as long as the intro is up.
+fn draw_snow(m: &Model, buf: &mut Buffer, area: Rect) {
     let (w, h) = (usize::from(area.width), usize::from(area.height));
     let dim = view::fg(m, rgb(DIM));
-    let gold = view::fg(m, rgb(GOLD)).add_modifier(Modifier::BOLD);
-
-    if m.frame < TUNE_FRAMES {
-        for y in 0..h {
-            let row: String = (0..w)
-                .map(|x| static_cell(m.snow_seed, x, y, m.frame))
-                .collect();
-            buf.set_string(area.x, area.y + y as u16, row, dim);
-        }
-        if m.frame > TUNE_FRAMES / 2 {
-            let label = Line::styled(
-                format!(
-                    " {}{} · MIDWINTER SPECIAL ",
-                    view::icon(m, "📺"),
-                    host::CHANNEL
-                ),
-                view::title_style(m),
-            );
-            centred(buf, area, h / 2, &label);
-        }
-        return;
-    }
-
-    // Snow keeps falling behind the title for as long as the intro is up.
     for y in 0..h {
         for x in 0..w {
             if let Some(ch) = flake(m.snow_seed, x, y, h, m.frame) {
@@ -143,14 +162,24 @@ pub fn draw(m: &Model, buf: &mut Buffer, area: Rect) {
             }
         }
     }
+}
 
-    let flashing = m.frame < TUNE_FRAMES + FLASH_FRAMES;
-    let logo_style = if flashing {
+/// Where the greeting sits among the card's lines, and how wide it is.
+struct Greeting {
+    rows: std::ops::Range<usize>,
+    width: usize,
+}
+
+/// The title card: the station, the logo, the host's greeting as far as it
+/// has been typed, and once it's done, tonight's notes and what to press.
+fn card(m: &Model, w: usize) -> (Vec<Line<'static>>, Greeting) {
+    let dim = view::fg(m, rgb(DIM));
+    let gold = view::fg(m, rgb(GOLD)).add_modifier(Modifier::BOLD);
+    let logo_style = if m.frame < TUNE_FRAMES + FLASH_FRAMES {
         m.ink.badge(rgb(GOLD))
     } else {
         view::fg(m, rgb(RED)).add_modifier(Modifier::BOLD)
     };
-
     let mut lines = vec![
         Line::styled(format!("*  {} presents  *", host::CHANNEL), dim),
         Line::default(),
@@ -166,8 +195,34 @@ pub fn draw(m: &Model, buf: &mut Buffer, area: Rect) {
     lines.push(Line::styled("~ The Midwinter Special ~", gold));
     lines.push(Line::default());
 
-    // The greeting is wrapped whole and then revealed, so words never jump
-    // from one line to the next as they are typed.
+    let (typed, width) = typed_greeting(m, w);
+    let rows = lines.len()..lines.len() + typed.len();
+    lines.extend(typed);
+
+    if m.intro_done() {
+        if !m.notes.is_empty() {
+            lines.push(Line::default());
+            let note_style = view::fg(m, rgb(GREEN)).add_modifier(Modifier::ITALIC);
+            lines.extend(
+                m.notes
+                    .iter()
+                    .take(3)
+                    .map(|note| Line::styled(note.clone(), note_style)),
+            );
+        }
+        lines.push(Line::default());
+        lines.push(Line::from(vec![
+            Span::styled("Press any key to meet tonight's guests...", gold),
+            Span::styled("  (q to quit)", dim),
+        ]));
+    }
+    (lines, Greeting { rows, width })
+}
+
+/// The host's greeting, wrapped whole and then revealed as far as it has
+/// been typed, so words never jump from one line to the next. Returns the
+/// lines and the width of the whole block.
+fn typed_greeting(m: &Model, w: usize) -> (Vec<Line<'static>>, usize) {
     let full = format!("{}{}: {}", view::icon(m, "📺"), host::NAME, m.greeting);
     let typed = m.frame.saturating_sub(TUNE_FRAMES + FLASH_FRAMES) * TYPE_SPEED;
     let mut budget = if m.intro_done() {
@@ -176,53 +231,25 @@ pub fn draw(m: &Model, buf: &mut Buffer, area: Rect) {
         // The host's name is already on screen when the typing starts.
         typed + full.chars().count() - m.greeting.chars().count()
     };
-    let host_style = view::fg(m, rgb(GOLD)).add_modifier(Modifier::ITALIC);
-    let wrap_at = w.saturating_sub(4).clamp(10, 70);
-    let wrapped = textwrap::wrap(&full, wrap_at);
-    let block_width = wrapped.iter().map(|l| l.width()).max().unwrap_or(0);
-    let greeting_at = lines.len();
+    let style = view::fg(m, rgb(GOLD)).add_modifier(Modifier::ITALIC);
+    let wrapped = textwrap::wrap(&full, w.saturating_sub(4).clamp(10, 70));
+    let width = wrapped.iter().map(|l| l.width()).max().unwrap_or(0);
     let mut typing = true;
-    for text in &wrapped {
-        let n = text.chars().count();
-        let mut shown: String = text.chars().take(budget).collect();
-        if typing && budget < n {
-            // The cursor sits where the typing has got to, and nowhere else.
-            shown.push('▌');
-            typing = false;
-        }
-        budget = budget.saturating_sub(n + 1);
-        lines.push(Line::styled(shown, host_style));
-    }
-
-    if m.intro_done() {
-        if !m.notes.is_empty() {
-            lines.push(Line::default());
-            let note_style = view::fg(m, rgb(GREEN)).add_modifier(Modifier::ITALIC);
-            for note in m.notes.iter().take(3) {
-                lines.push(Line::styled(note.clone(), note_style));
+    let lines = wrapped
+        .iter()
+        .map(|text| {
+            let n = text.chars().count();
+            let mut shown: String = text.chars().take(budget).collect();
+            if typing && budget < n {
+                // The cursor sits where the typing has got to, and nowhere else.
+                shown.push('▌');
+                typing = false;
             }
-        }
-        lines.push(Line::default());
-        lines.push(Line::from(vec![
-            Span::styled("Press any key to meet tonight's guests...", gold),
-            Span::styled("  (q to quit)", dim),
-        ]));
-    }
-
-    let top = h.saturating_sub(lines.len() + 4) / 2;
-    for (i, line) in lines.iter().enumerate() {
-        let y = top + i;
-        if y >= h {
-            break;
-        }
-        if (greeting_at..greeting_at + wrapped.len()).contains(&i) {
-            // The greeting is a left-aligned block, centred as a whole.
-            let x = w.saturating_sub(block_width) / 2;
-            buf.set_line(area.x + x as u16, area.y + y as u16, line, area.width);
-        } else {
-            centred(buf, area, y, line);
-        }
-    }
+            budget = budget.saturating_sub(n + 1);
+            Line::styled(shown, style)
+        })
+        .collect();
+    (lines, width)
 }
 
 /// Draws a line centred on row `y` of the area.
