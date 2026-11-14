@@ -24,7 +24,7 @@ A `Line` is ratatui's type for one row of text. It holds a list of `Span`s, and 
 pub type Lines = Vec<Line<'static>>;
 ```
 
-`type` makes an alias, not a new type. The `'static` is a lifetime, and here is what it buys. A `Span` can either borrow its text or own it. A borrowed one would tie every line to the `Creature` the text came from, and every function that passed lines around would have to say so in its signature. `Line<'static>` promises that the line borrows nothing short-lived: its text is an owned `String`, or a literal compiled into the program. It costs a copy of each string per frame, which for a screen of text is nothing, and in return lines can be built, joined, boxed and returned with no lifetime notes at all.
+`type` makes an alias, not a new type. The `'static` is a lifetime. A `Span` can either borrow its text or own it. A borrowed one would tie every line to the `Creature` the text came from, and every function that passed lines around would have to say so in its signature. `Line<'static>` promises that the line borrows nothing short-lived: its text is an owned `String`, or a literal compiled into the program. That costs a copy of each string per frame, and in return lines can be built, joined, boxed and returned with no lifetime notes at all.
 
 Here is a whole section of a creature's page:
 
@@ -55,7 +55,7 @@ pub fn wrap(text: &str, width: usize, style: Style) -> Lines {
 }
 ```
 
-`textwrap::wrap` returns rows that may borrow from `text`. `into_owned()` turns each into a `String`, which is what makes the result `'static`. `width.max(10)` is a floor: on a terminal three columns wide there is no good answer, but there must be *an* answer, and it must not be a panic. You will see this habit all over the file. Its neighbour `hanging` wraps text under a bullet or a number, indenting every row after the first.
+`textwrap::wrap` returns rows that may borrow from `text`. `into_owned()` turns each into a `String`, which is what makes the result `'static`. `width.max(10)` is a floor: on a terminal three columns wide there is no good answer, but there must be *an* answer, and it must not be a panic. Its neighbour `hanging` wraps text under a bullet, indenting every row after the first.
 
 ## Wide and narrow
 
@@ -83,9 +83,7 @@ pub fn body_lines(m: &Model) -> Lines {
 }
 ```
 
-`boxed` takes lines and returns them inside a rounded border. `beside` takes two blocks of lines and joins them row by row, padding the left one to a fixed width. Both live in `tui.rs`, both are a dozen lines, and both are possible only because a page is data. Notice that the text is asked for at a *narrower* width, `w - plate_width - 3`, so it wraps to the space that is left.
-
-Width is measured in terminal columns, not characters. An emoji is one `char` and two columns wide, so the code calls `.width()` from the `unicode-width` crate wherever it pads, as your `Painter` did on Night 9.
+`boxed` takes lines and returns them inside a rounded border. `beside` takes two blocks of lines and joins them row by row, padding the left one to a fixed width. Both live in `tui.rs`, and both are possible only because a page is data. The text is asked for at a *narrower* width, `w - plate_width - 3`, so it wraps to the space that is left.
 
 ## Scrolling
 
@@ -117,7 +115,7 @@ fn viewport(m: &Model, mut lines: Lines, offset: usize, height: usize) -> Lines 
 }
 ```
 
-The two early returns come first, so that by the subtraction `lines.len() - height` the code already knows it cannot go below zero. `usize` has no negative numbers, and subtracting past zero is a panic in a debug build. `drain` moves a range of items out of a vector without copying them.
+The two early returns come first, so by the subtraction `lines.len() - height` the answer cannot be below zero. `usize` has no negative numbers. `drain` moves a range of items out of a vector without copying them.
 
 The keys only change the number. Down adds one, `End` sets it to `usize::MAX / 2`, which is "further than any page", and then one function in [`src/explorer/model.rs`](../src/explorer/model.rs) pulls it back into range:
 
@@ -155,7 +153,7 @@ Only the last few lines of `view.rs` touch the frame. By then there are three bl
 
 A `Rect` is a rectangle of the screen: x, y, width, height. `Paragraph` is a widget that draws lines into one. Every height is capped with `.min(...)` before it is subtracted from anything, so the sums hold on a terminal one row tall.
 
-ratatui also has a `Layout` type that splits an area by constraints, and most ratatui programs use it. The explorer does not need it. Its header is as tall as its lines happen to be at this width, so the heights are known before anything is placed, and three rectangles are quickly worked out by hand.
+ratatui also has a `Layout` type that splits an area by constraints. The explorer does not use it: its header is as tall as its lines happen to be at this width, so the heights are known before anything is placed, and three rectangles are quickly worked out by hand.
 
 The last step of all is in `draw`: in plain mode, `plain::plainify` swaps box-drawing characters for ASCII once the screen is drawn. Night 15 comes back to why that happens afterwards.
 
@@ -209,16 +207,7 @@ fn every_page_draws_at_every_size() {
 }
 ```
 
-Every section of every creature, at six sizes, scrolled to the end. At the small sizes it asserts nothing about the text: the test is that drawing returns at all. A subtraction that goes below zero, or an index past the end of a vector, panics, and a panic fails the test. The `(1, 1)` terminal is there to find exactly those. From 80 by 24 up, the creature's name must be on screen.
-
-```bash
-cargo test every_page_draws
-```
-
-```
-running 1 test
-test explorer::tests::every_page_draws_at_every_size ... ok
-```
+Every section of every creature, at six sizes, scrolled to the end. At the small sizes it asserts nothing about the text: the test is that drawing returns at all. A subtraction below zero or an index past the end of a vector panics, and a panic fails the test. The `(1, 1)` terminal is there to find exactly those.
 
 To see screens instead of checking them, one test prints samples when asked:
 

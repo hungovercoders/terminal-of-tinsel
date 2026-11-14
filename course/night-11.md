@@ -25,7 +25,7 @@ cargo run -- creature
 
 The last command opens the explorer, which is what the next five nights take apart. Press `q` to leave it.
 
-Your own copy is not finished with. The names you have used since Night 3 are the repository's names, so you can carry on by adding each file as it is discussed, copying from the repository and reading as you go. Tonight's file is [`src/tui.rs`](../src/tui.rs), and tonight's exercise gets its first half running in your copy.
+Your own copy is not finished with. The names you have used since Night 3 are the repository's names, so you can carry on by adding each file as it is discussed. Tonight's file is [`src/tui.rs`](../src/tui.rs), and tonight's exercise gets its first half running in your copy.
 
 ## One new dependency
 
@@ -35,7 +35,7 @@ ratatui = { version = "0.30.2", default-features = false, features = ["crossterm
 
 ratatui is a library for drawing full-screen terminal programs. It does not talk to the terminal itself: a *backend* does, and crossterm is the backend that works on Linux, macOS and Windows. Asking for the `crossterm` feature brings it in and re-exports it as `ratatui::crossterm`, which is why you will not see a separate `crossterm` line in [`Cargo.toml`](../Cargo.toml). There is one copy, and it is always the version ratatui was built against.
 
-`default-features = false` switches off what ratatui would otherwise add: a calendar widget, macros, a layout cache and coloured underlines. The program uses none of them, and the house rule is to keep dependencies few and check what their defaults pull in.
+`default-features = false` switches off what ratatui would otherwise add: a calendar widget, macros, a layout cache and coloured underlines. The program uses none of them, and the house rule is to keep dependencies few.
 
 ## What "taking over the terminal" means
 
@@ -65,7 +65,7 @@ pub fn run(app: &mut impl App, what: &str) -> Result<()> {
 
 `try_init` also installs a panic hook that restores the terminal before the panic message is printed, so even a bug leaves the shell usable and the message readable.
 
-`lost` is a closure, a function written in place that can use the variables around it (here, `what`). It turns an `io::Error` into the `TinselError` you met on Night 7. It is passed to `map_err` twice, which works because a closure that only borrows its surroundings is `Copy`.
+`lost` is a closure, a function written in place that can use the variables around it (here, `what`). It turns an `io::Error` into the `TinselError` you met on Night 7.
 
 ## A trait of your own
 
@@ -137,13 +137,11 @@ That is the whole engine. Each time round:
 
 3. **Update.** A key goes to `on_key`. If a tick is due, `on_tick` runs. Then round again, where the new state is drawn.
 
-Three details are worth a second look.
+Two details are worth a second look.
 
 The `if let ... && ...` tests a pattern and a condition in one go: "if this event is a key, and the key is a press". Windows reports a key going down and coming back up as two events, and without the second half every key there would count twice.
 
 `every.saturating_sub(last_tick.elapsed())` is how the ticks stay even. If a key arrives 20 milliseconds into a 70 millisecond wait, the next `poll` waits only the remaining 50. `saturating_sub` stops at zero where plain subtraction of a longer `Duration` from a shorter one would panic.
-
-Nothing here handles a resize event, and yet the explorer redraws when you drag the window. A resize is an event, so it wakes `event::read()`. It is not a key, so nothing is done with it, and the loop goes round to the top, where `terminal.size()` is asked afresh.
 
 ## Plugging the explorer in
 
@@ -166,7 +164,7 @@ impl App for Model<'_> {
 }
 ```
 
-Each method passes straight through to the model, except `draw`, which goes to a separate `view` module. The model knows nothing about the trait or the terminal. The comment at the top of that file says why it matters: "nothing here touches the real terminal, so it is all tested by drawing into ratatui's `TestBackend`". The only code that needs a real terminal is the thirty lines of `run` and `event_loop` above.
+Each method passes straight through to the model, except `draw`, which goes to a separate `view` module. The model knows nothing about the trait or the terminal. The only code that needs a real terminal is `run` and `event_loop` above, and that is what lets everything else be tested.
 
 ## When there is no terminal
 
@@ -196,11 +194,11 @@ error: the Midwinter Special needs a terminal to play on (stdout or stdin is not
 hint: use --json for the data, name a creature to print its page, or tune in from a shell
 ```
 
-The exit code is 1. `Code::NoTerminal` is one of the stable codes from Night 7, spelled `no-terminal` when an error is printed as JSON. The hint says what a script should do instead, and it is true: in `main.rs` the `--json` branch returns the data before `require_terminal` is ever reached, so `creature --json` works in a pipe. That is the standard `TinselError` is held to: a message a player can act on.
+The exit code is 1. `Code::NoTerminal` is one of the stable codes from Night 7, spelled `no-terminal` when an error is printed as JSON. The hint says what a script should do instead, and it is true: in `main.rs` the `--json` branch returns the data before `require_terminal` is ever reached, so `creature --json` works in a pipe. 
 
 ## Try it
 
-- Run `cargo run -- creature --all --no-intro`, then resize the window while it is open. Nothing in the program listens for resizes. Find the two lines of `event_loop` that make it work anyway.
+- Run `cargo run -- creature --all --no-intro`, then resize the window while it is open. Nothing in the loop handles a resize event, yet the screen redraws. A resize wakes `event::read()`. Find the two lines of `event_loop` that do the rest.
 - Run `cargo run -q -- creature | cat`. Which half of `require_terminal` caught it this time?
 - In [`src/tui.rs`](../src/tui.rs), read `snapshot` at the bottom. It calls `resize` and `draw` exactly as the loop does, on a terminal that exists only in memory. That is tomorrow night.
 

@@ -27,7 +27,7 @@ pub enum Screen {
 
 You could track this with two booleans, `in_intro` and `in_gallery`. Two booleans have four combinations, and one of them (both true) means nothing. An enum with three variants has exactly three values. When the state can only be one of a few things, an enum makes the impossible combinations unwritable.
 
-The derives matter. `Copy` lets a `Screen` be passed around by value like a number. `PartialEq` and `Eq` allow `self.screen == Screen::Intro`.
+`Copy` lets a `Screen` be passed around by value like a number. `PartialEq` and `Eq` allow `self.screen == Screen::Intro`.
 
 Every key press arrives at one function, which decides who should hear it:
 
@@ -137,8 +137,6 @@ The model stores the open section as `tab: usize`, an index into `tabs_for` the 
 
 `c @ '1'..='9'` is two patterns in one. `'1'..='9'` is a range: it matches any character from `1` to `9`. `c @` keeps hold of whichever one matched. A `char` converts to its number with `as`, and the digits are consecutive, so `c as usize - '1' as usize` turns `'1'` into 0 and `'3'` into 2. Pressing `6` on Lussi's page does nothing, because `i < tabs` is false.
 
-`set_tab` also sets `scroll` back to 0. A new section should open at its top.
-
 ## The same section on the next guest
 
 Press the right arrow on Krampus's legend and you would expect the next guest's legend, not their facts. But an index is no good for that: section 3 is Myths for Krampus and On Screen for Marley. So `open` remembers the *kind* of section and looks it up again:
@@ -157,8 +155,7 @@ Press the right arrow on Krampus's legend and you would expect the next guest's 
     }
 ```
 
-`bool::then` turns a condition into an `Option`: `Some(the tab)` if we were already on a page, `None` if we came from the gallery. After the creature changes, `position` searches the new creature's tabs for the same variant. `and_then` runs that search only if there was a previous tab, and `unwrap_or(0)` falls back to Facts, which every creature has. Three `Option` methods chained together handle "wasn't on a page", "new guest has no such section" and "found it", with no nested `if`.
-
+`bool::then` turns a condition into an `Option`: `Some(the tab)` if we were already on a page, `None` if we came from the gallery. After the creature changes, `position` searches the new creature's tabs for the same variant. `and_then` runs that search only if there was a previous tab, and `unwrap_or(0)` falls back to Facts, which every creature has. 
 This is the reason `Tab` is an enum and not a number: `x == t` compares meanings.
 
 ## The tab bar
@@ -216,18 +213,7 @@ The harder part is drawing. The list is longer than the screen, and the cursor m
 
 Each creature takes two lines, a name and a description, and last night's `viewport` overwrites its first and last rows with markers. So the window must end at least one line after the description, and start at least one line before the name. Notice what the model does *not* hold: a scroll position for the gallery. The offset is worked out from the cursor on every draw, so the two cannot drift apart.
 
-There is a test for exactly this, at a height of ten rows:
-
-```rust
-    for c in &vault.creatures {
-        let text = screen(&mut m, 80, 10);
-        assert!(
-            text.contains(&format!("▶ {} {}", c.emoji, c.name)),
-            "{text}"
-        );
-        press(&mut m, KeyCode::Down);
-    }
-```
+A test, `the_selection_stays_on_screen_in_a_short_gallery`, walks the cursor down every creature at a height of ten rows and checks the `▶` is on screen each time.
 
 From 100 columns up, the selected creature's portrait is boxed beside the list, with last night's `beside`:
 
@@ -244,12 +230,6 @@ From 100 columns up, the selected creature's portrait is boxed beside the list, 
     St Nicholas's grim, black-robed servant, who carries…   │      /  \              /  \                            │
   🌾 Hans Trapp                                             │     | /\ \            / /\ |                           │
     The Alsatian bogeyman who comes with the Christkindel…  │     | \ \ \__________/ / / |                           │
-  🧔 Knecht Ruprecht                                        │      \ \_/            \_/ /                            │
-    St Nicholas's bearded German servant, who asks childr…  │       \   .--.    .--.   /                             │
-  👿 Čert                                                   │       |  ( o  )  (  o )  |                             │
-    The shaggy, chain-rattling devil who walks the Czech…   │       |   '--'    '--'   |                             │
-                                                            │       |       /  \       |                             │
-── Nordic Yule ──                                           │        \     '----'     /                              │
 ...
 ```
 
