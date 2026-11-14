@@ -1,0 +1,36 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH terminal-of-tinsel-quiz 1  "quiz " 
+.SH NAME
+terminal\-of\-tinsel\-quiz \- Pull a cracker: the Christmas Cracker Quiz
+.SH SYNOPSIS
+\fBterminal\-of\-tinsel quiz\fR [\fB\-\-json\fR] [\fB\-n\fR|\fB\-\-questions\fR] [\fB\-\-no\-color\fR] [\fB\-\-pack\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fINAME\fR] 
+.SH DESCRIPTION
+Multiple\-choice questions built from the creature data: facts, quotes, first appearances, film credits and myth checks. Every answer explains itself. Name a creature to be quizzed only about that one.
+.PP
+With \-\-json the questions are printed with their answers instead.
+.SH OPTIONS
+.TP
+\fB\-\-json\fR
+Print the command\*(Aqs data as JSON instead of drawing it (errors become a JSON object on stderr)
+.TP
+\fB\-n\fR, \fB\-\-questions\fR \fI<N>\fR [default: 10]
+Number of questions
+.TP
+\fB\-\-no\-color\fR
+Plain output: no colour, no emoji, ASCII borders (also set by NO_COLOR, or by piping)
+.TP
+\fB\-\-pack\fR \fI<PACK>\fR
+Only use creatures from these packs, e.g. \-\-pack nordic,dickens
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+[\fINAME\fR]
+Only ask about this creature
+.SH EXTRA
+Examples:
+  terminal\-of\-tinsel quiz
+  terminal\-of\-tinsel quiz \-n 5
+  terminal\-of\-tinsel quiz yule cat
+  terminal\-of\-tinsel quiz \-\-pack nordic

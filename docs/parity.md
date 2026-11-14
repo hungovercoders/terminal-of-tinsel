@@ -30,10 +30,10 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [x] | `countdown`, `--date` | `countdown`, `--date` | done |
 | [x] | `countdown` shows the moon and the next anniversary | add both to `countdown` | done (P4) |
 | [x] | no equivalent | `advent`, `--date` (Tinsel extra, kept) | done |
-| [ ] | `packs` | `packs` | P5 |
-| [ ] | `packs new <id>` | `packs new <id>` | P5 |
-| [~] | `completion <shell>` (Cobra's name) | `completions <shell>` (clap's convention), plus hidden alias `completion` | P5 |
-| [ ] | completes monster names, aliases and pack ids | dynamic completion with clap_complete's `CompleteEnv` | P5 |
+| [x] | `packs` | `packs` | done (P5) |
+| [x] | `packs new <id>` | `packs new <id>` | done (P5) |
+| [~] | `completion <shell>` (Cobra's name) | `completions <shell>` (clap's convention), plus hidden alias `completion` | done (P5) |
+| [x] | completes monster names, aliases and pack ids | dynamic completion with clap_complete's `CompleteEnv` | done (P5) |
 | [x] | `--version`, `--help` | the same | done |
 
 ## Global flags and environment
@@ -42,7 +42,7 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 |-|--------|--------|-------|
 | [x] | `--json` on every command | the same | done |
 | [x] | `--pack a,b` | the same | done |
-| [ ] | `--pack` accepts community packs, with "did you mean" | today clap only accepts the four built-in ids; validate at run time instead | P5 |
+| [x] | `--pack` accepts community packs, with "did you mean" | today clap only accepts the four built-in ids; validate at run time instead | done (P5) |
 | [x] | `--no-color`, `NO_COLOR`, plain when piped | the same | done |
 | [x] | `TERMINAL_OF_TERROR_SEED` | `TERMINAL_OF_TINSEL_SEED` (only `random` and the welcome use it so far) | done |
 | [x] | the seed fixes quiz, guess, mash, the explorer's host lines and `tonight --shuffle` | all but `tonight --shuffle` done (P1, P2) | done (P4) |
@@ -163,7 +163,7 @@ Badge emoji will be checked against the two-column rule before they land.
 | [x] | `film.title`, `year`, `director`, `star`, `note` | present | done |
 | [x] | `film.releaseDate`, `studio`, `makeup`, `silent` | add all four as optional | done (P4) |
 | [x] | `ascii` from `<id>.txt`, with `\r\n` normalised | add; shown in `--json` as `ascii` | done (P1) |
-| [ ] | `Pack.Source`: "built-in" or a path | add | P5 |
+| [x] | `Pack.Source`: "built-in" or a path | add | done (P5) |
 | [x] | lookup by id, name, alias, partial; ambiguity listed; "did you mean" by edit distance | present, and it folds accents too | done |
 | [x] | "did you mean" lists up to three names | Tinsel suggests one; match Terror | done (P1) |
 | [x] | data tests: every field, 5+ facts, stats 1 to 10, colours, emoji width, unique ids | present | done |
@@ -175,12 +175,12 @@ Badge emoji will be checked against the two-column rule before they land.
 
 | | Terror | Tinsel | Phase |
 |-|--------|--------|-------|
-| [ ] | packs load from `<config>/packs/<id>/` on every run | the same; the embedded loader and the disk loader share one code path | P5 |
-| [ ] | only `name`, `description` and `facts` are required; defaults fill the rest | the same (`serde(default)` on a separate lenient type) | P5 |
-| [ ] | broken files, bad stats and duplicate ids warn on stderr and are skipped | the same | P5 |
-| [ ] | `pack.json` is optional for a community pack | the same | P5 |
-| [ ] | `packs new` writes `pack.json`, an example creature and a portrait; refuses built-in ids and bad ids | the same | P5 |
-| [ ] | `packs --json`: `id`, `name`, `description`, `source`, creature ids | the same | P5 |
+| [x] | packs load from `<config>/packs/<id>/` on every run | the same; the embedded loader and the disk loader share one code path | done (P5) |
+| [x] | only `name`, `description` and `facts` are required; defaults fill the rest | the same (`serde(default)` on a separate lenient type) | done (P5) |
+| [x] | broken files, bad stats and duplicate ids warn on stderr and are skipped | the same | done (P5) |
+| [x] | `pack.json` is optional for a community pack | the same | done (P5) |
+| [x] | `packs new` writes `pack.json`, an example creature and a portrait; refuses built-in ids and bad ids | the same | done (P5) |
+| [x] | `packs --json`: `id`, `name`, `description`, `source`, creature ids | the same | done (P5) |
 | [~] | community creatures join the 31 Nights rotation | advent doors are hand-written in `advent.json`, so community creatures stay out of advent | - |
 
 ## Shipping
@@ -189,12 +189,12 @@ Badge emoji will be checked against the two-column rule before they land.
 |-|--------|--------|-------|
 | [x] | GoReleaser: Linux, macOS, Windows on Intel and ARM | cargo-dist, same targets | done |
 | [x] | Homebrew cask in `hungovercoders/homebrew-tap` | Homebrew formula, same tap | done |
-| [ ] | a man page per command, from the command tree | clap_mangen | P5 |
-| [ ] | man pages and completion scripts in every archive | generated `man/` and `completions/` committed, a test that fails when they're stale, and cargo-dist `include` | P5 |
-| [~] | Homebrew installs man pages and completions | cargo-dist's generated formula can't; the README will say where they are in the archive | P5 |
+| [x] | a man page per command, from the command tree | clap_mangen | done (P5) |
+| [x] | man pages and completion scripts in every archive | generated `man/` and `completions/` committed, a test that fails when they're stale, and cargo-dist `include` | done (P5) |
+| [~] | Homebrew installs man pages and completions | cargo-dist's generated formula can't; the README will say where they are in the archive | done (P5) |
 | [~] | a Release button (`workflow_dispatch`) that tags and publishes | cargo-dist owns `release.yml` and is tag-driven; left as it is | - |
 | [x] | CI: format, lint, tests on three systems, smoke test | present, plus MSRV 1.88 | done |
-| [ ] | smoke test covers every command, `--json`, plain output, error codes, `packs new`, no-terminal refusals | extend phase by phase | P1 to P5 |
+| [x] | smoke test covers every command, `--json`, plain output, error codes, `packs new`, no-terminal refusals | the same | done (P1 to P5) |
 | [ ] | CI checks the release config (`goreleaser check`) | `dist plan` in CI | P7 |
 | [x] | CI runs with the home variable pointed at a scratch directory | the same from P3 | done (P3) |
 
@@ -226,8 +226,8 @@ Each gets its default features and tree checked before it lands, and MSRV 1.88 m
 |-------|-------|-----|
 | P1, done | `ratatui` 0.30 (default features off, `crossterm` backend only; crossterm comes re-exported, so it isn't a direct dependency) | the explorer and the game screens. MSRV 1.88, the same as Tinsel's. About 45 more crates |
 | P3, done | `directories` 6.0 (no features; brings `dirs-sys` and `option-ext`, which is MPL-2.0) | the config dir |
-| P5 | `clap_complete` feature `unstable-dynamic` | `CompleteEnv`; it's behind an unstable feature flag, so the version gets pinned |
-| P5 | `clap_mangen` | man pages |
+| P5, done | `clap_complete` feature `unstable-dynamic` (adds `shlex` and `is_executable`) | `CompleteEnv`; it's behind an unstable feature flag, so the committed scripts in `completions/` show any change |
+| P5, done | `clap_mangen` 0.3 as a dev-dependency (adds `roff`) | man pages; never in the shipped binary |
 
 No `regex` (the quiz's name masking is small enough to write by hand) and no `rand` (SplitMix64 stays, so
 seeded games never change between releases).
@@ -288,7 +288,7 @@ and `cargo test` before every PR. Each phase updates the README, `CHANGELOG.md`,
 | 2 (done) | `feature/games` | quiz, guess, mash, the seed everywhere | `math/rand` against a pinned generator; enums with data for question kinds |
 | 3 (done) | `feature/stocking` | store, captures, badges, reset | `os.UserConfigDir` against `directories`; maps of times in serde; atomic writes |
 | 4 (done) | `feature/rituals` | `tonight`, the moon, anniversaries, new film fields | `time.Time` against jiff's civil dates |
-| 5 | `feature/packs` | `packs`, community packs, `packs new`, dynamic completion, man pages | `embed.FS` and `fs.FS` against `include_dir` plus `std::fs`; Cobra completion against `CompleteEnv` |
+| 5 (done) | `feature/packs` | `packs`, community packs, `packs new`, dynamic completion, man pages | `embed.FS` and `fs.FS` against `include_dir` plus `std::fs`; Cobra completion against `CompleteEnv` |
 | 6 | `feature/roster` | new creatures and portraits, advent doors refreshed | nothing new in code: the data tests as the reviewer |
 | 7 | `chore/polish` | tapes and GIFs, CONTRIBUTING, git-cliff, dependabot, .editorconfig, slopstopper | GoReleaser against cargo-dist, start to finish |
 | 8 | `feature/website` | the site generator, its pages and tests, Cloudflare hosting, slopstopper profile `ui` | `html/template` and `go run` against a workspace member; sharing code between a binary and a generator |

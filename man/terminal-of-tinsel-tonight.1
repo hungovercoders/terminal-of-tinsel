@@ -1,0 +1,28 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH terminal-of-tinsel-tonight 1  "tonight " 
+.SH NAME
+terminal\-of\-tinsel\-tonight \- See tonight\*(Aqs Christmas double bill
+.SH SYNOPSIS
+\fBterminal\-of\-tinsel tonight\fR [\fB\-\-date\fR] [\fB\-\-json\fR] [\fB\-\-no\-color\fR] [\fB\-\-shuffle\fR] [\fB\-\-pack\fR] [\fB\-h\fR|\fB\-\-help\fR] 
+.SH DESCRIPTION
+Print a ticket for tonight\*(Aqs Channel 25 double bill. The line\-up changes every night, so check back tomorrow, or use \-\-shuffle for a different bill. From 1 to 24 December the guest behind that night\*(Aqs advent door tops the bill.
+.SH OPTIONS
+.TP
+\fB\-\-date\fR \fI<YYYY\-MM\-DD>\fR
+See the bill for another night (YYYY\-MM\-DD)
+.TP
+\fB\-\-json\fR
+Print the command\*(Aqs data as JSON instead of drawing it (errors become a JSON object on stderr)
+.TP
+\fB\-\-no\-color\fR
+Plain output: no colour, no emoji, ASCII borders (also set by NO_COLOR, or by piping)
+.TP
+\fB\-\-shuffle\fR
+Pick a random double bill instead of tonight\*(Aqs
+.TP
+\fB\-\-pack\fR \fI<PACK>\fR
+Only use creatures from these packs, e.g. \-\-pack nordic,dickens
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)

@@ -176,3 +176,32 @@ Terror's crypt (`internal/crypt`, `internal/store`) becomes Tinsel's stocking (`
   the JSON, which Go does with `omitempty`.
 - **Floats don't hash or compare exactly.** The moon's illumination is an `f64`, so `Moon` can't
   derive `Eq`, only `PartialEq`. Go has no such distinction to trip over, or to be protected by.
+
+## Phase 5: packs, completion and man pages
+
+- **One loader for two places.** Go's `fs.FS` is why Terror's loader doesn't care whether a pack is
+  embedded or on disk: `embed.FS` and `os.DirFS` both satisfy it. Rust's standard library has no such
+  interface, and `include_dir` and `std::fs` share nothing, so Tinsel defines the two methods it needs
+  as a trait (`PackFiles`: read a file, list the JSON files) and implements it twice. Twenty lines buys
+  what Go gives away, and nothing more than is used.
+- **Lenient parsing is opt-in.** A Go struct unmarshals from `{}` without complaint. A serde struct
+  fails on the first missing field unless it carries `#[serde(default)]`, which needs `Default` on
+  every nested type. Tinsel turns it on for `Creature` so a community creature can be three lines, and
+  then has to hold the built-in creatures to the full set in the data tests, as Terror does.
+- **Completion that asks the program.** Cobra's generated scripts call back into the binary's hidden
+  `__complete` command, and a `ValidArgsFunction` supplies the names. clap's stable generator writes a
+  static script that only knows the flags. Its newer `CompleteEnv` works the Cobra way: the script
+  runs the binary with `COMPLETE=bash`, and `ArgValueCandidates` supplies creature and pack names. It
+  sits behind clap_complete's `unstable-dynamic` feature, so the scripts may change with an upgrade;
+  the committed copies in `completions/` make any change show up in a diff.
+- **Man pages.** Cobra's `doc.GenManTree` and clap's `clap_mangen` do the same job from the command
+  tree. Terror runs its generator in a GoReleaser `before` hook. cargo-dist has no such hook, so Tinsel
+  commits the output and a test compares it with a fresh run. `clap_mangen` is a dev-dependency: it
+  never reaches the shipped binary.
+- **Validating a flag late.** With only built-in packs, clap could reject `--pack elves` itself, with
+  the choices in `--help`. Community packs aren't known until the config directory has been read, so
+  the check moved to run time, as in Terror, and the "did you mean" had to be written by hand.
+- **JSON key order.** Terror builds the `packs new` example from a `map[string]any`, and Go marshals
+  map keys in alphabetical order, so `aliases` comes first and `name` is buried. serde_json's `json!`
+  macro does the same unless its `preserve_order` feature is on. Tinsel writes the example from a text
+  template instead, so the file reads top to bottom the way a person fills it in.
