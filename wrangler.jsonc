@@ -1,0 +1,22 @@
+// The website, served by Cloudflare as static assets with no Worker script.
+// The build command is `cargo run --release -p tinsel-site -- --out dist`
+// and the deploy command is `npx wrangler deploy`. Response headers come from
+// public/_headers. Nothing is deployed until a Cloudflare project is
+// connected to the repository: see docs/website.md.
+{
+  "name": "terminal-of-tinsel",
+  "compatibility_date": "2026-10-10",
+  "assets": {
+    "directory": "./dist",
+    // The site links pages by their .html names; the default handling would
+    // redirect every one of them to an extensionless URL.
+    "html_handling": "none",
+    "not_found_handling": "404-page"
+  },
+  // Add the custom domain here once one is agreed, as Terminal of Terror does:
+  // "routes": [{ "pattern": "example.com", "custom_domain": true }],
+  // Workers Logs stay off: the Worker only serves the built site, and off
+  // means Cloudflare keeps no per-request records that the maintainers can
+  // read. The privacy page and the footer say so.
+  "observability": { "enabled": false }
+}

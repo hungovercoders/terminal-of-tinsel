@@ -306,6 +306,8 @@ cargo clippy --all-targets -- -D warnings
 
 Or with [Task](https://taskfile.dev): `task check`, `task run -- creature krampus`. The explorer is drawn with [ratatui](https://ratatui.rs); `DUMP=1 cargo test dump_screens -- --nocapture` prints sample screens without a terminal.
 
+The website generator lives in `site/`: `cargo run -p tinsel-site -- --out dist` builds it, and [docs/website.md](docs/website.md) explains it.
+
 ### Releasing
 
 The man pages and completion scripts in `man/` and `completions/` are generated from the command tree and committed, because cargo-dist copies files into the archives but can't generate them. `cargo test` fails if they're stale; `UPDATE_SHELLDOCS=1 cargo test shell_docs` rewrites them. Do that after changing a command or a flag, and when the version changes.

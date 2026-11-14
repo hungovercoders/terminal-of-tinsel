@@ -23,14 +23,25 @@ tasks:
   check:
     desc: Format check, clippy and every test
     cmds:
-      - cargo fmt --check
-      - cargo clippy --all-targets -- -D warnings
-      - cargo test
+      - cargo fmt --all --check
+      - cargo clippy --workspace --all-targets -- -D warnings
+      - cargo test --workspace
 
   fmt:
     desc: Format the code
     cmds:
-      - cargo fmt
+      - cargo fmt --all
+
+  site:
+    desc: Build the website into dist/
+    cmds:
+      - cargo run --quiet -p tinsel-site -- --out dist
+
+  site:serve:
+    desc: Build the website and serve it on http://localhost:8025
+    cmds:
+      - task: site
+      - python3 -m http.server 8025 --directory dist
 
   shelldocs:
     desc: Regenerate man/ and completions/ after changing a command or a flag

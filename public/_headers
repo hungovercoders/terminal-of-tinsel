@@ -1,0 +1,20 @@
+# Response headers for the website, in Cloudflare's _headers format. The site
+# builder copies this file into its output as _headers and Cloudflare applies
+# it to every asset.
+#
+# The CSP allows no inline styles or scripts: each creature's colours live in
+# static/themes.css and behaviour in static/site.js. The site's tests check
+# that no page needs more than this allows.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# Font files never change in place: a new version gets a new file name.
+/static/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

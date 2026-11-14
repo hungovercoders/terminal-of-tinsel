@@ -1,0 +1,16 @@
+[package]
+name = "tinsel-site"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Builds the Terminal of Tinsel website from the same creature data as the program"
+license = "CC0-1.0"
+publish = false
+
+# The website isn't part of a release: cargo-dist ships only the program.
+[package.metadata.dist]
+dist = false
+
+[dependencies]
+terminal-of-tinsel = { path = ".." }
+clap = { version = "4.6.7", default-features = false, features = ["std"] }

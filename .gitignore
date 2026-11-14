@@ -1,5 +1,8 @@
 /target
 
+# The built website: cargo run -p tinsel-site -- --out dist
+/dist
+
 # slopstopper begin
 # Generated outputs from slopstopper checks. Safe to delete locally.
 # .ss/.workflows-installed is the source of truth for what install.sh

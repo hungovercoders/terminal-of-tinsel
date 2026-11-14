@@ -63,6 +63,9 @@
 - git-cliff for the changelog, dependabot for Cargo, npm and GitHub Actions, `.editorconfig` and
   `.gitattributes`.
 - VHS tapes and a render script for the README demos, in `docs/demos/`.
+- A website generator in `site/`: a home page, the roster, a page per creature and the advent calendar,
+  built from the same pack data as the program. It isn't deployed yet.
+- The program's modules are now a library (`src/lib.rs`) as well as a binary, so the website can use them.
 
 ### Changed
 
