@@ -1,0 +1,23 @@
+{
+  "name": "Midwinter Special",
+  "background": "#0b1410",
+  "foreground": "#f1faee",
+  "cursor": "#e9c46a",
+  "selection": "#2d6a4f",
+  "black": "#1b2a22",
+  "red": "#e63946",
+  "green": "#52b788",
+  "yellow": "#e9c46a",
+  "blue": "#8ecae6",
+  "purple": "#c77dff",
+  "cyan": "#90e0ef",
+  "white": "#f1faee",
+  "brightBlack": "#8d99ae",
+  "brightRed": "#ff6b6b",
+  "brightGreen": "#95d5b2",
+  "brightYellow": "#ffe8a3",
+  "brightBlue": "#bde0fe",
+  "brightPurple": "#e0aaff",
+  "brightCyan": "#caf0f8",
+  "brightWhite": "#ffffff"
+}
