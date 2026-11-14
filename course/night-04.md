@@ -214,7 +214,7 @@ git commit -m "feat: a seeded random fact"
 ## Try it
 
 - Try seeds 1 to 5 and see which creatures come up.
-- Set the seed to `tinsel`. It isn't a number, so `parse` gives `None` and the clock is used. The finished program prints a warning here; you'll see how on Night 7.
+- Set the seed to `tinsel`. It isn't a number, so `parse` gives `None` and the clock is used. The finished program prints a warning here as well: see `from_env_or_clock` in [`src/rng.rs`](../src/rng.rs).
 - Change `wrapping_add` to a plain `+` and run it a few times. In a debug build it panics with "attempt to add with overflow" as soon as the state passes the top. Put it back.
 - Print the first three numbers from `Rng::new(0)`. The first should be 16294208416658607535, which is `0xE220_A839_7B1D_CDAF`. On Night 8 a test will pin that.
 
@@ -226,8 +226,8 @@ SplitMix64 comes from a 2014 paper by Guy Steele, Doug Lea and Christine Flood, 
 
 Add a method `die` to `Rng` that rolls a six-sided die, returning 1 to 6 as a `u8`, and print three rolls at the end of `random`.
 
-Hint: `self.below(6)` gives 0 to 5. Convert with `as u8` and add one. The finished program has exactly this method, and uses it on Night 19 for the Snowball Showdown. Take the printing out again afterwards; you can leave `die` in, though the compiler will warn that nothing uses it yet.
+Hint: `self.below(6)` gives 0 to 5. Convert with `as u8` and add one. The finished program has exactly this method, and uses it on Night 19 for the Snowball Showdown. Take both out again afterwards: a method nothing uses earns a compiler warning, and from Night 8 we treat warnings as errors.
 
-> 📺 *"A fair machine, and it chose the cat. It usually does. Tomorrow the guests stop living in the source code and move somewhere with more room: under the tree, in JSON."*
+> 📺 *"A fair machine, and nobody can accuse it of having favourites. Tomorrow the guests stop living in the source code and move somewhere with more room: under the tree, in JSON."*
 
 [← Night 3](night-03.md) · [Index](README.md) · [Night 5 →](night-05.md)

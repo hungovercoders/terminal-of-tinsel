@@ -21,7 +21,7 @@ terminal-of-tinsel creature krampus
 terminal-of-tinsel random --json
 ```
 
-The first word after the program's name is a **subcommand**. Words after it are **arguments**, and words starting with `--` are **flags**. Reading those by hand from the raw list of words is tedious and easy to get wrong, so nearly every Rust command-line program uses a crate called **clap** to do it.
+The first word after the program's name is a **subcommand**. Words after it are **arguments**, and words starting with `--` are **flags**. Reading those by hand from the raw list of words is tedious and error-prone, so nearly every Rust command-line program uses a crate called **clap** to do it.
 
 ## Add clap
 
