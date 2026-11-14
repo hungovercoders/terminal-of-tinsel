@@ -462,7 +462,7 @@ fn tonight_prints_a_ticket() {
         .stdout(predicate::str::contains("TONIGHT'S CHRISTMAS DOUBLE BILL"))
         .stdout(predicate::str::contains("Saturday 19 December 2026"))
         .stdout(predicate::str::contains("SCROOGE (1951)"))
-        .stdout(predicate::str::contains("with Michael Hordern"))
+        .stdout(predicate::str::contains("Directed by Brian Desmond Hurst"))
         .stdout(predicate::str::contains("ADMIT ONE"))
         .stdout(predicate::str::contains("FROM THE HOST"))
         .stdout(predicate::str::contains("A Christmas Carol was published"))
