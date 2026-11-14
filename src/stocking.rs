@@ -271,6 +271,10 @@ pub fn apply<'a>(p: &mut Progress, all: &'a [Creature], o: &Outcome) -> Unlocks<
     }
 
     // What the stocking holds now.
+    // The badges are about the built-in roster: a community pack adds
+    // creatures to catch, not conditions to meet.
+    let all: Vec<Creature> = all.iter().filter(|c| !c.community).cloned().collect();
+    let all = all.as_slice();
     let held = |c: &&Creature| p.captured.contains_key(&c.id);
     let every = |group: &dyn Fn(&Creature) -> bool| {
         let members: Vec<&Creature> = all.iter().filter(|c| group(c)).collect();

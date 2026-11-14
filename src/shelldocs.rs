@@ -14,7 +14,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use clap::CommandFactory;
-use clap_complete::env::Shells;
 
 use crate::cli::Cli;
 
@@ -47,20 +46,16 @@ fn write_man_pages(dir: &Path) {
 /// Generates a completion script for each shell into `dir`. Each is a few
 /// lines that ask the program itself what to offer.
 fn write_completions(dir: &Path) {
+    use clap::ValueEnum;
     fs::create_dir_all(dir).unwrap();
-    for (shell, extension) in [
-        ("bash", "bash"),
-        ("elvish", "elv"),
-        ("fish", "fish"),
-        ("powershell", "ps1"),
-        ("zsh", "zsh"),
-    ] {
-        let mut script = Vec::new();
-        Shells::builtins()
-            .completer(shell)
-            .unwrap()
-            .write_registration("COMPLETE", BIN, BIN, BIN, &mut script)
-            .unwrap();
+    // Exactly what `terminal-of-tinsel completions <shell>` prints.
+    for shell in clap_complete::Shell::value_variants() {
+        let extension = match shell {
+            clap_complete::Shell::Elvish => "elv",
+            clap_complete::Shell::PowerShell => "ps1",
+            other => &other.to_string(),
+        };
+        let script = crate::complete_script(*shell).unwrap();
         fs::write(dir.join(format!("{BIN}.{extension}")), script).unwrap();
     }
 }
