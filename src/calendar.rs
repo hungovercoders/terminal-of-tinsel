@@ -344,57 +344,88 @@ fn note(emoji: &'static str, text: impl Into<String>) -> Note {
     }
 }
 
-/// Notes for the special nights of the season, for the countdown and the Fact
-/// of the Night.
-pub fn notes(d: Date, creatures: &[Creature]) -> Vec<Note> {
-    let mut out = Vec::new();
-    match (d.month(), d.day()) {
-        (12, 5) => out.push(note("😈", "It's Krampusnacht. Hide the birch switches.")),
-        (12, 6) => out.push(note(
-            "🎁",
-            "It's St Nicholas Day. Père Fouettard is close behind.",
-        )),
-        (12, 8) => out.push(note(
-            "🪵",
-            "The Tió de Nadal comes home today. Don't forget to feed it.",
-        )),
-        (12, 19) => out.push(note(
+/// What to say on the dated nights of the season, as (month, day, emoji,
+/// text). The anniversary of A Christmas Carol counts its years, so it is
+/// handled beside the table.
+const FEAST_NOTES: [(i8, i8, &str, &str); 10] = [
+    (12, 5, "😈", "It's Krampusnacht. Hide the birch switches."),
+    (
+        12,
+        6,
+        "🎁",
+        "It's St Nicholas Day. Père Fouettard is close behind.",
+    ),
+    (
+        12,
+        8,
+        "🪵",
+        "The Tió de Nadal comes home today. Don't forget to feed it.",
+    ),
+    (
+        12,
+        13,
+        "🌑",
+        "It's St Lucy's Night, and Lussi's long night. Stay awake.",
+    ),
+    (
+        12,
+        21,
+        "🌙",
+        "The winter solstice is here, or near enough: the longest night of the year.",
+    ),
+    (
+        12,
+        24,
+        "🎄",
+        "It's Christmas Eve. Porridge out for the tomte, and new clothes on.",
+    ),
+    (
+        12,
+        25,
+        "🎁",
+        "It's Christmas Day! The busiest morning of the year for stockings.",
+    ),
+    (
+        12,
+        26,
+        "🐴",
+        "It's Boxing Day. Listen out for the Mari Lwyd at the door.",
+    ),
+    (
+        1,
+        5,
+        "🧶",
+        "It's Twelfth Night: Perchta's night, and La Befana's. Is the spinning done?",
+    ),
+    (
+        1,
+        6,
+        "💧",
+        "It's Epiphany. The waters are blessed and the kallikantzaroi flee.",
+    ),
+];
+
+/// The note for a dated night of the season, if this is one.
+fn feast_note(d: Date) -> Option<Note> {
+    if (d.month(), d.day()) == (12, 19) {
+        return Some(note(
             "📖",
             format!(
                 "A Christmas Carol was published on this day in 1843, {} years ago.",
                 d.year() - 1843
             ),
-        )),
-        (12, 24) => out.push(note(
-            "🎄",
-            "It's Christmas Eve. Porridge out for the tomte, and new clothes on.",
-        )),
-        (12, 26) => out.push(note(
-            "🐴",
-            "It's Boxing Day. Listen out for the Mari Lwyd at the door.",
-        )),
-        (12, 13) => out.push(note(
-            "🌑",
-            "It's St Lucy's Night, and Lussi's long night. Stay awake.",
-        )),
-        (1, 5) => out.push(note(
-            "🧶",
-            "It's Twelfth Night: Perchta's night, and La Befana's. Is the spinning done?",
-        )),
-        (1, 6) => out.push(note(
-            "💧",
-            "It's Epiphany. The waters are blessed and the kallikantzaroi flee.",
-        )),
-        (12, 21) => out.push(note(
-            "🌙",
-            "The winter solstice is here, or near enough: the longest night of the year.",
-        )),
-        (12, 25) => out.push(note(
-            "🎁",
-            "It's Christmas Day! The busiest morning of the year for stockings.",
-        )),
-        _ => {}
+        ));
     }
+    FEAST_NOTES
+        .iter()
+        .find(|(month, day, _, _)| (*month, *day) == (d.month(), d.day()))
+        .map(|(_, _, emoji, text)| note(emoji, *text))
+}
+
+/// Notes for the special nights of the season, for the countdown and the Fact
+/// of the Night.
+pub fn notes(d: Date, creatures: &[Creature]) -> Vec<Note> {
+    let mut out: Vec<Note> = feast_note(d).into_iter().collect();
     for a in anniversaries(d, creatures) {
         if let Some(film) = &a.creature.film {
             // The year comes from the same date the count does.

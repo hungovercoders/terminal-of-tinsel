@@ -342,6 +342,18 @@ pub fn creature(p: &Painter, c: &Creature, pack_name: &str, reveal: bool) -> Str
     out.push(p.heading("THE LEGEND", accent));
     out.extend(p.wrap(&c.legend, w, |l| l.to_string()));
 
+    out.extend(creature_myths(p, c, w, reveal));
+    out.extend(creature_quotes(p, c, w));
+    out.extend(creature_film(p, c, w));
+    out.extend(creature_stats(p, c, w));
+    out.extend(creature_legacy(p, c, w));
+    out.join("\n") + "\n"
+}
+
+/// Myth or Fact?: the claims, and with `reveal` their verdicts.
+fn creature_myths(p: &Painter, c: &Creature, w: usize, reveal: bool) -> Vec<String> {
+    let accent = c.theme.accent.as_str();
+    let mut out = Vec::new();
     if !c.myths.is_empty() {
         out.push(String::new());
         out.push(p.heading("MYTH OR FACT?", accent));
@@ -370,7 +382,13 @@ pub fn creature(p: &Painter, c: &Creature, pack_name: &str, reveal: bool) -> Str
             ));
         }
     }
+    out
+}
 
+/// From the Page: lines from public-domain sources.
+fn creature_quotes(p: &Painter, c: &Creature, w: usize) -> Vec<String> {
+    let accent = c.theme.accent.as_str();
+    let mut out = Vec::new();
     if !c.quotes.is_empty() {
         out.push(String::new());
         out.push(p.heading("FROM THE PAGE", accent));
@@ -387,7 +405,13 @@ pub fn creature(p: &Painter, c: &Creature, pack_name: &str, reveal: bool) -> Str
             ));
         }
     }
+    out
+}
 
+/// On Screen: the classic film, where there is one.
+fn creature_film(p: &Painter, c: &Creature, w: usize) -> Vec<String> {
+    let accent = c.theme.accent.as_str();
+    let mut out = Vec::new();
     if let Some(f) = &c.film {
         out.push(String::new());
         out.push(p.heading("ON SCREEN", accent));
@@ -415,7 +439,13 @@ pub fn creature(p: &Painter, c: &Creature, pack_name: &str, reveal: bool) -> Str
             out.extend(p.wrap(&credits.join(" · "), w, |l| p.paint(l, DIM)));
         }
     }
+    out
+}
 
+/// The stat card, with powers and weaknesses.
+fn creature_stats(p: &Painter, c: &Creature, w: usize) -> Vec<String> {
+    let (primary, accent) = (c.theme.primary.as_str(), c.theme.accent.as_str());
+    let mut out = Vec::new();
     out.push(String::new());
     out.push(p.heading("STAT CARD", accent));
     for (label, value) in c.stats.labelled() {
@@ -440,7 +470,14 @@ pub fn creature(p: &Painter, c: &Creature, pack_name: &str, reveal: bool) -> Str
         w,
         |l| l.replacen("Weaknesses:", &p.bold("Weaknesses:", RED), 1),
     ));
+    out
+}
 
+/// Legacy: where the creature turns up today.
+fn creature_legacy(p: &Painter, c: &Creature, w: usize) -> Vec<String> {
+    let accent = c.theme.accent.as_str();
+    let b = p.bullet();
+    let mut out = Vec::new();
     if !c.legacy.is_empty() {
         out.push(String::new());
         out.push(p.heading("LEGACY", accent));
@@ -448,7 +485,7 @@ pub fn creature(p: &Painter, c: &Creature, pack_name: &str, reveal: bool) -> Str
             out.extend(hanging(p, b, item, w, |l| p.paint(l, DIM)));
         }
     }
-    out.join("\n") + "\n"
+    out
 }
 
 /// Wraps text under a marker with a hanging indent: " • first line\n   more".

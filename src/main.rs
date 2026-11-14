@@ -67,11 +67,23 @@ fn main() -> ExitCode {
     }
 }
 
+/// What every command needs: how to draw, which creatures are in play, and
+/// whether to print data instead.
+struct Show {
+    painter: Painter,
+    /// Every creature, whatever `--pack` says: the stocking's badges count
+    /// them all.
+    everything: Vault,
+    /// The creatures in play.
+    vault: Vault,
+    json: bool,
+    /// Whether the full-screen pages are in colour.
+    colour: bool,
+}
+
 fn run(cli: Cli) -> Result<()> {
     let no_colour = cli.no_color || std::env::var_os("NO_COLOR").is_some_and(|v| !v.is_empty());
     let plain = no_colour || !io::stdout().is_terminal();
-    let painter = Painter::new(plain, terminal_width());
-    // The stocking's badges count every creature, whatever --pack says.
     let mut everything = Vault::load();
     // Community packs: anything broken is reported and skipped, never fatal.
     if let Ok(dir) = store::dir() {
@@ -83,480 +95,570 @@ fn run(cli: Cli) -> Result<()> {
             eprintln!("warning: community pack: {warning}");
         }
     }
-    let vault = everything.clone().only_packs(&cli.pack)?;
-    let json = cli.json;
+    let show = Show {
+        painter: Painter::new(plain, terminal_width()),
+        vault: everything.clone().only_packs(&cli.pack)?,
+        everything,
+        json: cli.json,
+        colour: !no_colour,
+    };
+    show.dispatch(cli.command)
+}
 
-    match cli.command {
-        None => {
-            let mut rng = Rng::from_env_or_clock();
-            if json {
-                return print_json(&serde_json::json!({
-                    "host": host::NAME,
-                    "channel": host::CHANNEL,
-                    "greeting": host::greeting(&mut rng),
-                    "sleepsUntilChristmas": calendar::sleeps_until_christmas(calendar::today()),
-                }));
+impl Show {
+    /// Runs the command. One flat match, so that a new `Command` variant
+    /// fails to compile until it has an arm here.
+    fn dispatch(&self, command: Option<Command>) -> Result<()> {
+        match command {
+            None => self.welcome(),
+            Some(Command::List) => self.list(),
+            Some(Command::Creature {
+                name,
+                reveal,
+                explore,
+                all,
+                no_intro,
+            }) => self.creature(spoken(&name).as_deref(), reveal, explore, all, no_intro),
+            Some(Command::Random { daily, date }) => self.random(daily, date.as_deref()),
+            Some(Command::Quiz {
+                creature,
+                questions,
+            }) => self.quiz(spoken(&creature).as_deref(), questions),
+            Some(Command::Guess { rounds }) => self.guess(rounds),
+            Some(Command::Mash { creatures, fast }) => self.mash(&creatures, fast),
+            Some(Command::Stocking { action }) => self.stocking(action),
+            Some(Command::Tonight { date, shuffle }) => self.tonight(date.as_deref(), shuffle),
+            Some(Command::Countdown { date }) => self.countdown(date.as_deref()),
+            Some(Command::Advent { date }) => self.advent(date.as_deref()),
+            Some(Command::Packs { action }) => self.packs(action),
+            Some(Command::Completions { shell }) => complete_script(shell).map(|s| print(&s)),
+        }
+    }
+
+    fn welcome(&self) -> Result<()> {
+        let mut rng = Rng::from_env_or_clock();
+        let greeting = host::greeting(&mut rng);
+        if self.json {
+            return print_json(&serde_json::json!({
+                "host": host::NAME,
+                "channel": host::CHANNEL,
+                "greeting": greeting,
+                "sleepsUntilChristmas": calendar::sleeps_until_christmas(calendar::today()),
+            }));
+        }
+        print(&render::welcome(
+            &self.painter,
+            &self.vault,
+            calendar::today(),
+            greeting,
+        ));
+        Ok(())
+    }
+
+    fn list(&self) -> Result<()> {
+        if self.json {
+            return print_json(&self.vault.creatures);
+        }
+        print(&render::list(&self.painter, &self.vault));
+        Ok(())
+    }
+
+    /// A creature's page, or with no name (or when asked to) the explorer.
+    fn creature(
+        &self,
+        name: Option<&str>,
+        reveal: bool,
+        explore: bool,
+        gallery: bool,
+        no_intro: bool,
+    ) -> Result<()> {
+        // The gallery is a screen of the explorer, so asking for it opens it.
+        let explore = explore || gallery;
+        let named = match name {
+            None => None,
+            Some(name) => Some(self.vault.find(name)?),
+        };
+        if self.json {
+            return match named {
+                Some(c) => print_json(c),
+                None => print_json(&self.vault.creatures),
+            };
+        }
+        if let Some(c) = named.filter(|_| !explore) {
+            let pack = self.vault.pack_of(c).map_or(c.pack.as_str(), |p| &p.name);
+            print(&render::creature(&self.painter, c, pack, reveal));
+            return Ok(());
+        }
+        require_terminal(
+            "the Midwinter Special",
+            "use --json for the data, name a creature to print its page, or tune in from a shell",
+        )?;
+        // Badges for a night are judged by when play began.
+        let started = calendar::now();
+        let visit = explorer::run(
+            &self.vault,
+            explorer::Options {
+                show_all: gallery,
+                start_id: named.map(|c| c.id.clone()),
+                no_intro,
+                reveal,
+                colour: self.colour,
+                today: calendar::today(),
+                rng: Rng::from_env_or_clock(),
+            },
+        )?;
+        if let Some(line) = visit.sign_off {
+            let text = format!("{}{line}", self.painter.glyph("📺"));
+            print(&(self.painter.italic(&text, render::DIM) + "\n"));
+        }
+        let met = visit.seen.len();
+        if met > 0 {
+            // "guests" follows the size of the guest list, not how many
+            // were met.
+            let text = match self.vault.creatures.len() {
+                1 => "You met tonight's only guest.".to_string(),
+                all => format!("You met {met} of tonight's {all} guests."),
+            };
+            print(&(self.painter.paint(&text, render::DIM) + "\n"));
+            let mut outcome = Outcome::new(Kind::Explore, started);
+            outcome.seen = visit.seen;
+            self.record(&outcome);
+        }
+        Ok(())
+    }
+
+    fn random(&self, daily: bool, date: Option<&str>) -> Result<()> {
+        let daily = daily || date.is_some();
+        let today = calendar::parse_date(date)?;
+        let mut rng = if daily {
+            Rng::new(calendar::daily_seed(today))
+        } else {
+            Rng::from_env_or_clock()
+        };
+        if self.vault.creatures.is_empty() {
+            return Err(TinselError::new(Code::Usage, "no creatures in those packs"));
+        }
+        let (c, fact) = match calendar::advent_guest(today, &self.vault).filter(|_| daily) {
+            Some((_, c, fact)) => (c, fact),
+            None => {
+                let c = self.fact_teller(daily, &mut rng);
+                (c, rng.pick(&c.facts).clone())
             }
-            let greeting = host::greeting(&mut rng);
-            print(&render::welcome(
-                &painter,
-                &vault,
-                calendar::today(),
-                greeting,
+        };
+        let notes = if daily {
+            calendar::notes(today, &self.vault.creatures)
+        } else {
+            Vec::new()
+        };
+        if self.json {
+            let note_texts: Vec<String> = notes.iter().map(|n| n.text.clone()).collect();
+            return print_json(&FactJson {
+                id: &c.id,
+                creature: &c.name,
+                fact: &fact,
+                date: daily.then(|| today.to_string()),
+                notes: &note_texts,
+            });
+        }
+        let title = if daily {
+            format!("FACT OF THE NIGHT · {}", today.strftime("%A %-d %B"))
+        } else {
+            "RANDOM FESTIVE FACT".to_string()
+        };
+        let quip = host::quip(&mut rng);
+        print(&render::fact_card(
+            &self.painter,
+            &title,
+            c,
+            &fact,
+            &notes,
+            quip,
+        ));
+        Ok(())
+    }
+
+    /// Who tells a fact. The Fact of the Night is drawn from the built-in
+    /// creatures, so it's the same for everyone whatever packs they have
+    /// added. Any other fact can be anyone's.
+    fn fact_teller(&self, daily: bool, rng: &mut Rng) -> &creatures::Creature {
+        let pool: Vec<&creatures::Creature> = self
+            .vault
+            .creatures
+            .iter()
+            .filter(|c| !(daily && c.community))
+            .collect();
+        match pool.is_empty() {
+            true => rng.pick(&self.vault.creatures),
+            false => pool[rng.below(pool.len())],
+        }
+    }
+
+    fn quiz(&self, creature: Option<&str>, questions: usize) -> Result<()> {
+        if questions == 0 {
+            return Err(TinselError::new(
+                Code::BadFlag,
+                "--questions must be at least 1",
             ));
         }
-
-        Some(Command::List) => {
-            if json {
-                return print_json(&vault.creatures);
-            }
-            print(&render::list(&painter, &vault));
+        let focus = match creature {
+            None => None,
+            Some(name) => Some(self.vault.find(name)?.id.as_str()),
+        };
+        let mut rng = Rng::from_env_or_clock();
+        let quiz = quiz::generate(&mut rng, &self.vault.creatures, questions, focus);
+        if quiz.is_empty() {
+            return Err(
+                TinselError::new(Code::Usage, "couldn't find any questions to ask")
+                    .with_hint("try a different --pack"),
+            );
         }
-
-        Some(Command::Creature {
-            name,
-            reveal,
-            explore,
-            all,
-            no_intro,
-        }) => {
-            let named = if name.is_empty() {
-                None
-            } else {
-                Some(vault.find(&name.join(" "))?)
-            };
-            if json {
-                return match named {
-                    Some(c) => print_json(c),
-                    None => print_json(&vault.creatures),
-                };
-            }
-            match named {
-                Some(c) if !explore && !all => {
-                    let pack = vault.pack_of(c).map_or(c.pack.as_str(), |p| &p.name);
-                    print(&render::creature(&painter, c, pack, reveal));
-                }
-                _ => {
-                    require_terminal(
-                        "the Midwinter Special",
-                        "use --json for the data, name a creature to print its page, or tune in from a shell",
-                    )?;
-                    // Badges for a night are judged by when play began.
-                    let started = calendar::now();
-                    let visit = explorer::run(
-                        &vault,
-                        explorer::Options {
-                            show_all: all,
-                            start_id: named.map(|c| c.id.clone()),
-                            no_intro,
-                            reveal,
-                            colour: !no_colour,
-                            today: calendar::today(),
-                            rng: Rng::from_env_or_clock(),
-                        },
-                    )?;
-                    if let Some(line) = visit.sign_off {
-                        let text = format!("{}{line}", painter.glyph("📺"));
-                        print(&(painter.italic(&text, render::DIM) + "\n"));
-                    }
-                    let met = visit.seen.len();
-                    if met > 0 {
-                        // "guests" follows the size of the guest list, not
-                        // how many were met.
-                        let text = match vault.creatures.len() {
-                            1 => "You met tonight's only guest.".to_string(),
-                            all => format!("You met {met} of tonight's {all} guests."),
-                        };
-                        print(&(painter.paint(&text, render::DIM) + "\n"));
-                        let mut outcome = Outcome::new(Kind::Explore, started);
-                        outcome.seen = visit.seen;
-                        record(&painter, &everything, &outcome);
-                    }
-                }
-            }
+        if self.json {
+            return print_json(&quiz);
         }
-
-        Some(Command::Random { daily, date }) => {
-            let daily = daily || date.is_some();
-            let today = calendar::parse_date(date.as_deref())?;
-            let mut rng = if daily {
-                Rng::new(calendar::daily_seed(today))
-            } else {
-                Rng::from_env_or_clock()
-            };
-            if vault.creatures.is_empty() {
-                return Err(TinselError::new(Code::Usage, "no creatures in those packs"));
-            }
-            let (c, fact) = match calendar::advent_guest(today, &vault).filter(|_| daily) {
-                Some((_, c, fact)) => (c, fact),
-                None => {
-                    // The Fact of the Night is drawn from the built-in
-                    // creatures, so it's the same for everyone whatever
-                    // packs they have added. Any other fact can be anyone's.
-                    let pool: Vec<&creatures::Creature> = vault
-                        .creatures
-                        .iter()
-                        .filter(|c| !(daily && c.community))
-                        .collect();
-                    let c = match pool.is_empty() {
-                        true => rng.pick(&vault.creatures),
-                        false => pool[rng.below(pool.len())],
-                    };
-                    (c, rng.pick(&c.facts).clone())
-                }
-            };
-            let notes = if daily {
-                calendar::notes(today, &vault.creatures)
-            } else {
-                Vec::new()
-            };
-            let note_texts: Vec<String> = notes.iter().map(|n| n.text.clone()).collect();
-            if json {
-                return print_json(&FactJson {
-                    id: &c.id,
-                    creature: &c.name,
-                    fact: &fact,
-                    date: daily.then(|| today.to_string()),
-                    notes: &note_texts,
-                });
-            }
-            let title = if daily {
-                format!("FACT OF THE NIGHT · {}", today.strftime("%A %-d %B"))
-            } else {
-                "RANDOM FESTIVE FACT".to_string()
-            };
-            let quip = host::quip(&mut rng);
-            print(&render::fact_card(&painter, &title, c, &fact, &notes, quip));
+        require_terminal(
+            "the Christmas Cracker Quiz",
+            "use --json for the questions and answers, or play from a shell",
+        )?;
+        let started = calendar::now();
+        let mut app = games::QuizApp::new(quiz, rng, self.colour);
+        tui::run(&mut app, "the Christmas Cracker Quiz")?;
+        let result = app.into_result();
+        print(&render::quiz_summary(&self.painter, &result));
+        if result.score().1 > 0 {
+            let mut outcome = Outcome::new(Kind::Quiz, started);
+            outcome.correct = result.correct_by();
+            outcome.score = result.percent() as u32;
+            outcome.total = result.questions.len() as u32;
+            outcome.completed = result.completed;
+            self.record(&outcome);
         }
+        Ok(())
+    }
 
-        Some(Command::Quiz {
-            creature,
-            questions,
-        }) => {
-            if questions == 0 {
-                return Err(TinselError::new(
-                    Code::BadFlag,
-                    "--questions must be at least 1",
-                ));
-            }
-            let focus = if creature.is_empty() {
-                None
-            } else {
-                Some(vault.find(&creature.join(" "))?.id.as_str())
-            };
-            let mut rng = Rng::from_env_or_clock();
-            let quiz = quiz::generate(&mut rng, &vault.creatures, questions, focus);
-            if quiz.is_empty() {
-                return Err(
-                    TinselError::new(Code::Usage, "couldn't find any questions to ask")
-                        .with_hint("try a different --pack"),
-                );
-            }
-            if json {
-                return print_json(&quiz);
-            }
-            require_terminal(
-                "the Christmas Cracker Quiz",
-                "use --json for the questions and answers, or play from a shell",
-            )?;
-            let started = calendar::now();
-            let mut app = games::QuizApp::new(quiz, rng, !no_colour);
-            tui::run(&mut app, "the Christmas Cracker Quiz")?;
-            let result = app.into_result();
-            print(&render::quiz_summary(&painter, &result));
-            if result.score().1 > 0 {
-                let mut outcome = Outcome::new(Kind::Quiz, started);
-                outcome.correct = result.correct_by();
-                outcome.score = result.percent() as u32;
-                outcome.total = result.questions.len() as u32;
-                outcome.completed = result.completed;
-                record(&painter, &everything, &outcome);
-            }
+    fn guess(&self, rounds: usize) -> Result<()> {
+        if rounds == 0 {
+            return Err(TinselError::new(
+                Code::BadFlag,
+                "--rounds must be at least 1",
+            ));
         }
+        let mut rng = Rng::from_env_or_clock();
+        let game = guess::rounds(&mut rng, &self.vault.creatures, rounds);
+        if game.is_empty() {
+            return Err(TinselError::new(
+                Code::Usage,
+                "Guess the Guest needs at least 3 different creatures, including one with a portrait",
+            )
+            .with_hint("try a different --pack"));
+        }
+        if self.json {
+            let out: Vec<guess::RoundJson> = game.iter().map(Into::into).collect();
+            return print_json(&out);
+        }
+        require_terminal(
+            "Guess the Guest",
+            "use --json for the rounds and answers, or play from a shell",
+        )?;
+        let started = calendar::now();
+        let mut app = games::GuessApp::new(game, rng, self.colour);
+        tui::run(&mut app, "Guess the Guest")?;
+        let result = app.into_result();
+        print(&render::guess_summary(&self.painter, &result));
+        if result.played() > 0 {
+            let mut outcome = Outcome::new(Kind::Guess, started);
+            outcome.correct = result.correct_by();
+            outcome.score = result.score() as u32;
+            outcome.total = result.rounds.len() as u32;
+            outcome.completed = result.completed;
+            outcome.frost_reader = result.frost_reader();
+            self.record(&outcome);
+        }
+        Ok(())
+    }
 
-        Some(Command::Guess { rounds }) => {
-            if rounds == 0 {
-                return Err(TinselError::new(
-                    Code::BadFlag,
-                    "--rounds must be at least 1",
-                ));
-            }
-            let mut rng = Rng::from_env_or_clock();
-            let game = guess::rounds(&mut rng, &vault.creatures, rounds);
-            if game.is_empty() {
+    /// The two creatures for a showdown: the ones named, and the rest drawn
+    /// from creatures not already in a corner. Picking from that pool, not
+    /// retrying at random, can't loop.
+    fn corners(&self, names: &[String], rng: &mut Rng) -> Result<[&creatures::Creature; 2]> {
+        let mut corners = Vec::new();
+        for name in names {
+            corners.push(self.vault.find(name)?);
+        }
+        if let [a, b] = corners.as_slice()
+            && a.id == b.id
+        {
+            return Err(TinselError::new(
+                Code::Usage,
+                format!("{} can't throw snowballs at itself", a.name),
+            )
+            .with_hint("pick two different creatures"));
+        }
+        while corners.len() < 2 {
+            let pool: Vec<&creatures::Creature> = self
+                .vault
+                .creatures
+                .iter()
+                .filter(|c| corners.iter().all(|taken| taken.id != c.id))
+                .collect();
+            if pool.is_empty() {
                 return Err(TinselError::new(
                     Code::Usage,
-                    "Guess the Guest needs at least 3 different creatures, including one with a portrait",
+                    "the Snowball Showdown needs at least two different creatures",
                 )
                 .with_hint("try a different --pack"));
             }
-            if json {
-                let out: Vec<guess::RoundJson> = game.iter().map(Into::into).collect();
-                return print_json(&out);
-            }
-            require_terminal(
-                "Guess the Guest",
-                "use --json for the rounds and answers, or play from a shell",
-            )?;
-            let started = calendar::now();
-            let mut app = games::GuessApp::new(game, rng, !no_colour);
-            tui::run(&mut app, "Guess the Guest")?;
-            let result = app.into_result();
-            print(&render::guess_summary(&painter, &result));
-            if result.played() > 0 {
-                let mut outcome = Outcome::new(Kind::Guess, started);
-                outcome.correct = result.correct_by();
-                outcome.score = result.score() as u32;
-                outcome.total = result.rounds.len() as u32;
-                outcome.completed = result.completed;
-                outcome.frost_reader = result.frost_reader();
-                record(&painter, &everything, &outcome);
-            }
+            corners.push(pool[rng.below(pool.len())]);
         }
+        Ok([corners[0], corners[1]])
+    }
 
-        Some(Command::Mash { creatures, fast }) => {
-            let mut rng = Rng::from_env_or_clock();
-            let mut corners = Vec::new();
-            for name in &creatures {
-                corners.push(vault.find(name)?);
-            }
-            if let [a, b] = corners.as_slice()
-                && a.id == b.id
-            {
-                return Err(TinselError::new(
-                    Code::Usage,
-                    format!("{} can't throw snowballs at itself", a.name),
-                )
-                .with_hint("pick two different creatures"));
-            }
-            // Fill the empty corners from creatures not already in one.
-            // Picking from this pool, not retrying at random, can't loop.
-            while corners.len() < 2 {
-                let pool: Vec<&creatures::Creature> = vault
-                    .creatures
-                    .iter()
-                    .filter(|c| corners.iter().all(|taken| taken.id != c.id))
-                    .collect();
-                if pool.is_empty() {
-                    return Err(TinselError::new(
-                        Code::Usage,
-                        "the Snowball Showdown needs at least two different creatures",
-                    )
-                    .with_hint("try a different --pack"));
-                }
-                corners.push(pool[rng.below(pool.len())]);
-            }
-            let bout = mash::fight(&mut rng, corners[0], corners[1]);
-            if json {
-                return print_json(&MashJson {
-                    a: bout.a.into(),
-                    b: bout.b.into(),
-                    rounds: &bout.rounds,
-                    winner: &bout.winner().id,
-                    finale: &bout.finale,
-                });
-            }
-            let pause = |ms: u64| {
-                if !fast && io::stdout().is_terminal() {
-                    std::thread::sleep(std::time::Duration::from_millis(ms));
-                }
-            };
-            print(&render::mash_header(&painter, &bout));
-            pause(1200);
-            for round in &bout.rounds {
-                print(&render::mash_round(&painter, &bout, round));
-                pause(1500);
-            }
-            print(&render::mash_result(&painter, &bout));
-            record(
-                &painter,
-                &everything,
-                &Outcome::new(Kind::Mash, calendar::now()),
-            );
+    fn mash(&self, names: &[String], fast: bool) -> Result<()> {
+        let mut rng = Rng::from_env_or_clock();
+        let [a, b] = self.corners(names, &mut rng)?;
+        let bout = mash::fight(&mut rng, a, b);
+        if self.json {
+            return print_json(&MashJson {
+                a: bout.a.into(),
+                b: bout.b.into(),
+                rounds: &bout.rounds,
+                winner: &bout.winner().id,
+                finale: &bout.finale,
+            });
         }
-
-        Some(Command::Stocking { action: None }) => {
-            let dir = store::dir()?;
-            let progress = store::load(&dir)?;
-            if json {
-                return print_json(&progress);
+        let pause = |ms: u64| {
+            if !fast && io::stdout().is_terminal() {
+                std::thread::sleep(std::time::Duration::from_millis(ms));
             }
-            print(&render::stocking(&painter, &progress, &everything));
-            let path = store::tilde(&store::path_in(&dir));
-            print(&format!(
-                "\n{}\n",
-                painter.paint(&format!("Progress is saved in {path}"), render::DIM)
-            ));
+        };
+        print(&render::mash_header(&self.painter, &bout));
+        pause(1200);
+        for round in &bout.rounds {
+            print(&render::mash_round(&self.painter, &bout, round));
+            pause(1500);
         }
+        print(&render::mash_result(&self.painter, &bout));
+        self.record(&Outcome::new(Kind::Mash, calendar::now()));
+        Ok(())
+    }
 
-        Some(Command::Stocking {
-            action: Some(StockingAction::Reset { yes }),
-        }) => {
-            let dir = store::dir()?;
-            if !yes {
-                if !io::stdin().is_terminal() {
-                    return Err(TinselError::new(
-                        Code::NoTerminal,
-                        "refusing to empty the stocking without a terminal to confirm on",
-                    )
-                    .with_hint("pass -y to reset without asking"));
-                }
-                eprint!(
-                    "This tips out every creature and forgets all your badges. Type 'yes' to confirm: "
-                );
-                let mut answer = String::new();
-                let _ = io::stdin().read_line(&mut answer);
-                if answer.trim().to_lowercase() != "yes" {
-                    if json {
-                        return print_json(&serde_json::json!({ "reset": false }));
-                    }
-                    print("Phew. Your stocking is untouched.\n");
-                    return Ok(());
-                }
-            }
-            store::reset(&dir)?;
-            if json {
-                return print_json(&serde_json::json!({ "reset": true }));
-            }
-            print(
-                "The stocking is tipped out on the hearthrug, and every creature has scampered off. Your progress has been reset.\n",
-            );
+    fn stocking(&self, action: Option<StockingAction>) -> Result<()> {
+        let dir = store::dir()?;
+        if let Some(StockingAction::Reset { yes }) = action {
+            return self.stocking_reset(&dir, yes);
         }
-
-        Some(Command::Tonight { date, shuffle }) => {
-            let today = calendar::parse_date(date.as_deref())?;
-            let too_few = || {
-                TinselError::new(Code::Usage, "a double bill needs at least two creatures")
-                    .with_hint("try a different --pack")
-            };
-            if vault.creatures.len() < 2 {
-                return Err(too_few());
-            }
-            let (first, second) = if shuffle {
-                let mut bill: Vec<&creatures::Creature> = vault.creatures.iter().collect();
-                Rng::from_env_or_clock().shuffle(&mut bill);
-                (bill[0], bill[1])
-            } else {
-                calendar::double_bill(today, &vault).ok_or_else(too_few)?
-            };
-            let notes = calendar::notes(today, &vault.creatures);
-            if json {
-                return print_json(&TonightJson {
-                    date: today.to_string(),
-                    features: [
-                        FeatureJson::new(render::FIRST_FEATURE, first),
-                        FeatureJson::new(render::SECOND_FEATURE, second),
-                    ],
-                    notes: notes.into_iter().map(|n| n.text).collect(),
-                });
-            }
-            print(&render::ticket(&painter, today, first, second));
-            print(&render::fact_card(
-                &painter,
-                "FROM THE HOST",
-                first,
-                &host::intro(first),
-                &notes,
-                "",
-            ));
+        let progress = store::load(&dir)?;
+        if self.json {
+            return print_json(&progress);
         }
+        print(&render::stocking(
+            &self.painter,
+            &progress,
+            &self.everything,
+        ));
+        let path = store::tilde(&store::path_in(&dir));
+        print(&format!(
+            "\n{}\n",
+            self.painter
+                .paint(&format!("Progress is saved in {path}"), render::DIM)
+        ));
+        Ok(())
+    }
 
-        Some(Command::Countdown { date }) => {
-            let today = calendar::parse_date(date.as_deref())?;
-            if json {
-                let guest = calendar::advent_guest(today, &vault);
-                return print_json(&CountdownJson {
-                    date: today.to_string(),
-                    christmas: calendar::is_christmas(today),
-                    sleeps_until_christmas: calendar::sleeps_until_christmas(today),
-                    advent: guest.map(|(night, c, fact)| AdventJson {
-                        night: night.night,
-                        id: &c.id,
-                        name: &c.name,
-                        note: &night.note,
-                        fact,
-                    }),
-                    twelve_days: calendar::twelve_days(today),
-                    yule_lads_in_town: calendar::yule_lads_in_town(today),
-                    moon: calendar::moon(today).into(),
-                    next_special_night: calendar::next_special_night(today, &vault.creatures)
-                        .map(Into::into),
-                    notes: calendar::notes(today, &vault.creatures)
-                        .into_iter()
-                        .map(|n| n.text)
-                        .collect(),
-                });
+    fn stocking_reset(&self, dir: &std::path::Path, yes: bool) -> Result<()> {
+        if !yes && !confirm_reset()? {
+            if self.json {
+                return print_json(&serde_json::json!({ "reset": false }));
             }
-            print(&render::countdown(&painter, &vault, today));
+            print("Phew. Your stocking is untouched.\n");
+            return Ok(());
         }
-
-        Some(Command::Advent { date }) => {
-            let today = calendar::parse_date(date.as_deref())?;
-            if json {
-                let doors: Vec<_> = vault
-                    .advent
-                    .iter()
-                    .map(|n| DoorJson {
-                        night: n.night,
-                        id: &n.id,
-                        name: vault.get(&n.id).map(|c| c.name.as_str()),
-                        note: &n.note,
-                        door: render::door(n.night, today),
-                    })
-                    .collect();
-                return print_json(
-                    &serde_json::json!({ "date": today.to_string(), "doors": doors }),
-                );
-            }
-            print(&render::advent(&painter, &vault, today));
+        store::reset(dir)?;
+        if self.json {
+            return print_json(&serde_json::json!({ "reset": true }));
         }
+        print(
+            "The stocking is tipped out on the hearthrug, and every creature has scampered off. Your progress has been reset.\n",
+        );
+        Ok(())
+    }
 
-        Some(Command::Packs { action: None }) => {
-            if json {
-                let out: Vec<PackJson> = everything
-                    .by_pack()
-                    .into_iter()
-                    .map(|(pack, members)| PackJson {
-                        id: &pack.id,
-                        name: &pack.name,
-                        description: &pack.description,
-                        source: &pack.source,
-                        creatures: members.iter().map(|c| c.id.as_str()).collect(),
-                    })
-                    .collect();
-                return print_json(&out);
-            }
-            let dir = store::dir().ok().map(|d| store::packs_dir(&d));
-            print(&render::packs(&painter, &everything, dir.as_deref()));
+    fn tonight(&self, date: Option<&str>, shuffle: bool) -> Result<()> {
+        let today = calendar::parse_date(date)?;
+        let too_few = || {
+            TinselError::new(Code::Usage, "a double bill needs at least two creatures")
+                .with_hint("try a different --pack")
+        };
+        if self.vault.creatures.len() < 2 {
+            return Err(too_few());
         }
-
-        Some(Command::Packs {
-            action: Some(PacksAction::New { id }),
-        }) => {
-            let dir = packs::scaffold(&everything, &store::packs_dir(&store::dir()?), &id)?;
-            let creature = packs::example_id(&id);
-            if json {
-                return print_json(&serde_json::json!({
-                    "pack": id,
-                    "creature": creature,
-                    "path": dir.display().to_string(),
-                }));
-            }
-            print(&format!(
-                "Created {}\n\n\
-                 Edit {creature}.json (and {creature}.txt for its portrait), then try:\n  \
-                 terminal-of-tinsel creature {creature}\n  \
-                 terminal-of-tinsel quiz --pack {id}\n\n\
-                 Only name, description and facts are required.\n",
-                store::tilde(&dir)
-            ));
+        let (first, second) = if shuffle {
+            let mut bill: Vec<&creatures::Creature> = self.vault.creatures.iter().collect();
+            Rng::from_env_or_clock().shuffle(&mut bill);
+            (bill[0], bill[1])
+        } else {
+            calendar::double_bill(today, &self.vault).ok_or_else(too_few)?
+        };
+        let notes = calendar::notes(today, &self.vault.creatures);
+        if self.json {
+            return print_json(&TonightJson {
+                date: today.to_string(),
+                features: [
+                    FeatureJson::new(render::FIRST_FEATURE, first),
+                    FeatureJson::new(render::SECOND_FEATURE, second),
+                ],
+                notes: notes.into_iter().map(|n| n.text).collect(),
+            });
         }
+        print(&render::ticket(&self.painter, today, first, second));
+        print(&render::fact_card(
+            &self.painter,
+            "FROM THE HOST",
+            first,
+            &host::intro(first),
+            &notes,
+            "",
+        ));
+        Ok(())
+    }
 
-        Some(Command::Completions { shell }) => {
-            print(&complete_script(shell)?);
+    fn countdown(&self, date: Option<&str>) -> Result<()> {
+        let today = calendar::parse_date(date)?;
+        if !self.json {
+            print(&render::countdown(&self.painter, &self.vault, today));
+            return Ok(());
+        }
+        let guest = calendar::advent_guest(today, &self.vault);
+        print_json(&CountdownJson {
+            date: today.to_string(),
+            christmas: calendar::is_christmas(today),
+            sleeps_until_christmas: calendar::sleeps_until_christmas(today),
+            advent: guest.map(|(night, c, fact)| AdventJson {
+                night: night.night,
+                id: &c.id,
+                name: &c.name,
+                note: &night.note,
+                fact,
+            }),
+            twelve_days: calendar::twelve_days(today),
+            yule_lads_in_town: calendar::yule_lads_in_town(today),
+            moon: calendar::moon(today).into(),
+            next_special_night: calendar::next_special_night(today, &self.vault.creatures)
+                .map(Into::into),
+            notes: calendar::notes(today, &self.vault.creatures)
+                .into_iter()
+                .map(|n| n.text)
+                .collect(),
+        })
+    }
+
+    fn advent(&self, date: Option<&str>) -> Result<()> {
+        let today = calendar::parse_date(date)?;
+        if !self.json {
+            print(&render::advent(&self.painter, &self.vault, today));
+            return Ok(());
+        }
+        let doors: Vec<_> = self
+            .vault
+            .advent
+            .iter()
+            .map(|n| DoorJson {
+                night: n.night,
+                id: &n.id,
+                name: self.vault.get(&n.id).map(|c| c.name.as_str()),
+                note: &n.note,
+                door: render::door(n.night, today),
+            })
+            .collect();
+        print_json(&serde_json::json!({ "date": today.to_string(), "doors": doors }))
+    }
+
+    fn packs(&self, action: Option<PacksAction>) -> Result<()> {
+        if let Some(PacksAction::New { id }) = action {
+            return self.packs_new(&id);
+        }
+        if self.json {
+            let out: Vec<PackJson> = self
+                .everything
+                .by_pack()
+                .into_iter()
+                .map(|(pack, members)| PackJson {
+                    id: &pack.id,
+                    name: &pack.name,
+                    description: &pack.description,
+                    source: &pack.source,
+                    creatures: members.iter().map(|c| c.id.as_str()).collect(),
+                })
+                .collect();
+            return print_json(&out);
+        }
+        let dir = store::dir().ok().map(|d| store::packs_dir(&d));
+        print(&render::packs(
+            &self.painter,
+            &self.everything,
+            dir.as_deref(),
+        ));
+        Ok(())
+    }
+
+    fn packs_new(&self, id: &str) -> Result<()> {
+        let dir = packs::scaffold(&self.everything, &store::packs_dir(&store::dir()?), id)?;
+        let creature = packs::example_id(id);
+        if self.json {
+            return print_json(&serde_json::json!({
+                "pack": id,
+                "creature": creature,
+                "path": dir.display().to_string(),
+            }));
+        }
+        print(&format!(
+            "Created {}\n\n\
+             Edit {creature}.json (and {creature}.txt for its portrait), then try:\n  \
+             terminal-of-tinsel creature {creature}\n  \
+             terminal-of-tinsel quiz --pack {id}\n\n\
+             Only name, description and facts are required.\n",
+            store::tilde(&dir)
+        ));
+        Ok(())
+    }
+
+    /// Saves an outcome to the player's stocking and announces anything new.
+    /// Trouble with the save file is reported but never stops the fun.
+    fn record(&self, outcome: &Outcome) {
+        let saved = store::dir().and_then(|dir| {
+            let mut progress = store::load(&dir)?;
+            let unlocks = stocking::apply(&mut progress, &self.everything.creatures, outcome);
+            store::save(&dir, &progress)?;
+            Ok(unlocks)
+        });
+        match saved {
+            Ok(unlocks) => print(&render::unlocks(&self.painter, &unlocks)),
+            // With the hint, so a broken save file comes with its way out.
+            Err(e) => eprintln!("warning: this session wasn't saved: {e}"),
         }
     }
-    Ok(())
+}
+
+/// A name given as several words, joined up, or nothing if no word was
+/// given. An empty word is still a name: `creature ""` asks for a creature
+/// called nothing, which is an error, not a request for the explorer.
+fn spoken(words: &[String]) -> Option<String> {
+    (!words.is_empty()).then(|| words.join(" "))
+}
+
+/// Asks before emptying the stocking. Without a terminal to ask on, it
+/// refuses rather than guess.
+fn confirm_reset() -> Result<bool> {
+    if !io::stdin().is_terminal() {
+        return Err(TinselError::new(
+            Code::NoTerminal,
+            "refusing to empty the stocking without a terminal to confirm on",
+        )
+        .with_hint("pass -y to reset without asking"));
+    }
+    eprint!("This tips out every creature and forgets all your badges. Type 'yes' to confirm: ");
+    let mut answer = String::new();
+    let _ = io::stdin().read_line(&mut answer);
+    Ok(answer.trim().to_lowercase() == "yes")
 }
 
 /// The script that registers dynamic completion with a shell: the same one
@@ -585,22 +687,6 @@ struct PackJson<'a> {
     /// "built-in", or the directory a community pack was loaded from.
     source: &'a str,
     creatures: Vec<&'a str>,
-}
-
-/// Saves an outcome to the player's stocking and announces anything new.
-/// Trouble with the save file is reported but never stops the fun.
-fn record(painter: &Painter, everything: &Vault, outcome: &Outcome) {
-    let saved = store::dir().and_then(|dir| {
-        let mut progress = store::load(&dir)?;
-        let unlocks = stocking::apply(&mut progress, &everything.creatures, outcome);
-        store::save(&dir, &progress)?;
-        Ok(unlocks)
-    });
-    match saved {
-        Ok(unlocks) => print(&render::unlocks(painter, &unlocks)),
-        // With the hint, so a broken save file comes with its way out.
-        Err(e) => eprintln!("warning: this session wasn't saved: {e}"),
-    }
 }
 
 /// A showdown as `--json` prints it: who fought, round by round, and who won.

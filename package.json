@@ -1,0 +1,8 @@
+{
+  "name": "terminal-of-tinsel",
+  "private": true,
+  "devDependencies": {
+    "markdownlint-cli": "^0.47.0"
+  },
+  "description": "Tooling for slopstopper's checks"
+}

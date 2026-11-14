@@ -1,4 +1,6 @@
 [tools]
+"node" = "20"
+"pipx:slopstopper-cli" = "0.28.0"
 rust = "stable"
 task = "3"
 "cargo:cargo-dist" = "0.34.0"

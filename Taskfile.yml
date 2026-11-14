@@ -1,5 +1,9 @@
 version: '3'
 
+includes:
+  ss:
+    taskfile: ./Taskfile.ss.yml
+
 tasks:
   default:
     desc: Format, lint and test
@@ -27,6 +31,11 @@ tasks:
     desc: Format the code
     cmds:
       - cargo fmt
+
+  shelldocs:
+    desc: Regenerate man/ and completions/ after changing a command or a flag
+    cmds:
+      - UPDATE_SHELLDOCS=1 cargo test shell_docs
 
   release:plan:
     desc: Show what cargo-dist would build for a release

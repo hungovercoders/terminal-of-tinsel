@@ -222,3 +222,25 @@ the quiz, the games, completion and the man pages picked them up without a chang
   a new JSON file needs a rebuild to appear. Go's build cache notices a new file under an embedded
   directory. With `include_dir` on stable Rust, Cargo is only told about the files that were there at
   the last build, so if a new creature doesn't show up, touch `src/creatures.rs` or run `cargo clean`.
+
+## Phase 7: repo polish
+
+- **Releases: GoReleaser against cargo-dist.** GoReleaser is one YAML file you write: builds, archives,
+  a `before` hook, the Homebrew cask, the release notes. cargo-dist is a few lines of TOML and a
+  workflow it generates and owns. It gives installers (shell, PowerShell, Homebrew) for nothing, but
+  where GoReleaser has a hook for everything, cargo-dist has none, which is why Tinsel commits its man
+  pages instead of generating them at release time.
+- **Versions.** Go stamps the version in at link time (`-ldflags -X`), from the tag. Cargo reads it from
+  `Cargo.toml`, so a release is a commit that changes the version before the tag, and anything that
+  embeds it (the man pages) has to be regenerated in that commit.
+- **Formatting and linting.** `gofmt` and `go vet` come with Go, and nobody argues with them. `rustfmt`
+  and `clippy` come with rustup and play the same parts, but clippy has far more opinions: several of
+  the review fixes in this project were clippy's (`is_multiple_of`, collapsed `if let` chains).
+- **One complexity budget, two languages.** slopstopper's complexity check uses the same ceiling for
+  Go and Rust. Terror's Cobra commands are a file each, so they passed. Tinsel's `match` on a clap enum
+  had grown into one 460-line function, and had to be split into a method per command. Rust's `match`
+  makes a long function easy to write and the compiler never complains about its length.
+- **Dependency updates.** Dependabot knows `gomod` and `cargo` alike. The difference is in what a bump
+  can break: Go's minimal version selection changes little, while a Cargo bump can bring new versions
+  of everything beneath it, so `Cargo.lock` is committed and CI builds with `--locked`.
+- **Recording demos.** VHS is a Go program and installs with `go install`, even for a Rust project.
