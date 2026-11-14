@@ -16,7 +16,7 @@ use crate::creatures::PACK_ORDER;
     long_about = "Terminal of Tinsel brings the creatures of Christmas folklore to your terminal: \
 St Nicholas's grim companions, the Yule Cat and the Yule Lads, the Mari Lwyd at the door \
 and the spirits of A Christmas Carol, presented by your host, Auntie Aerial, live on \
-Channel 25's Midwinter Special.\n\nStart here:  terminal-of-tinsel list",
+Channel 25's Midwinter Special.\n\nStart here:  terminal-of-tinsel creature",
     after_help = "Set NO_COLOR or pass --no-color for plain output. Every command takes --json."
 )]
 pub struct Cli {
@@ -48,19 +48,35 @@ pub enum Command {
     #[command(visible_alias = "ls")]
     List,
 
-    /// Read a creature's page: facts, legend, myth or fact, stats and more
+    /// Tune in to the Midwinter Special, or read one creature's page
     #[command(
         visible_alias = "show",
-        after_help = "Examples:\n  terminal-of-tinsel creature krampus\n  terminal-of-tinsel creature yule cat --reveal\n  terminal-of-tinsel creature marley --json"
+        long_about = "With no name, opens the Midwinter Special: an interactive explorer of every \
+creature, with a gallery, numbered sections, portraits and search. Press ? inside it for the keys.\n\n\
+With a name, prints that creature's page. Nicknames and parts of names work, and accents are \
+optional. Add --explore to open the explorer on that creature instead.",
+        after_help = "Examples:\n  terminal-of-tinsel creature\n  terminal-of-tinsel creature krampus\n  terminal-of-tinsel creature yule cat --reveal\n  terminal-of-tinsel creature marley --explore\n  terminal-of-tinsel creature marley --json"
     )]
     Creature {
         /// The creature's name, nickname or part of one, e.g. krampus, "yule cat", nisse
-        #[arg(required = true, num_args = 1.., value_name = "NAME")]
+        #[arg(num_args = 0.., value_name = "NAME")]
         name: Vec<String>,
 
         /// Show the verdicts in Myth or Fact?
         #[arg(short, long)]
         reveal: bool,
+
+        /// Open the explorer on the named creature instead of printing its page
+        #[arg(short = 'x', long)]
+        explore: bool,
+
+        /// Open the explorer on the gallery of every creature
+        #[arg(short, long)]
+        all: bool,
+
+        /// Skip Channel 25 tuning in
+        #[arg(long)]
+        no_intro: bool,
     },
 
     /// A random creature fact, or with --daily the Fact of the Night
@@ -120,6 +136,28 @@ mod tests {
             Some(Command::Creature { name, .. }) => assert_eq!(name.join(" "), "yule cat"),
             other => panic!("parsed {other:?}"),
         }
+    }
+
+    #[test]
+    fn creature_needs_no_name_and_takes_the_explorer_flags() {
+        let cli = Cli::try_parse_from(["t", "creature", "--all", "--no-intro"]).unwrap();
+        match cli.command {
+            Some(Command::Creature {
+                name,
+                all,
+                no_intro,
+                explore,
+                ..
+            }) => {
+                assert!(name.is_empty() && all && no_intro && !explore);
+            }
+            other => panic!("parsed {other:?}"),
+        }
+        let cli = Cli::try_parse_from(["t", "creature", "marley", "-x"]).unwrap();
+        assert!(matches!(
+            cli.command,
+            Some(Command::Creature { explore: true, .. })
+        ));
     }
 
     #[test]

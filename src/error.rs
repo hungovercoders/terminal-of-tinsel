@@ -13,6 +13,8 @@ pub enum Code {
     BadPack,
     BadDate,
     BadFlag,
+    /// A screen that needs a terminal was run from a script, a pipe or CI.
+    NoTerminal,
     Usage,
 }
 
@@ -72,6 +74,15 @@ mod tests {
         assert_eq!(
             e.to_json(),
             r#"{"error":{"code":"unknown-creature","message":"no such creature"}}"#
+        );
+    }
+
+    #[test]
+    fn no_terminal_has_its_own_code() {
+        let e = TinselError::new(Code::NoTerminal, "needs a terminal").with_hint("use --json");
+        assert_eq!(
+            e.to_json(),
+            r#"{"error":{"code":"no-terminal","message":"needs a terminal","hint":"use --json"}}"#
         );
     }
 
