@@ -1,0 +1,35 @@
+{
+  "id": "cert",
+  "name": "Čert",
+  "aliases": ["Cert", "The Čert", "Czech Devil"],
+  "emoji": "👿",
+  "description": "The shaggy, chain-rattling devil who walks the Czech streets with St Nicholas and an angel on 5 December",
+  "origin": "Czech and Slovak folklore",
+  "debut": {"medium": "folklore", "title": "Czech and Slovak folk tradition", "era": "an old figure of folk tales, and of the St Nicholas visit on 5 December"},
+  "legend": "On the evening of 5 December, the eve of St Nicholas Day, three figures go from door to door in Czech and Slovak towns: Mikuláš, the saint in his bishop's robes, an angel in white, and a čert, a devil. Mikuláš asks each child whether they've been good, and many recite a poem or sing a song to prove it. The angel hands out sweets and fruit. The čert, with his horns, blackened face, shaggy fur and rattling chains, is there for the others: a lump of coal or a potato, and the threat of a ride to hell in his sack. Outside this one night he is a stock character of Czech fairy tales, where he is more often foolish than frightening, and is regularly outwitted by a sharp-tongued villager.",
+  "myths": [
+    {"claim": "The čert comes on Christmas Eve.", "true": false, "explanation": "His night is 5 December, the eve of St Nicholas Day."},
+    {"claim": "He walks with an angel as well as the saint.", "true": true, "explanation": "The visiting party is three: Mikuláš, an angel and a devil."},
+    {"claim": "In Czech fairy tales the devil always wins.", "true": false, "explanation": "He usually loses. The čert of the folk tales is easily tricked, and often sent packing."},
+    {"claim": "Dvořák wrote an opera about a čert.", "true": true, "explanation": "The Devil and Kate (Čert a Káča) opened at the National Theatre in Prague in 1899."}
+  ],
+  "quotes": [],
+  "powers": ["Rattling chains", "A sack with room for one more", "A direct route to hell", "Making a whole street of children suddenly polite"],
+  "weaknesses": ["A well-recited poem", "The angel standing next to him", "Anyone cleverer than he is, which is most people"],
+  "stats": {"strength": 6, "speed": 6, "cunning": 3, "dread": 7},
+  "legacy": [
+    "Antonín Dvořák's comic opera The Devil and Kate (1899)",
+    "The Mikuláš evening, still kept on 5 December across the Czech Republic and Slovakia"
+  ],
+  "facts": [
+    "Čert is the Czech and Slovak word for a devil",
+    "On the evening of 5 December he goes from door to door with Mikuláš, who is St Nicholas, and an angel",
+    "Mikuláš asks children whether they've been good, and many recite a poem or sing a song for him",
+    "Naughty children are threatened with a lump of coal or a potato, or a ride to hell in his sack",
+    "He's usually played with horns, a blackened face, shaggy fur and rattling chains",
+    "In Czech fairy tales he is often more foolish than frightening, and is regularly outwitted",
+    "Dvořák's comic opera The Devil and Kate opened in Prague in 1899"
+  ],
+  "hostIntro": "Our next guest comes as one of three, and he's the one without the halo. Have your poem ready, viewers.",
+  "theme": {"primary": "#C1121F", "accent": "#780000"}
+}

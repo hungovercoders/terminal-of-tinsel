@@ -1,0 +1,35 @@
+{
+  "id": "knecht-ruprecht",
+  "name": "Knecht Ruprecht",
+  "aliases": ["Ruprecht", "Servant Rupert", "Farmhand Rupert"],
+  "emoji": "🧔",
+  "description": "St Nicholas's bearded German servant, who asks children whether they can say their prayers",
+  "origin": "German folklore",
+  "debut": {"medium": "folklore", "title": "German Christmas custom", "era": "first recorded in the 17th century, in a Nuremberg Christmas procession"},
+  "legend": "Knecht Ruprecht, Servant Rupert, walks beside St Nicholas in much of Germany. He is a man, not a demon: bearded, wrapped in a long dark robe with a pointed hood, with a staff in his hand and a sack over his shoulder. In many tellings he asks the children of the house whether they can say their prayers. Those who can are given apples, nuts and gingerbread. Those who can't may get a switch for their parents to use, or, in some tellings, a swipe from his bag of ashes. He first turns up in writing in the 17th century, as a figure in a Christmas procession in Nuremberg. In some Protestant regions, where the saint himself fell out of favour, Ruprecht is said to have come with the Christ Child instead, or on his own.",
+  "myths": [
+    {"claim": "Knecht Ruprecht is just the German name for Krampus.", "true": false, "explanation": "They do the same job, but Ruprecht is a bearded man in a robe, and Krampus is a horned Alpine demon."},
+    {"claim": "His name means Servant Rupert.", "true": true, "explanation": "Knecht is a servant or farmhand, so he is Servant Rupert or Farmhand Rupert."},
+    {"claim": "He always travels with St Nicholas.", "true": false, "explanation": "Usually, but in some regions he is said to accompany the Christ Child, or to come alone."},
+    {"claim": "Robert Schumann wrote a piano piece about him.", "true": true, "explanation": "Knecht Ruprecht is one of the pieces in his Album for the Young, published in 1848."}
+  ],
+  "quotes": [],
+  "powers": ["Knowing who has said their prayers", "A sack of apples, nuts and gingerbread", "A bag of ashes", "A long walk through the snow without complaint"],
+  "weaknesses": ["Children who know their prayers", "St Nicholas has the final say", "A sack that gets lighter all evening"],
+  "stats": {"strength": 6, "speed": 4, "cunning": 6, "dread": 6},
+  "legacy": [
+    "Theodor Storm's poem Knecht Ruprecht (1862), in which he comes in from the forest to announce that Christmas is near",
+    "Robert Schumann's piano piece Knecht Ruprecht, in his Album for the Young (1848)"
+  ],
+  "facts": [
+    "Knecht Ruprecht is St Nicholas's companion in German Christmas folklore",
+    "His name means Servant Rupert, or Farmhand Rupert",
+    "He first appears in written sources in the 17th century, as a figure in a Nuremberg Christmas procession",
+    "He's usually shown as a bearded man in a long dark robe with a pointed hood",
+    "In many tellings he asks children whether they can say their prayers",
+    "Children who can are given apples, nuts and gingerbread",
+    "Theodor Storm's poem about him, written in 1862, is still learnt by German children"
+  ],
+  "hostIntro": "Our next guest has walked in from the forest, and he has one question for you. I do hope you've been practising.",
+  "theme": {"primary": "#8D6E63", "accent": "#D7CCC8"}
+}

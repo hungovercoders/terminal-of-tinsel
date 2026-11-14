@@ -1,0 +1,39 @@
+{
+  "id": "ghost-of-christmas-past",
+  "name": "The Ghost of Christmas Past",
+  "aliases": ["Ghost of Christmas Past", "Spirit of Christmas Past", "First Spirit"],
+  "emoji": "✨",
+  "description": "The first of Scrooge's three spirits: a flickering figure, child and old man at once, with a light streaming from its head",
+  "origin": "A Christmas Carol by Charles Dickens",
+  "debut": {"medium": "novella", "title": "A Christmas Carol", "creator": "Charles Dickens", "year": 1843},
+  "legend": "When the clock strikes one, the curtains of Scrooge's bed are drawn aside by the first spirit. It looks like a child, and yet like an old man seen from a great way off. It wears a white tunic trimmed with summer flowers, holds a branch of fresh green holly, and from the crown of its head springs a bright clear jet of light. Under its arm it carries a great extinguisher for a cap. It leads Scrooge back through his own past: the schoolroom where he was left alone at Christmas, his sister Fan coming to fetch him home, the ball at old Fezziwig's warehouse, and the day Belle released him from their engagement because he loved money more. Scrooge can bear no more, seizes the extinguisher-cap and presses it down over the spirit's head, but he can't hide the light.",
+  "myths": [
+    {"claim": "The Ghost of Christmas Past is a child.", "true": false, "explanation": "Dickens says it is like a child, yet not so like a child as like an old man. Its hair is white with age, and its face has not a wrinkle."},
+    {"claim": "It shows Scrooge other people's Christmases long ago.", "true": false, "explanation": "Scrooge asks whether it means the long past, and it answers: his own."},
+    {"claim": "Scrooge puts its light out.", "true": false, "explanation": "He presses the extinguisher-cap down with all his force, but the light still streams out from under it across the floor."},
+    {"claim": "A light shines from the top of its head.", "true": true, "explanation": "A bright clear jet of light springs from the crown of its head, which is why it carries an extinguisher for a cap."}
+  ],
+  "quotes": [
+    {"text": "These are but shadows of the things that have been. They have no consciousness of us.", "speaker": "The Ghost of Christmas Past", "source": "A Christmas Carol (1843), stave 2"},
+    {"text": "Rise! and walk with me!", "speaker": "The Ghost of Christmas Past", "source": "A Christmas Carol (1843), stave 2"}
+  ],
+  "powers": ["Walking through years as if through doors", "A light that can't be put out", "Showing a man what he once was", "Flight, with a touch of its hand"],
+  "weaknesses": ["A great extinguisher for a cap", "Only an hour to work in", "A pupil who can't bear to look"],
+  "stats": {"strength": 3, "speed": 8, "cunning": 8, "dread": 5},
+  "legacy": [
+    "Played as a child, an old man, a woman and a candle flame in adaptations, since the book allows all of them",
+    "The pattern for every story in which a character is walked back through their own memories"
+  ],
+  "facts": [
+    "The Ghost of Christmas Past is the first of the three spirits to visit Scrooge",
+    "It arrives as the clock strikes one",
+    "It looks like a child and like an old man at the same time",
+    "It holds a branch of fresh green holly, and its dress is trimmed with summer flowers",
+    "A bright clear jet of light springs from the crown of its head",
+    "It carries a great extinguisher for a cap under its arm",
+    "Its shape flickers: now one arm, now one leg, now twenty legs",
+    "It shows Scrooge his lonely schooldays, his sister Fan, Fezziwig's ball and his lost love Belle"
+  ],
+  "hostIntro": "Our next guest has brought the holiday slides. All of them. Yours, I'm afraid. Do sit down.",
+  "theme": {"primary": "#FFE8A3", "accent": "#C9A227"}
+}

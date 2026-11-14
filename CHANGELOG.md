@@ -49,6 +49,11 @@
   prints a short script that asks the program what to offer (`completion` works too).
 - **Man pages**, one per command, and the completion scripts ship in the release archives under `man/`
   and `completions/`.
+- **Eight new creatures**, each with a portrait, taking the roster to 22: the Ghosts of Christmas Past
+  and Present, Knecht Ruprecht, Čert, La Befana, the Wild Hunt, the Yule Goat and Lussi. The Dickens
+  quotes were checked against the text of the 1843 book.
+- The advent calendar has ten new doors, so that only the Yule Cat and the Yule Lads appear twice.
+  Lussi has the 13th, her own night, and the Wild Hunt the 21st, the longest.
 - Auntie Aerial has sign-off lines, and a special greeting on Christmas Eve and Christmas Day.
 
 ### Changed

@@ -100,7 +100,7 @@ fn piped_output_is_plain() {
 fn list_json_is_every_creature() {
     let v = json(&["list"]);
     let all = v.as_array().unwrap();
-    assert_eq!(all.len(), 14);
+    assert_eq!(all.len(), 22);
     assert!(
         all.iter()
             .all(|c| c["pack"].is_string() && c["facts"].is_array())
@@ -116,7 +116,15 @@ fn pack_filter_narrows_the_list() {
         .iter()
         .map(|c| c["id"].as_str().unwrap())
         .collect();
-    assert_eq!(ids, ["marley", "ghost-yet-to-come"]);
+    assert_eq!(
+        ids,
+        [
+            "marley",
+            "ghost-of-christmas-past",
+            "ghost-of-christmas-present",
+            "ghost-yet-to-come"
+        ]
+    );
 }
 
 #[test]
@@ -129,9 +137,9 @@ fn creature_json_by_alias() {
 #[test]
 fn creature_json_without_a_name_is_every_creature() {
     let v = json(&["creature"]);
-    assert_eq!(v.as_array().unwrap().len(), 14);
+    assert_eq!(v.as_array().unwrap().len(), 22);
     let v = json(&["creature", "--pack", "nordic"]);
-    assert_eq!(v.as_array().unwrap().len(), 4);
+    assert_eq!(v.as_array().unwrap().len(), 6);
 }
 
 #[test]
@@ -310,7 +318,7 @@ fn a_showdown_goes_in_the_stocking_and_reset_empties_it() {
         .success()
         .stdout(predicate::str::contains("THE STOCKING"))
         .stdout(predicate::str::contains(format!(
-            "0 of 14 creatures caught · {badges} of 17 badges"
+            "0 of 22 creatures caught · {badges} of 17 badges"
         )))
         .stdout(predicate::str::contains("Snowball Showdowns staged: 2"))
         .stdout(predicate::str::contains("Progress is saved in"))
@@ -391,7 +399,7 @@ fn tab_completes_commands_creatures_and_packs() {
     assert!(completions_at(&home, &["ma"]).starts_with("mash\t"));
     assert_eq!(
         completions_at(&home, &["creature", "yu"]),
-        "yule-cat\tThe Yule Cat\nyule-lads\tThe Yule Lads\n"
+        "yule-cat\tThe Yule Cat\nyule-lads\tThe Yule Lads\nyule-goat\tThe Yule Goat\n"
     );
     assert!(completions_at(&home, &["quiz", "mar"]).contains("marley\tMarley's Ghost"));
     assert!(completions_at(&home, &["mash", "krampus", "gry"]).contains("gryla\t"));
@@ -440,7 +448,7 @@ fn a_community_pack_can_be_made_and_joins_everything() {
         assert!(out.stderr.is_empty(), "a good pack loads without warnings");
         serde_json::from_slice(&out.stdout).unwrap()
     };
-    assert_eq!(json_at(&["list"]).as_array().unwrap().len(), 15);
+    assert_eq!(json_at(&["list"]).as_array().unwrap().len(), 23);
     let packs = json_at(&["packs"]);
     let packs = packs.as_array().unwrap();
     assert_eq!(packs.len(), 5);
@@ -481,6 +489,19 @@ fn a_community_pack_can_be_made_and_joins_everything() {
         ))
         .stdout(predicate::str::contains("A community pack, from"))
         .stdout(predicate::str::contains("Community packs live in"));
+
+    // A pack of one is too small for the games that need a crowd.
+    for args in [
+        vec!["guess", "--pack", "office-party"],
+        vec!["mash", "--pack", "office-party"],
+        vec!["tonight", "--pack", "office-party"],
+    ] {
+        let out = tinsel_at(&home).args(&args).arg("--json").output().unwrap();
+        assert!(!out.status.success(), "{args:?}");
+        let e: Value = serde_json::from_slice(&out.stderr).unwrap();
+        assert_eq!(e["error"]["code"], "usage", "{args:?}");
+        assert_eq!(e["error"]["hint"], "try a different --pack", "{args:?}");
+    }
 
     // The same id twice, a built-in id and a bad id are all refused.
     for id in ["office-party", "nordic", "Office Party"] {
@@ -714,12 +735,10 @@ fn errors_have_stable_codes() {
         json_error(&["quiz", "rudolph"])["error"]["code"],
         "unknown-creature"
     );
-    for args in [
-        vec!["mash", "krampus", "krampus"],
-        vec!["guess", "--pack", "dickens"],
-    ] {
-        assert_eq!(json_error(&args)["error"]["code"], "usage", "{args:?}");
-    }
+    assert_eq!(
+        json_error(&["mash", "krampus", "krampus"])["error"]["code"],
+        "usage"
+    );
 }
 
 #[test]

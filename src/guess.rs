@@ -222,13 +222,17 @@ mod tests {
     #[test]
     fn there_are_only_as_many_rounds_as_portraits() {
         let v = Vault::load();
-        assert_eq!(rounds(&mut Rng::new(1), &v.creatures, 99).len(), 14);
+        assert_eq!(
+            rounds(&mut Rng::new(1), &v.creatures, 99).len(),
+            v.creatures.len()
+        );
     }
 
     #[test]
     fn too_few_creatures_is_no_game() {
-        let v = Vault::load().only_packs(&["dickens".into()]).unwrap();
-        assert!(rounds(&mut Rng::new(1), &v.creatures, 5).is_empty());
+        let v = Vault::load();
+        assert!(rounds(&mut Rng::new(1), &v.creatures[..2], 5).is_empty());
+        assert!(!rounds(&mut Rng::new(1), &v.creatures[..3], 5).is_empty());
     }
 
     #[test]
@@ -278,7 +282,7 @@ mod tests {
     #[test]
     fn clues_arrive_at_the_third_and_fourth_stages() {
         let v = Vault::load();
-        let all = rounds(&mut Rng::new(25), &v.creatures, 14);
+        let all = rounds(&mut Rng::new(25), &v.creatures, 99);
         let marley = all.iter().find(|r| r.creature.id == "marley").unwrap();
         assert!(marley.clues(1).is_empty());
         assert_eq!(marley.clues(2), ["First appeared in 1843"]);

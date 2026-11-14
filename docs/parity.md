@@ -169,7 +169,7 @@ Badge emoji will be checked against the two-column rule before they land.
 | [x] | data tests: every field, 5+ facts, stats 1 to 10, colours, emoji width, unique ids | present | done |
 | [x] | data test: portraits are single-width characters | add with the portraits | done (P1) |
 | [x] | data test: `film` only where the pack allows | Tinsel allows a film in any pack, so the test checks the credits are complete and `releaseDate` agrees with `year` | done (P4) |
-| [ ] | 55 monsters in 6 packs | 14 in 4 today; grow towards it | P6 |
+| [~] | 55 monsters in 6 packs | 22 in 4 after P6 (14 before); it grows as creatures can be researched properly, not to hit a number | P6, ongoing |
 
 ## Community packs
 
@@ -289,6 +289,6 @@ and `cargo test` before every PR. Each phase updates the README, `CHANGELOG.md`,
 | 3 (done) | `feature/stocking` | store, captures, badges, reset | `os.UserConfigDir` against `directories`; maps of times in serde; atomic writes |
 | 4 (done) | `feature/rituals` | `tonight`, the moon, anniversaries, new film fields | `time.Time` against jiff's civil dates |
 | 5 (done) | `feature/packs` | `packs`, community packs, `packs new`, dynamic completion, man pages | `embed.FS` and `fs.FS` against `include_dir` plus `std::fs`; Cobra completion against `CompleteEnv` |
-| 6 | `feature/roster` | new creatures and portraits, advent doors refreshed | nothing new in code: the data tests as the reviewer |
+| 6 (done) | `feature/roster` | new creatures and portraits, advent doors refreshed | nothing new in code: the data tests as the reviewer |
 | 7 | `chore/polish` | tapes and GIFs, CONTRIBUTING, git-cliff, dependabot, .editorconfig, slopstopper | GoReleaser against cargo-dist, start to finish |
 | 8 | `feature/website` | the site generator, its pages and tests, Cloudflare hosting, slopstopper profile `ui` | `html/template` and `go run` against a workspace member; sharing code between a binary and a generator |

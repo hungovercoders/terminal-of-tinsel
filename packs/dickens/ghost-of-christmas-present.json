@@ -1,0 +1,39 @@
+{
+  "id": "ghost-of-christmas-present",
+  "name": "The Ghost of Christmas Present",
+  "aliases": ["Ghost of Christmas Present", "Spirit of Christmas Present", "Second Spirit"],
+  "emoji": "🌿",
+  "description": "The second of Scrooge's spirits: a jolly giant in a green robe, enthroned on a heap of Christmas food, who lives for a single day",
+  "origin": "A Christmas Carol by Charles Dickens",
+  "debut": {"medium": "novella", "title": "A Christmas Carol", "creator": "Charles Dickens", "year": 1843},
+  "legend": "Scrooge finds his own room hung with holly, mistletoe and ivy, and heaped with turkeys, geese, puddings and punch. On top sits a jolly giant, glorious to see, holding up a glowing torch shaped like Plenty's horn. He wears a green robe bordered with white fur, a holly wreath set with shining icicles, and an antique scabbard with no sword in it. He takes Scrooge through the streets on Christmas morning, to Bob Cratchit's house and Tiny Tim, to miners on a moor, to a lighthouse, to a ship at sea, and to his nephew's party. The spirit grows older as the day goes on, for his life on this globe ends that night. Before midnight he opens his robe to show two wretched children, Ignorance and Want, and turns Scrooge's own words against him.",
+  "myths": [
+    {"claim": "The Ghost of Christmas Present lives for only one day.", "true": true, "explanation": "He tells Scrooge his life upon this globe is very brief, and that it ends that night. He vanishes as the bell strikes twelve."},
+    {"claim": "He carries a sword.", "true": false, "explanation": "He wears an antique scabbard, but there's no sword in it, and the sheath is eaten up with rust."},
+    {"claim": "He has more than eighteen hundred brothers.", "true": true, "explanation": "One for every Christmas before 1843. Scrooge calls it a tremendous family to provide for."},
+    {"claim": "The children under his robe are his own.", "true": false, "explanation": "He says they are Man's. The boy is Ignorance and the girl is Want."}
+  ],
+  "quotes": [
+    {"text": "Come in! and know me better, man!", "speaker": "The Ghost of Christmas Present", "source": "A Christmas Carol (1843), stave 3"},
+    {"text": "This boy is Ignorance. This girl is Want. Beware them both, and all of their degree, but most of all beware this boy, for on his brow I see that written which is Doom, unless the writing be erased.", "speaker": "The Ghost of Christmas Present", "source": "A Christmas Carol (1843), stave 3"}
+  ],
+  "powers": ["A torch that sprinkles goodwill", "Fitting his giant frame into any room", "Showing every Christmas happening at once", "Remembering exactly what you said"],
+  "weaknesses": ["A life one day long", "Midnight", "An empty scabbard"],
+  "stats": {"strength": 8, "speed": 6, "cunning": 6, "dread": 4},
+  "legacy": [
+    "John Leech's picture of him for the first edition, robed and wreathed among the food",
+    "Often named as an influence on the jolly, robed Father Christmas of Victorian Christmas cards"
+  ],
+  "facts": [
+    "The Ghost of Christmas Present is the second of the three spirits to visit Scrooge",
+    "Dickens calls him a jolly Giant, glorious to see",
+    "He wears a green robe bordered with white fur, and a holly wreath set with icicles",
+    "His torch is shaped like Plenty's horn, and he sprinkles blessings from it",
+    "He wears an antique scabbard with no sword in it",
+    "He shows Scrooge the Cratchits' Christmas dinner and Tiny Tim",
+    "He grows visibly older during the day, and his life ends at midnight",
+    "He shelters two children under his robe: Ignorance and Want"
+  ],
+  "hostIntro": "Our next guest fills the studio, and he's brought the catering. Mind the punch, and do ask him about his brothers.",
+  "theme": {"primary": "#2D6A4F", "accent": "#D4A373"}
+}

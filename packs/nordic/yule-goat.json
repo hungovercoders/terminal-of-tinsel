@@ -1,0 +1,35 @@
+{
+  "id": "yule-goat",
+  "name": "The Yule Goat",
+  "aliases": ["Yule Goat", "Julbock", "Julebukk", "Julbocken"],
+  "emoji": "🐐",
+  "description": "The Scandinavian Christmas goat: once a rowdy visitor in disguise, then the bringer of presents, now made of straw",
+  "origin": "Scandinavian folklore",
+  "debut": {"medium": "folklore", "title": "Scandinavian Christmas custom", "era": "an old midwinter figure, and the gift-bringer of the 1800s"},
+  "legend": "The Yule Goat has had at least three careers. In older custom, young men dressed up as the goat and went from house to house at Christmas, playing pranks and expecting food and drink. During the 19th century the goat turned respectable and became the bringer of presents: someone in the household would dress as the goat to hand them out, before the jultomte took over the job. Finland still calls its Father Christmas Joulupukki, the Yule goat. Today the goat is best known as an ornament of straw bound with red ribbon. It's often linked to the two goats that drew the god Thor's chariot, though the connection can't be proved. Since 1966 the Swedish town of Gävle has built a giant straw goat each Advent, and each year waits to see whether it will survive.",
+  "myths": [
+    {"claim": "The Yule Goat has always brought presents.", "true": false, "explanation": "That was its 19th-century job. Before that it was a prankster in disguise, going from house to house."},
+    {"claim": "Finland's Father Christmas is named after a goat.", "true": true, "explanation": "Joulupukki means Yule goat, or Christmas goat."},
+    {"claim": "The Gävle goat has stood safely every year since 1966.", "true": false, "explanation": "The first one was burnt down on New Year's Eve 1966, and many of its successors have been burnt or wrecked."},
+    {"claim": "It is proved to descend from Thor's goats.", "true": false, "explanation": "The link is often made and can't be proved."}
+  ],
+  "quotes": [],
+  "powers": ["Changing jobs every few centuries", "Butting", "Delivering presents before it was fashionable", "Being rebuilt every single year"],
+  "weaknesses": ["Being made of straw", "Matches", "New Year's Eve in Gävle"],
+  "stats": {"strength": 6, "speed": 7, "cunning": 5, "dread": 3},
+  "legacy": [
+    "The straw goat that stands under Scandinavian Christmas trees",
+    "The giant Gävle goat, built in Sweden every Advent since 1966"
+  ],
+  "facts": [
+    "The Yule Goat, or julbock, is one of the oldest Christmas figures of Scandinavia",
+    "In older custom, young men dressed as the goat and went from house to house playing pranks",
+    "During the 19th century the goat became the bringer of Christmas presents",
+    "The Finnish name for Father Christmas, Joulupukki, means Yule goat",
+    "Today it's best known as a goat made of straw, bound with red ribbon",
+    "Since 1966 the Swedish town of Gävle has built a giant straw goat each Advent",
+    "The first Gävle goat was burnt down on New Year's Eve, and many since have gone the same way"
+  ],
+  "hostIntro": "Our next guest used to bring the presents, until a little man in a red cap got the job. He's taken it very well. Keep him away from the candles.",
+  "theme": {"primary": "#E9C46A", "accent": "#BC4749"}
+}

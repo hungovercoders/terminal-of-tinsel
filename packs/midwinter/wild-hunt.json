@@ -1,0 +1,36 @@
+{
+  "id": "wild-hunt",
+  "name": "The Wild Hunt",
+  "aliases": ["Wild Hunt", "Wilde Jagd", "Oskoreia", "Odin's Hunt"],
+  "emoji": "🐎",
+  "description": "The ghostly host of riders and hounds that storms across the winter sky, bringing trouble to anyone who sees it",
+  "origin": "Folklore of northern and western Europe",
+  "debut": {"medium": "folklore", "title": "European folk tradition", "era": "recorded in England in the 12th century, and named by Jacob Grimm in 1835"},
+  "legend": "On stormy winter nights, a host of spectral riders is said to sweep across the sky with horns blowing and hounds baying. Who leads it depends on where you are standing. In Scandinavia it is Odin, and the Norwegians call the host the Oskoreia. In German lands it is the Wilde Jagd, sometimes led by a woman such as Frau Perchta. In Britain the leaders include King Herla, who in Walter Map's 12th-century telling can never dismount. The Peterborough Chronicle's entry for 1127 describes black huntsmen riding black horses and black goats, with black hounds. In many tellings the Hunt rides in the long nights around midwinter and the Twelve Days of Christmas, and to see it was widely held to foretell war, plague or a death.",
+  "myths": [
+    {"claim": "The Wild Hunt is always led by Odin.", "true": false, "explanation": "Odin, or Wodan, leads it in Scandinavian and many German tellings. Elsewhere its leaders include King Herla, Frau Perchta and many others."},
+    {"claim": "It only ever rides at Christmas.", "true": false, "explanation": "Midwinter is its usual season, but not its only one: the Peterborough chronicler's huntsmen were seen in late winter and into spring."},
+    {"claim": "Jacob Grimm gave it its best-known name.", "true": true, "explanation": "He wrote about the Wilde Jagd in his Deutsche Mythologie of 1835, and the name stuck."},
+    {"claim": "Seeing it was thought to be a bad omen.", "true": true, "explanation": "It was widely held to foretell war or plague, or the death of whoever saw it."}
+  ],
+  "quotes": [],
+  "powers": ["Riding the storm", "Hounds that never tire", "A horn heard for miles", "Foretelling disaster"],
+  "weaknesses": ["Daybreak", "Riders who can never dismount", "Anyone sensible enough to stay indoors"],
+  "stats": {"strength": 9, "speed": 10, "cunning": 5, "dread": 9},
+  "legacy": [
+    "Peter Nicolai Arbo's painting Åsgårdsreien (1872), now in Norway's national museum",
+    "Jacob Grimm's Deutsche Mythologie (1835), which made it a subject for scholars"
+  ],
+  "facts": [
+    "The Wild Hunt is a ghostly host of riders and hounds that sweeps across the winter sky",
+    "Tales of it are told across northern and western Europe, under many names",
+    "In Scandinavia it is led by Odin, and in Norway it is called the Oskoreia",
+    "The Peterborough Chronicle's entry for 1127 describes black huntsmen on black horses and black goats",
+    "Walter Map, writing in the 12th century, told of King Herla and his riders, who can never dismount",
+    "Jacob Grimm wrote about it as the Wilde Jagd in his Deutsche Mythologie of 1835",
+    "Seeing it was widely held to foretell war, plague or a death",
+    "Peter Nicolai Arbo painted it in 1872"
+  ],
+  "hostIntro": "Our next guests won't be coming in. They'll be going over. Windows shut, please, and don't look up.",
+  "theme": {"primary": "#90A4AE", "accent": "#37474F"}
+}

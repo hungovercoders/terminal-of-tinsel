@@ -205,3 +205,20 @@ Terror's crypt (`internal/crypt`, `internal/store`) becomes Tinsel's stocking (`
   map keys in alphabetical order, so `aliases` comes first and `name` is buried. serde_json's `json!`
   macro does the same unless its `preserve_order` feature is on. Tinsel writes the example from a text
   template instead, so the file reads top to bottom the way a person fills it in.
+
+## Phase 6: the roster
+
+No new code, which is the point: eight creatures went in as JSON and text files, and the commands,
+the quiz, the games, completion and the man pages picked them up without a change.
+
+- **The data tests are the reviewer.** Both projects test their data, but the split differs. In Go a
+  missing field is silently the zero value, so Terror's tests have to look for emptiness. In Rust the
+  parser could have refused it, but Tinsel gave every field a default for community packs in phase 5,
+  so its tests do the same job as Terror's. The strictness lives in `cargo test`, not in the types.
+- **Hard-coded counts are a smell in either language.** Adding creatures broke a dozen tests that said
+  14. Most now ask the vault how many there are. The ones that still say 22 are end-to-end tests of the
+  shipped roster, where a surprise is worth a failure.
+- **Embedding is a build step.** `include_dir!` and `//go:embed` both read the files at compile time, so
+  a new JSON file needs a rebuild to appear. Go's build cache notices a new file under an embedded
+  directory. With `include_dir` on stable Rust, Cargo is only told about the files that were there at
+  the last build, so if a new creature doesn't show up, touch `src/creatures.rs` or run `cargo clean`.
