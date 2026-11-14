@@ -24,8 +24,8 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [x] | `quiz [monster]`, `-n` / `--questions` (default 10) | `quiz [creature]`: the Christmas Cracker Quiz | done (P2) |
 | [x] | `guess`, `-n` / `--rounds` (default 5) | `guess`: Guess the Guest, the portrait behind a frosted window | done (P2) |
 | [x] | `mash [a] [b]`, `--fast` | `mash [a] [b]`, `--fast`: the Snowball Showdown | done (P2) |
-| [ ] | `crypt` | `stocking` | P3 |
-| [ ] | `crypt reset`, `-y` / `--yes` | `stocking reset`, `-y` / `--yes` | P3 |
+| [x] | `crypt` | `stocking` | done (P3) |
+| [x] | `crypt reset`, `-y` / `--yes` | `stocking reset`, `-y` / `--yes` | done (P3) |
 | [ ] | `tonight`, `--shuffle`, `--date` | `tonight`: tonight's Christmas double bill | P4 |
 | [x] | `countdown`, `--date` | `countdown`, `--date` | done |
 | [ ] | `countdown` shows the moon and the next anniversary | add both to `countdown` | P4 |
@@ -47,7 +47,7 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [x] | `TERMINAL_OF_TERROR_SEED` | `TERMINAL_OF_TINSEL_SEED` (only `random` and the welcome use it so far) | done |
 | [ ] | the seed fixes quiz, guess, mash, the explorer's host lines and `tonight --shuffle` | all but `tonight --shuffle` done (P1, P2) | P4 |
 | [x] | a seed that isn't a number warns on stderr and is ignored | check and match | done (P2) |
-| [ ] | `TERMINAL_OF_TERROR_HOME` | `TERMINAL_OF_TINSEL_HOME`; otherwise the `directories` crate's config dir | P3 |
+| [x] | `TERMINAL_OF_TERROR_HOME` | `TERMINAL_OF_TINSEL_HOME`; otherwise the `directories` crate's config dir | done (P3) |
 
 ## Error codes (`--json` puts one object on stderr)
 
@@ -56,8 +56,8 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [x] | `unknown-monster` | `unknown-creature` | done |
 | [x] | `ambiguous-monster` | `ambiguous-creature` | done |
 | [x] | `bad-pack`, `bad-date`, `bad-flag`, `usage` | the same | done |
-| [ ] | `no-terminal` (explorer, quiz, guess, `crypt reset` without `-y`), with a hint | `no-terminal`: the explorer (P1) and the games (P2) have it; `stocking reset` to come | P3 |
-| [ ] | `store` (progress can't be read or written) | `store` | P3 |
+| [x] | `no-terminal` (explorer, quiz, guess, `crypt reset` without `-y`), with a hint | `no-terminal`: the explorer (P1) and the games (P2) have it; `stocking reset` to come | done (P3) |
+| [x] | `store` (progress can't be read or written) | `store` | done (P3) |
 
 ## The explorer (Bubble Tea becomes ratatui + crossterm)
 
@@ -77,7 +77,7 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 | [x] | per-monster colours from `theme` | already used by the static page; reuse | done (P1) |
 | [x] | silent-film monsters in black and white with intertitles and film grain | the Dickens pack as a Victorian engraving: sepia ink, an ENGRAVER'S INK badge and drifting snow, switched on by `"style": "engraving"` in `pack.json` | done (P1) |
 | [x] | ASCII portraits, `<id>.txt` beside each JSON file | original portraits for all 14 creatures | done (P1) |
-| [ ] | returns the pages visited, for progress | the same (recorded from P3) | P1, P3 |
+| [x] | returns the pages visited, for progress | the same | done (P1, P3) |
 | [x] | tests render every page at several sizes; `DUMP=1` prints sample screens | ratatui `TestBackend` tests of every page and size | done (P1) |
 
 ## Games
@@ -100,37 +100,37 @@ its Christmas equivalent in Terminal of Tinsel. Terror is the reference implemen
 
 | | Terror | Tinsel | Phase |
 |-|--------|--------|-------|
-| [ ] | `progress.json` in the config dir, written atomically | `stocking.json`, written to a temp file and renamed | P3 |
-| [ ] | fields: `version`, `knowledge`, `captured`, `badges`, `seen`, games played and best scores | the same fields | P3 |
-| [ ] | a monster is captured at 3 correct answers (quiz or guess) | a creature goes in the stocking at 3 | P3 |
-| [ ] | games and the explorer record after play; unlocks are announced | the same | P3 |
-| [ ] | a broken save warns and never stops the game | the same | P3 |
-| [ ] | badges count every pack, whatever `--pack` says | the same | P3 |
-| [ ] | `crypt --json` prints the progress | `stocking --json` | P3 |
-| [ ] | `crypt` shows where progress is saved, with `~` | the same | P3 |
-| [ ] | reset asks for "yes"; without a terminal it needs `-y` | the same | P3 |
+| [x] | `progress.json` in the config dir, written atomically | `stocking.json`, written to a temp file and renamed | done (P3) |
+| [x] | fields: `version`, `knowledge`, `captured`, `badges`, `seen`, games played and best scores | the same fields | done (P3) |
+| [x] | a monster is captured at 3 correct answers (quiz or guess) | a creature goes in the stocking at 3 | done (P3) |
+| [x] | games and the explorer record after play; unlocks are announced | the same | done (P3) |
+| [x] | a broken save warns and never stops the game | the same | done (P3) |
+| [x] | badges count every pack, whatever `--pack` says | the same | done (P3) |
+| [x] | `crypt --json` prints the progress | `stocking --json` | done (P3) |
+| [x] | `crypt` shows where progress is saved, with `~` | the same | done (P3) |
+| [x] | reset asks for "yes"; without a terminal it needs `-y` | the same | done (P3) |
 
 Badges (Terror has 17; Tinsel gets 17):
 
 | | Terror | Tinsel | How |
 |-|--------|--------|-----|
-| [ ] | 🎃 First Fright | 🎉 First Cracker | Finish your first quiz |
-| [ ] | 🏆 Flawless Fiend | 🏆 Top of the Tree | 100% on a quiz of 5 or more |
-| [ ] | 🦴 Grave Robber | 🧦 Stocking Filler | First creature in the stocking |
-| [ ] | 🔍 Eagle Eye | 🔍 Frost Reader | Name a guest through the thickest frost |
-| [ ] | 🥊 Fight Promoter | 🥊 Snowball Referee | Stage your first showdown |
-| [ ] | 📚 Midnight Scholar | 📚 Fireside Scholar | Visit every creature's page |
-| [ ] | 🦉 Night Owl | 🦉 Up Past Bedtime | Play between midnight and 4am |
-| [ ] | 🌕 Survived the Full Moon | 🌕 Cold Moon | Play on a full-moon night |
-| [ ] | 🐈 Unlucky for Some | 😈 Krampusnacht Survivor | Play on 5 December |
-| [ ] | 👻 Halloween Spirit | 🎄 Christmas Spirit | Play on Christmas Day |
-| [ ] | 🎬 Silent Era Scholar | 🎬 Matinee Regular | Capture every creature with a classic film |
-| [ ] | 📺 Monster Kid | 🎁 Saint's Shadow | Capture every companion of St Nicholas |
-| [ ] | 🌍 Folklorist | 🌍 Midwinter Wanderer | Capture 5 from Midwinter Europe (once it has 5; every one until then) |
-| [ ] | 🔭 Cryptozoologist | 🐈 Friend of the Yule Cat | Capture every Nordic creature |
-| [ ] | 📖 Bookworm | 📖 Dickensian | Capture every spirit of A Christmas Carol |
-| [ ] | 🏹 Hero of Legend | 🌟 Twelfth Nighter | Play on Twelfth Night (Terror's sixth pack has no Tinsel twin) |
-| [ ] | 👑 Master of the Crypt | 👑 Keeper of the Stocking | Capture every creature |
+| [x] | 🎃 First Fright | 🎉 First Cracker | Finish your first quiz |
+| [x] | 🏆 Flawless Fiend | 🏆 Top of the Tree | 100% on a quiz of 5 or more |
+| [x] | 🦴 Grave Robber | 🧦 Stocking Filler | First creature in the stocking |
+| [x] | 🔍 Eagle Eye | 🔍 Frost Reader | Name a guest through the thickest frost |
+| [x] | 🥊 Fight Promoter | 🥊 Snowball Referee | Stage your first showdown |
+| [x] | 📚 Midnight Scholar | 📚 Fireside Scholar | Visit every creature's page |
+| [x] | 🦉 Night Owl | 🦉 Up Past Bedtime | Play between midnight and 4am |
+| [x] | 🌕 Survived the Full Moon | 🌕 Cold Moon | Play on a full-moon night |
+| [x] | 🐈 Unlucky for Some | 😈 Krampusnacht Survivor | Play on 5 December |
+| [x] | 👻 Halloween Spirit | 🎄 Christmas Spirit | Play on Christmas Day |
+| [x] | 🎬 Silent Era Scholar | 🎬 Matinee Regular | Capture every creature with a classic film |
+| [x] | 📺 Monster Kid | 🎁 Saint's Shadow | Capture every companion of St Nicholas |
+| [x] | 🌍 Folklorist | 🌍 Midwinter Wanderer | Capture 5 from Midwinter Europe (once it has 5; every one until then) |
+| [x] | 🔭 Cryptozoologist | 🐈 Friend of the Yule Cat | Capture every Nordic creature |
+| [x] | 📖 Bookworm | 📖 Dickensian | Capture every spirit of A Christmas Carol |
+| [x] | 🏹 Hero of Legend | 🌟 Twelfth Nighter | Play on Twelfth Night (Terror's sixth pack has no Tinsel twin) |
+| [x] | 👑 Master of the Crypt | 👑 Keeper of the Stocking | Capture every creature |
 
 Badge emoji will be checked against the two-column rule before they land.
 
@@ -144,8 +144,8 @@ Badge emoji will be checked against the two-column rule before they land.
 | [ ] | and headlines `tonight` | the advent guest headlines the double bill | P4 |
 | [x] | daily seed `YYYYMMDD` | the same | done |
 | [x] | notes: Halloween, Friday the 13th, anniversaries | notes: Krampusnacht, St Nicholas Day, the Tió, Carol anniversary, Christmas Eve, Boxing Day, Twelfth Night, Epiphany, Yule Lads, Twelve Days | done |
-| [ ] | moon phase (mean synodic month from the 6 January 2000 new moon; name, emoji, illumination) | the same sum with jiff; `moon` in `countdown --json` | P4 |
-| [ ] | full-moon note | full-moon note (December's is the Cold Moon) | P4 |
+| [ ] | moon phase (mean synodic month from the 6 January 2000 new moon; name, emoji, illumination) | the moon's age and the full-moon test arrived with the badges (P3); the name, emoji, illumination and `moon` in `countdown --json` to come | P4 |
+| [x] | full-moon note | full-moon note (December's is the Cold Moon) | P4 |
 | [ ] | "N nights until Halloween" note within 60 nights | "N sleeps until Christmas" note within 60 | P4 |
 | [ ] | film anniversaries from `film.releaseDate`: today's and the next | the "next special night": the nearer of the next film anniversary and the next dated feast | P4 |
 | [ ] | `tonight`: a ticket, two features at 9:00 PM and 10:45 PM, the host's intro, notes | a cinema ticket for Channel 25's double bill at 7:00 PM and 8:45 PM | P4 |
@@ -196,7 +196,7 @@ Badge emoji will be checked against the two-column rule before they land.
 | [x] | CI: format, lint, tests on three systems, smoke test | present, plus MSRV 1.88 | done |
 | [ ] | smoke test covers every command, `--json`, plain output, error codes, `packs new`, no-terminal refusals | extend phase by phase | P1 to P5 |
 | [ ] | CI checks the release config (`goreleaser check`) | `dist plan` in CI | P7 |
-| [ ] | CI runs with the home variable pointed at a scratch directory | the same from P3 | P3 |
+| [x] | CI runs with the home variable pointed at a scratch directory | the same from P3 | done (P3) |
 
 ## Repo extras
 
@@ -225,7 +225,7 @@ Each gets its default features and tree checked before it lands, and MSRV 1.88 m
 | Phase | Crate | Why |
 |-------|-------|-----|
 | P1, done | `ratatui` 0.30 (default features off, `crossterm` backend only; crossterm comes re-exported, so it isn't a direct dependency) | the explorer and the game screens. MSRV 1.88, the same as Tinsel's. About 45 more crates |
-| P3 | `directories` | the config dir |
+| P3, done | `directories` 6.0 (no features; brings `dirs-sys` and `option-ext`, which is MPL-2.0) | the config dir |
 | P5 | `clap_complete` feature `unstable-dynamic` | `CompleteEnv`; it's behind an unstable feature flag, so the version gets pinned |
 | P5 | `clap_mangen` | man pages |
 
@@ -286,7 +286,7 @@ and `cargo test` before every PR. Each phase updates the README, `CHANGELOG.md`,
 |-------|--------|----------|-----------------------|
 | 1 (done) | `feature/explorer` | ratatui explorer, portraits, `no-terminal`, search, `--all`, `--no-intro` | Bubble Tea's Elm loop against ratatui's immediate mode; who owns the event loop |
 | 2 (done) | `feature/games` | quiz, guess, mash, the seed everywhere | `math/rand` against a pinned generator; enums with data for question kinds |
-| 3 | `feature/stocking` | store, captures, badges, reset | `os.UserConfigDir` against `directories`; maps of times in serde; atomic writes |
+| 3 (done) | `feature/stocking` | store, captures, badges, reset | `os.UserConfigDir` against `directories`; maps of times in serde; atomic writes |
 | 4 | `feature/rituals` | `tonight`, the moon, anniversaries, new film fields | `time.Time` against jiff's civil dates |
 | 5 | `feature/packs` | `packs`, community packs, `packs new`, dynamic completion, man pages | `embed.FS` and `fs.FS` against `include_dir` plus `std::fs`; Cobra completion against `CompleteEnv` |
 | 6 | `feature/roster` | new creatures and portraits, advent doors refreshed | nothing new in code: the data tests as the reviewer |

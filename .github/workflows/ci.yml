@@ -35,6 +35,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      # Keep saved progress in the workspace, not the runner's config directory.
+      TERMINAL_OF_TINSEL_HOME: ${{ github.workspace }}/.tinsel-home
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
@@ -65,6 +68,13 @@ jobs:
               exit 1
             fi
           done
+          $bin stocking | grep -q 'Snowball Showdowns staged: 1'
+          $bin stocking --json > /dev/null
+          if $bin stocking reset < /dev/null > /dev/null 2>&1; then
+            echo "expected stocking reset to refuse without a terminal or -y"
+            exit 1
+          fi
+          $bin stocking reset -y
           $bin random --daily
           $bin countdown --date 2026-12-24
           $bin advent --date 2026-12-12
