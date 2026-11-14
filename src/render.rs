@@ -1378,8 +1378,8 @@ mod tests {
 
     #[test]
     fn plain_notes_lose_their_emoji() {
-        let n = &calendar::notes(date(2026, 12, 13), &[])[0];
-        assert_eq!(plain().note(n), "2 Yule Lads are in town.");
-        assert_eq!(colour().note(n), "🥄 2 Yule Lads are in town.");
+        let n = &calendar::notes(date(2026, 12, 14), &[])[0];
+        assert_eq!(plain().note(n), "3 Yule Lads are in town.");
+        assert_eq!(colour().note(n), "🥄 3 Yule Lads are in town.");
     }
 }

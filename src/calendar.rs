@@ -373,9 +373,13 @@ pub fn notes(d: Date, creatures: &[Creature]) -> Vec<Note> {
             "🐴",
             "It's Boxing Day. Listen out for the Mari Lwyd at the door.",
         )),
+        (12, 13) => out.push(note(
+            "🌑",
+            "It's St Lucy's Night, and Lussi's long night. Stay awake.",
+        )),
         (1, 5) => out.push(note(
             "🧶",
-            "It's Twelfth Night, Perchta's night. Is the spinning done?",
+            "It's Twelfth Night: Perchta's night, and La Befana's. Is the spinning done?",
         )),
         (1, 6) => out.push(note(
             "💧",

@@ -447,8 +447,23 @@ mod tests {
             ["stocking-filler", "friend-of-the-yule-cat"]
         );
         assert_eq!(capture(&mut p, "companions"), ["saints-shadow"]);
-        // Midwinter Europe has six creatures, and five are enough.
-        assert_eq!(capture(&mut p, "midwinter"), ["midwinter-wanderer"]);
+        // Midwinter Europe has six creatures, and five are enough: four
+        // earn nothing, the fifth earns the badge, the sixth nothing more.
+        let midwinter: Vec<&str> = v
+            .creatures
+            .iter()
+            .filter(|c| c.pack == "midwinter")
+            .map(|c| c.id.as_str())
+            .collect();
+        assert_eq!(midwinter.len(), 6);
+        let catch = |p: &mut Progress, ids: &[&str]| {
+            let mut o = Outcome::new(Kind::Quiz, evening());
+            o.correct = ids.iter().map(|id| (id.to_string(), CAPTURE_AT)).collect();
+            names(&apply(p, &v.creatures, &o))
+        };
+        assert!(catch(&mut p, &midwinter[..4]).is_empty());
+        assert_eq!(catch(&mut p, &midwinter[4..5]), ["midwinter-wanderer"]);
+        assert!(capture(&mut p, "midwinter").is_empty());
         // Marley is the only creature with a film, and Dickens completes the set.
         assert_eq!(
             capture(&mut p, "dickens"),
