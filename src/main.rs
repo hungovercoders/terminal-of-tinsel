@@ -131,11 +131,12 @@ fn run(cli: Cli) -> Result<()> {
                     }
                     let met = visit.seen.len();
                     if met > 0 {
-                        let guests = if met == 1 { "guest" } else { "guests" };
-                        let text = format!(
-                            "You met {met} of tonight's {} {guests}.",
-                            vault.creatures.len()
-                        );
+                        // "guests" follows the size of the guest list, not
+                        // how many were met.
+                        let text = match vault.creatures.len() {
+                            1 => "You met tonight's only guest.".to_string(),
+                            all => format!("You met {met} of tonight's {all} guests."),
+                        };
                         print(&(painter.paint(&text, render::DIM) + "\n"));
                     }
                 }

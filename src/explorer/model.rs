@@ -113,6 +113,8 @@ pub struct Model<'a> {
     pub(super) tab: usize,
     pub(super) scroll: usize,
     pub(super) revealed: bool,
+    /// Whether pages open with the verdicts showing (`--reveal`).
+    reveal: bool,
     pub(super) show_help: bool,
 
     pub(super) searching: bool,
@@ -153,6 +155,7 @@ impl<'a> Model<'a> {
             tab: 0,
             scroll: 0,
             revealed: false,
+            reveal: false,
             show_help: false,
             searching: false,
             query: String::new(),
@@ -165,7 +168,11 @@ impl<'a> Model<'a> {
             greeting: greeting.to_string(),
             notes: calendar::notes(opts.today)
                 .into_iter()
-                .map(|n| format!("{} {}", n.emoji, n.text))
+                // Plain mode has no emoji, here as everywhere.
+                .map(|n| match opts.colour {
+                    true => format!("{} {}", n.emoji, n.text),
+                    false => n.text,
+                })
                 .collect(),
             sign_off: None,
             quitting: false,
@@ -178,14 +185,15 @@ impl<'a> Model<'a> {
             .as_deref()
             .and_then(|id| vault.creatures.iter().position(|c| c.id == id));
         if let Some(i) = start {
+            // With --all the gallery opens with the named creature selected.
             m.index = i;
             m.cursor = i;
-            m.next = Screen::Detail;
         }
         // Asking for a creature by name means you know what you want: no intro.
         if opts.no_intro || start.is_some() {
             m.enter(m.next);
         }
+        m.reveal = opts.reveal;
         m.revealed = opts.reveal;
         m
     }
@@ -388,7 +396,7 @@ impl<'a> Model<'a> {
         self.cursor = i;
         self.enter(Screen::Detail);
         self.scroll = 0;
-        self.revealed = false;
+        self.revealed = self.reveal;
         self.tab = previous
             .and_then(|t| self.tabs().iter().position(|&x| x == t))
             .unwrap_or(0);
