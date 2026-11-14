@@ -1,0 +1,35 @@
+{
+  "id": "lussi",
+  "name": "Lussi",
+  "aliases": ["Lussi Long Night", "Lussinatt"],
+  "emoji": "🌑",
+  "description": "The dangerous spirit of the longest night, who rides out on 13 December to see whether the Christmas work is done",
+  "origin": "Norwegian and Swedish folklore",
+  "debut": {"medium": "folklore", "title": "Scandinavian midwinter tradition", "era": "tied to 13 December, the longest night under the old calendar"},
+  "legend": "The night of 13 December was once reckoned the longest of the year, and in Norway it was called Lussi langnatt, Lussi's long night. Lussi herself was a dangerous female spirit who rode through the dark that night with a fearsome following, the Lussiferda. She came to see whether the Christmas preparations were finished, and a household that was behind with its work had reason to be afraid. In Sweden people kept the Lussevaka, staying awake through the night rather than sleeping through it. The same date is the feast of St Lucy, and the gentle, candle-crowned Lucia of the modern processions is a much later arrival, who has all but pushed the older Lussi out of the picture.",
+  "myths": [
+    {"claim": "Lussi and St Lucia are the same figure.", "true": false, "explanation": "They share a night and something of a name, but Lussi is a dangerous spirit of folklore and Lucia is a saint."},
+    {"claim": "13 December was once counted as the longest night of the year.", "true": true, "explanation": "Under the old Julian calendar the winter solstice had drifted to about that date."},
+    {"claim": "The candle-crowned Lucia procession is an ancient custom.", "true": false, "explanation": "Public Lucia processions took their modern form in Sweden in the 20th century, after a Stockholm newspaper staged one in the late 1920s."},
+    {"claim": "Lussi rode with a following.", "true": true, "explanation": "Her company was called the Lussiferda."}
+  ],
+  "quotes": [],
+  "powers": ["The longest night of the year", "A fearsome riding company", "Knowing whose work isn't finished", "Being remembered when her night no longer is"],
+  "weaknesses": ["A household with everything ready", "People who stay awake", "A saint with a crown of candles"],
+  "stats": {"strength": 6, "speed": 8, "cunning": 7, "dread": 8},
+  "legacy": [
+    "The Lussevaka, the custom of staying awake through the night of 13 December",
+    "The modern Lucia processions, which took over her night"
+  ],
+  "facts": [
+    "Lussi is a dangerous female spirit of Norwegian and Swedish folklore",
+    "Her night is 13 December, known in Norway as Lussi langnatt, Lussi's long night",
+    "Under the old Julian calendar that night was reckoned the longest of the year",
+    "She was said to ride through the dark with a fearsome following, the Lussiferda",
+    "She came to check that the Christmas preparations were finished",
+    "In Sweden people kept the Lussevaka, staying awake through the night",
+    "The candle-crowned Lucia processions held on the same date are a much later custom"
+  ],
+  "hostIntro": "Our next guest only works one night a year, but it's a very long one. Is everything ready? She will check.",
+  "theme": {"primary": "#B8C0FF", "accent": "#5E60CE"}
+}
