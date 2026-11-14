@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-14
+
+The Midwinter Special goes interactive: an explorer, three games, a stocking to fill, community packs
+and eight new guests.
+
 ### Added
 
 - **The Midwinter Special.** `creature` with no name opens an interactive explorer: Channel 25 tunes in
@@ -72,7 +77,7 @@
 - `--no-color` and `NO_COLOR` apply inside the explorer too: the terminal's own colours, no emoji and
   ASCII borders.
 
-## [0.1.0] - Unreleased
+## [0.1.0] - not published
 
 The first broadcast of Channel 25's Midwinter Special.
 
