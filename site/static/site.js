@@ -17,12 +17,26 @@
       }
       button.hidden = false;
       button.addEventListener("click", function () {
-        navigator.clipboard.writeText(text.textContent).then(function () {
-          button.textContent = "Copied";
+        var say = function (word) {
+          button.textContent = word;
           setTimeout(function () {
             button.textContent = "Copy";
-          }, 1500);
-        });
+          }, 2500);
+        };
+        navigator.clipboard.writeText(text.textContent).then(
+          function () {
+            say("Copied");
+          },
+          function () {
+            // The browser refused: select the text so it can be copied by hand.
+            var range = document.createRange();
+            range.selectNodeContents(text);
+            var selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            say("Selected: press Ctrl or Cmd + C");
+          }
+        );
       });
     });
   }

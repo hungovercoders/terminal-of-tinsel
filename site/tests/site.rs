@@ -5,7 +5,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use terminal_of_tinsel::creatures::Vault;
-use tinsel_site::{BACKGROUND, BASE_URL, Config, build, contrast, readable};
+use tinsel_site::{BACKGROUND, BASE_URL, Config, PANEL, build, contrast, readable};
 
 /// Builds the site once per test into its own directory.
 fn built(name: &str) -> PathBuf {
@@ -165,11 +165,13 @@ fn creature_colours_can_be_read_on_the_background() {
     for c in &vault.creatures {
         for hex in [&c.theme.primary, &c.theme.accent] {
             let shown = readable(hex);
-            assert!(
-                contrast(&shown, BACKGROUND) >= 4.5,
-                "{}: {hex} became {shown}",
-                c.id
-            );
+            for behind in [BACKGROUND, PANEL] {
+                assert!(
+                    contrast(&shown, behind) >= 4.5,
+                    "{}: {hex} became {shown}, on {behind}",
+                    c.id
+                );
+            }
         }
     }
     // A colour that is already readable is left alone.
@@ -201,6 +203,29 @@ fn the_advent_calendar_has_a_door_for_every_night() {
             "door {night}"
         );
     }
+}
+
+#[test]
+fn the_404_page_works_at_any_depth() {
+    let out = built("lost");
+    let html = fs::read_to_string(out.join("404.html")).unwrap();
+    let mut targets = attributes(&html, "href");
+    targets.extend(attributes(&html, "src"));
+    for target in targets {
+        assert!(
+            ["/", "https://", "data:", "#"]
+                .iter()
+                .any(|start| target.starts_with(start)),
+            "{target} would be looked for beside the missing page"
+        );
+    }
+}
+
+#[test]
+fn the_engraving_palette_outranks_a_creature_colours() {
+    // themes.css loads after style.css, so a rule of equal weight would win.
+    let css = fs::read_to_string(built("engraving").join("static/style.css")).unwrap();
+    assert!(css.contains("body.engraving, .card.engraving {"));
 }
 
 #[test]

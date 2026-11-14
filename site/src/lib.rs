@@ -19,7 +19,7 @@ use std::path::{Path, PathBuf};
 
 use terminal_of_tinsel::creatures::{Creature, Vault};
 
-pub use colour::{BACKGROUND, contrast, readable};
+pub use colour::{BACKGROUND, PANEL, contrast, readable};
 pub use html::esc;
 
 /// Where the site will live. The canonical links, the sitemap and llms.txt
@@ -55,7 +55,12 @@ pub struct Page {
 
 impl Page {
     /// The prefix that takes a link on this page back to the site's root.
+    /// The 404 page is served at whatever address was missing, at any depth,
+    /// so it alone links from `/`.
     pub fn root(&self) -> String {
+        if self.path == "404.html" {
+            return "/".to_string();
+        }
         "../".repeat(self.path.matches('/').count())
     }
 }

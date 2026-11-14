@@ -5,18 +5,22 @@ use terminal_of_tinsel::render::parse_hex;
 /// The page background, as in `static/style.css`.
 pub const BACKGROUND: &str = "#0D1B18";
 
+/// The background of cards and panels, as in `static/style.css`. It is the
+/// lighter of the two, so a colour that can be read on it can be read on both.
+pub const PANEL: &str = "#142823";
+
 /// The contrast the accessibility guidelines ask of body text.
 const ENOUGH: f64 = 4.5;
 
-/// The colour, lightened towards white until it can be read on the
-/// background. A colour that can't be parsed becomes the site's gold.
+/// The colour, lightened towards white until it can be read on the page and
+/// on a panel. A colour that can't be parsed becomes the site's gold.
 pub fn readable(hex: &str) -> String {
     let Some((r, g, b)) = parse_hex(hex) else {
         return "#E9C46A".to_string();
     };
     let mut rgb = [f64::from(r), f64::from(g), f64::from(b)];
     for _ in 0..40 {
-        if contrast_of(rgb, channels(BACKGROUND)) >= ENOUGH {
+        if contrast_of(rgb, channels(PANEL)) >= ENOUGH {
             break;
         }
         for channel in &mut rgb {
