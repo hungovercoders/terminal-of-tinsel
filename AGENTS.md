@@ -9,6 +9,7 @@ Before you add a feature Terror already has, read [docs/parity.md](docs/parity.m
 ## Layout
 
 ```
+src/lib.rs         The modules below as a library, so site/ can use them
 src/main.rs        Entry point: parses args, runs the command, prints JSON or text, maps errors to exit codes
 src/cli.rs         The clap command tree
 src/creatures.rs   Creature, Pack and advent types, the loader (built-in packs and community packs
@@ -35,6 +36,7 @@ src/rng.rs         SplitMix64, pinned so daily facts never change between releas
 src/error.rs       TinselError and its stable codes
 packs/             Built-in data: <pack>/pack.json, <pack>/<id>.json, <pack>/<id>.txt (portrait), advent.json
 man/ completions/  Generated man pages and completion scripts, shipped in the release archives
+site/              The website generator, a second crate: pages built from the same packs (docs/website.md)
 tests/cli.rs       End-to-end tests of the binary
 ```
 
@@ -71,8 +73,8 @@ tests/cli.rs       End-to-end tests of the binary
 
 ```bash
 cargo fmt
-cargo clippy --all-targets -- -D warnings
-cargo test
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace                   # the program and the website generator
 DUMP=1 cargo test dump_ -- --nocapture   # print sample explorer and game screens
 ```
 
@@ -94,6 +96,7 @@ DUMP=1 cargo test dump_ -- --nocapture   # print sample explorer and game screen
 Before you add or edit a creature or a pack, read [CONTRIBUTING.md](CONTRIBUTING.md) for every creature field with a full example.
 Before you cut a release, read [CONTRIBUTING.md](CONTRIBUTING.md) "Releasing" for the git-cliff changelog and tagging steps.
 Before you change the explorer or a game screen, read [docs/ui.md](docs/ui.md) for the files, the screen tests and plain mode.
+Before you change the website, read [docs/website.md](docs/website.md) for how it is built, tested and styled.
 For any task not covered above, read [`docs/README.md`](./docs/README.md) for the routing table for every doc in this repo.
 
 ## Git

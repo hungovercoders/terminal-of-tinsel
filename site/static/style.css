@@ -1,0 +1,376 @@
+/* Terminal of Tinsel: a Christmas card from a television station. Fir-dark
+   background, cream text, gold and berry red. Per-creature colours come from
+   themes.css, which the site builder writes. */
+
+:root {
+  --bg: #0D1B18;
+  --panel: #142823;
+  --line: #2B4740;
+  --text: #F3EBDD;
+  --muted: #B5C4BD;
+  --gold: #E9C46A;
+  --red: #E63946;
+  --green: #52B788;
+  --primary: var(--gold);
+  --accent: var(--green);
+  --display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+/* A dusting of snow behind everything: two layers of dots, drifting. */
+.snow {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(circle, rgba(243, 235, 221, 0.55) 1px, transparent 1.5px),
+    radial-gradient(circle, rgba(243, 235, 221, 0.3) 1px, transparent 1.5px);
+  background-size: 140px 140px, 90px 90px;
+  background-position: 0 0, 45px 60px;
+  animation: snowfall 40s linear infinite;
+}
+
+@keyframes snowfall {
+  to { background-position: 0 560px, 45px 420px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snow { animation: none; }
+  .dot { animation: none !important; }
+  html { scroll-behavior: auto; }
+}
+
+a { color: var(--gold); text-underline-offset: 0.18em; }
+a:hover { color: var(--text); }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 2px; }
+
+.skip {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--gold);
+  color: var(--bg);
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+}
+.skip:focus { left: 0; z-index: 10; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The top bar */
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(13, 27, 24, 0.92);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.brand-name { font-family: var(--display); font-weight: 700; font-size: 1.2rem; }
+
+.onair {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--red);
+  border-radius: 3px;
+  color: #FF8A93;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--red);
+  animation: blink 2.4s ease-in-out infinite;
+}
+@keyframes blink { 50% { opacity: 0.25; } }
+
+.topnav { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; }
+.topnav a { color: var(--muted); text-decoration: none; padding: 0.25rem 0; }
+.topnav a:hover, .topnav a[aria-current="page"] { color: var(--gold); }
+.topnav a[aria-current="page"] { border-bottom: 2px solid var(--gold); }
+
+/* Layout */
+
+main {
+  width: min(100% - 2rem, 62rem);
+  margin: 0 auto;
+  padding: 2rem 0 3rem;
+}
+
+main > section, main > article, main > ol { margin-bottom: 3rem; }
+
+.prose { max-width: 44rem; }
+.prose, .creature { margin-inline: auto; }
+.creature { max-width: 48rem; }
+
+h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.2; }
+h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); margin: 0.2em 0 0.3em; color: var(--primary); }
+h2 { font-size: 1.6rem; margin: 2.2em 0 0.6em; color: var(--primary); }
+h3 { font-family: var(--body); font-weight: 600; font-size: 1.05rem; margin: 1.4em 0 0.4em; }
+
+.kicker {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.kicker a { color: inherit; }
+
+.small { font-size: 0.9rem; color: var(--muted); }
+
+.hero { text-align: center; padding: 2rem 0 1rem; }
+.hero h1 { color: var(--text); }
+.tagline { font-family: var(--display); font-style: italic; font-size: 1.35rem; margin: 0 0 1.5rem; color: var(--gold); }
+
+.host-line {
+  max-width: 40rem;
+  margin: 1.5rem auto;
+  padding: 0.9rem 1.2rem;
+  border-left: 3px solid var(--gold);
+  background: var(--panel);
+  text-align: left;
+  font-family: var(--display);
+  font-size: 1.1rem;
+}
+
+.cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; margin: 1.5rem 0; }
+.prose .cta-row { justify-content: flex-start; }
+
+.btn {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  border: 2px solid var(--gold);
+  border-radius: 4px;
+  background: var(--gold);
+  color: var(--bg);
+  font-weight: 600;
+  text-decoration: none;
+}
+.btn:hover { background: var(--text); border-color: var(--text); color: var(--bg); }
+.btn.ghost { background: transparent; color: var(--gold); }
+.btn.ghost:hover { background: var(--gold); color: var(--bg); }
+
+/* Terminal text */
+
+code { font-family: var(--mono); font-size: 0.92em; }
+:not(pre) > code { padding: 0.1em 0.35em; border-radius: 3px; background: var(--panel); }
+
+.code {
+  position: relative;
+  margin: 0.75rem 0 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #081210;
+}
+.code pre { margin: 0; padding: 1rem; overflow-x: auto; }
+.code code { font-size: 0.88rem; line-height: 1.6; }
+
+.copy {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.copy:hover { color: var(--gold); border-color: var(--gold); }
+
+/* What's on */
+
+.programmes, .cards, .doors { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+.programmes { grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+
+.programme {
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--red);
+  border-radius: 6px;
+  background: var(--panel);
+}
+.programme h3 { margin-top: 0; font-family: var(--display); font-size: 1.2rem; color: var(--gold); }
+.programme p { margin: 0.5rem 0; font-size: 0.97rem; }
+.programme .run { margin-bottom: 0; }
+
+/* Creature cards */
+
+.cards { grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+
+.card a {
+  display: grid;
+  gap: 0.2rem;
+  height: 100%;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--primary);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  text-decoration: none;
+}
+.card a:hover { border-color: var(--primary); }
+.card-emoji { font-size: 1.8rem; line-height: 1.2; }
+.card-name { font-family: var(--display); font-weight: 700; font-size: 1.25rem; color: var(--primary); }
+.card-origin { color: var(--accent); font-size: 0.85rem; }
+.card-text { color: var(--muted); font-size: 0.93rem; }
+
+.pack-text { color: var(--muted); max-width: 44rem; }
+
+/* A creature's page */
+
+.creature > header { margin-bottom: 1.5rem; }
+.aliases { margin: 0; color: var(--muted); font-style: italic; }
+.lede { font-size: 1.2rem; }
+
+.facts-line { display: grid; grid-template-columns: max-content 1fr; gap: 0.2rem 1rem; margin: 1rem 0; }
+.facts-line dt, .credits dt { color: var(--accent); font-weight: 600; }
+.facts-line dd, .credits dd { margin: 0; }
+.credits { display: grid; grid-template-columns: max-content 1fr; gap: 0.2rem 1rem; }
+
+.portrait {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border: 1px solid var(--primary);
+  border-radius: 10px;
+  background: #081210;
+  overflow-x: auto;
+}
+.portrait pre {
+  margin: 0 auto;
+  width: max-content;
+  color: var(--primary);
+  font-family: var(--mono);
+  font-size: clamp(0.6rem, 2.4vw, 0.95rem);
+  line-height: 1.2;
+}
+
+.stats { display: grid; grid-template-columns: max-content 1fr; gap: 0.5rem 1rem; align-items: center; }
+.stats dt { font-weight: 600; }
+.stats dd { margin: 0; display: flex; align-items: center; gap: 0.75rem; }
+.bar { display: block; height: 0.7rem; border-radius: 0.35rem; background: var(--primary); }
+.score { font-family: var(--mono); color: var(--muted); }
+.bar-0 { width: 0; }
+.bar-1 { width: 8%; }
+.bar-2 { width: 16%; }
+.bar-3 { width: 24%; }
+.bar-4 { width: 32%; }
+.bar-5 { width: 40%; }
+.bar-6 { width: 48%; }
+.bar-7 { width: 56%; }
+.bar-8 { width: 64%; }
+.bar-9 { width: 72%; }
+.bar-10 { width: 80%; }
+
+.myth {
+  margin: 0.6rem 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+}
+.myth summary { padding: 0.7rem 1rem; cursor: pointer; font-weight: 600; }
+.myth p { margin: 0; padding: 0 1rem 0.9rem; }
+.myth strong { color: var(--primary); }
+
+.quote { margin: 1.2rem 0; padding-left: 1.2rem; border-left: 3px solid var(--primary); }
+.quote blockquote { margin: 0; font-family: var(--display); font-style: italic; font-size: 1.15rem; }
+.quote blockquote p { margin: 0 0 0.4rem; }
+.quote figcaption { color: var(--muted); font-size: 0.93rem; }
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+/* The Dickens pack is drawn as an engraving: sepia ink on a dark page. The
+   selectors outrank a creature's own class in themes.css, which loads later. */
+body.engraving, .card.engraving { --primary: #D9B98A; --accent: #B89B74; }
+.engraving .portrait { border-style: double; border-width: 4px; }
+
+/* The advent calendar */
+
+.doors { grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); align-items: start; }
+.door {
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.door summary {
+  display: block;
+  padding: 1.1rem 1rem;
+  cursor: pointer;
+  text-align: center;
+  list-style: none;
+}
+.door summary::-webkit-details-marker { display: none; }
+.door-number { font-family: var(--display); font-weight: 700; font-size: 2.2rem; color: var(--primary); }
+.door[open] summary { padding-bottom: 0.2rem; }
+.door p { margin: 0.4rem 1rem 0.9rem; font-size: 0.95rem; }
+.door-guest { font-family: var(--display); font-size: 1.15rem; }
+.door.tonight { box-shadow: 0 0 0 3px var(--gold); }
+
+/* Tables */
+
+.commands { width: 100%; border-collapse: collapse; }
+.commands th, .commands td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.commands thead th { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.commands tbody th { font-weight: 400; white-space: nowrap; }
+
+/* The sign-off */
+
+.signoff {
+  padding: 2rem 1rem 3rem;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+.signoff .small { max-width: 44rem; margin: 1rem auto 0; }

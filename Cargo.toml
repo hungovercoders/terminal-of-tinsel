@@ -12,6 +12,11 @@ keywords = ["cli", "christmas", "folklore", "terminal", "advent"]
 categories = ["command-line-utilities", "games"]
 include = ["src/**", "packs/**", "README.md", "LICENSE", "CHANGELOG.md"]
 
+# The website generator is a second crate that reads this one as a library.
+# Plain `cargo build` and `cargo test` still mean the program alone.
+[workspace]
+members = ["site"]
+
 [dependencies]
 clap = { version = "4.6.7", features = ["derive", "wrap_help"] }
 # Pinned exactly: dynamic completion is behind an unstable feature, so a
