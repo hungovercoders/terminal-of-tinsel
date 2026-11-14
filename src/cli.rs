@@ -95,6 +95,52 @@ Add it to your shell's startup file:\n  echo 'terminal-of-tinsel random --daily'
         date: Option<String>,
     },
 
+    /// Pull a cracker: the Christmas Cracker Quiz
+    #[command(
+        long_about = "Multiple-choice questions built from the creature data: facts, quotes, first \
+appearances, film credits and myth checks. Every answer explains itself. Name a creature to be \
+quizzed only about that one.\n\nWith --json the questions are printed with their answers instead.",
+        after_help = "Examples:\n  terminal-of-tinsel quiz\n  terminal-of-tinsel quiz -n 5\n  terminal-of-tinsel quiz yule cat\n  terminal-of-tinsel quiz --pack nordic"
+    )]
+    Quiz {
+        /// Only ask about this creature
+        #[arg(num_args = 0.., value_name = "NAME")]
+        creature: Vec<String>,
+
+        /// Number of questions
+        #[arg(short = 'n', long, default_value_t = 10, value_name = "N")]
+        questions: usize,
+    },
+
+    /// Guess the Guest: name the creature behind the frosted window
+    #[command(
+        long_about = "A creature's portrait is hidden behind a frosted window. Guess who it is, or \
+press space to clear a little more frost and get clues, at the cost of points.\n\n\
+With --json the rounds are printed with their answers instead."
+    )]
+    Guess {
+        /// Number of rounds
+        #[arg(short = 'n', long, default_value_t = 5, value_name = "N")]
+        rounds: usize,
+    },
+
+    /// The Snowball Showdown: pit two creatures against each other
+    #[command(
+        long_about = "Stage a three-round showdown between two creatures. Each round tests \
+strength, speed, cunning or dread, using each creature's stat card plus the roll of a die. Leave \
+out one or both names for random contenders. Put a name of several words in quotes.",
+        after_help = "Examples:\n  terminal-of-tinsel mash\n  terminal-of-tinsel mash krampus\n  terminal-of-tinsel mash \"yule cat\" gryla --fast"
+    )]
+    Mash {
+        /// Up to two creatures, e.g. krampus "yule cat"
+        #[arg(num_args = 0..=2, value_name = "NAME")]
+        creatures: Vec<String>,
+
+        /// Skip the dramatic pauses
+        #[arg(long)]
+        fast: bool,
+    },
+
     /// Count the sleeps until Christmas
     Countdown {
         /// Pretend it's this date (YYYY-MM-DD)
@@ -158,6 +204,23 @@ mod tests {
             cli.command,
             Some(Command::Creature { explore: true, .. })
         ));
+    }
+
+    #[test]
+    fn the_games_parse() {
+        let cli = Cli::try_parse_from(["t", "quiz", "yule", "cat", "-n", "5"]).unwrap();
+        assert!(matches!(
+            cli.command,
+            Some(Command::Quiz { questions: 5, ref creature }) if creature.join(" ") == "yule cat"
+        ));
+        let cli = Cli::try_parse_from(["t", "guess"]).unwrap();
+        assert!(matches!(cli.command, Some(Command::Guess { rounds: 5 })));
+        let cli = Cli::try_parse_from(["t", "mash", "krampus", "yule cat", "--fast"]).unwrap();
+        assert!(matches!(
+            cli.command,
+            Some(Command::Mash { fast: true, ref creatures }) if creatures.len() == 2
+        ));
+        assert!(Cli::try_parse_from(["t", "mash", "a", "b", "c"]).is_err());
     }
 
     #[test]

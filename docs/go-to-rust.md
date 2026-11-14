@@ -91,3 +91,33 @@ The two libraries disagree about almost everything, which makes this the most in
 - **What it cost.** ratatui 0.30 needs Rust 1.88, exactly Tinsel's minimum. With default features off
   and only the crossterm backend, it took the tree from about 40 crates to about 85 and the stripped release
   binary from about 1.7 MB to 2.1 MB.
+
+## Phase 2: the games
+
+The quiz, Guess the Guest and the Snowball Showdown are ports of Terror's Midnight Quiz, Guess the
+Monster and Monster Mash: the same rules and numbers, with Christmas words.
+
+- **A trait where Go has an interface, but checked at the call.** Terror's three Bubble Tea programs
+  each implement `tea.Model`. Tinsel's explorer, quiz and guess each implement `App` (`src/tui.rs`), and
+  one `tui::run(&mut impl App)` drives them all. The difference is `impl App`: the loop is compiled once
+  per screen with the calls resolved, where Go dispatches through the interface at run time.
+- **A question kind is an enum, not a string.** Terror's `Question.Kind` is `"fact"`, `"myth"` and so
+  on, and the "no kind over a third" rule counts them in a `map[string]int`. In Tinsel `Kind` is an enum
+  that serde writes as the same lowercase strings, and the count is an array indexed by the variant. A
+  misspelt kind can't exist.
+- **`Option<usize>` for "not answered yet".** Terror marks an unanswered round with `Chosen: -1`.
+  Tinsel's `chosen: Option<usize>` makes the compiler ask what happens before the guess, everywhere.
+- **Shuffling by hand.** Go has `rand.Shuffle` and `rand.Perm`. Tinsel keeps its own SplitMix64 so that
+  seeded games never change between releases, which meant writing an eight-line Fisher-Yates shuffle.
+  The rand crate would have done it, at the cost of a sequence that can change with its version.
+- **No regex.** Terror hides a monster's name in a quiz clue with `regexp`. Go's is in the standard
+  library; Rust's is a crate, and a big one. Tinsel's `mask` walks the characters instead: 50 lines,
+  and it folds accents too, so "Grýla" is hidden however the fact spells it.
+- **Borrowed rounds.** A guess round holds `&Creature`, borrowed from the vault for the length of the
+  game, where Go copies the whole `Monster` struct into each round. The lifetime (`Round<'a>`) is the
+  price, and it spreads to everything that holds a round.
+- **Sleeping is the same.** The showdown's dramatic pauses are `time.Sleep` in Go and
+  `std::thread::sleep` in Rust, skipped in both when stdout isn't a terminal.
+- **Grammar is a data problem.** Terror's fight lines are in the present tense ("hurls"), which reads
+  wrongly for a plural name. Tinsel has the Yule Lads, so its lines are in the past tense, and the
+  loser's parting mutter is quoted rather than woven into the sentence.

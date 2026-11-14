@@ -55,6 +55,16 @@ jobs:
             echo "expected the explorer to refuse to run without a terminal"
             exit 1
           fi
+          $bin quiz -n 3 --json > /dev/null
+          $bin guess -n 2 --json > /dev/null
+          $bin mash krampus "yule cat" --fast
+          $bin mash krampus "yule cat" --json > /dev/null
+          for game in quiz guess; do
+            if $bin $game < /dev/null > /dev/null 2>&1; then
+              echo "expected $game to refuse to run without a terminal"
+              exit 1
+            fi
+          done
           $bin random --daily
           $bin countdown --date 2026-12-24
           $bin advent --date 2026-12-12

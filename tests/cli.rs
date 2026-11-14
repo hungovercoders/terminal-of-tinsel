@@ -36,6 +36,12 @@ fn every_command_runs() {
         vec!["creature", "krampus"],
         vec!["creature", "mari", "lwyd", "--reveal"],
         vec!["creature", "--json"],
+        vec!["quiz", "--json"],
+        vec!["quiz", "marley", "-n", "3", "--json"],
+        vec!["guess", "--json"],
+        vec!["mash"],
+        vec!["mash", "krampus", "yule cat", "--fast"],
+        vec!["mash", "gryla", "--json"],
         vec!["random"],
         vec!["random", "--daily"],
         vec!["countdown"],
@@ -133,6 +139,103 @@ fn the_explorer_refuses_to_run_without_a_terminal() {
 }
 
 #[test]
+fn quiz_json_is_seeded_and_carries_its_answers() {
+    let a = json(&["quiz", "-n", "6"]);
+    assert_eq!(
+        a,
+        json(&["quiz", "-n", "6"]),
+        "the same seed, the same quiz"
+    );
+    let questions = a.as_array().unwrap();
+    assert_eq!(questions.len(), 6);
+    for q in questions {
+        let options = q["options"].as_array().unwrap();
+        assert!((q["answer"].as_u64().unwrap() as usize) < options.len());
+        assert!(q["kind"].is_string() && q["prompt"].is_string() && q["creatureId"].is_string());
+    }
+    let focused = json(&["quiz", "yule", "cat", "--questions", "4"]);
+    assert!(
+        focused
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|q| q["creatureId"] == "yule-cat")
+    );
+}
+
+#[test]
+fn guess_json_has_rounds_with_four_options() {
+    let v = json(&["guess", "--rounds", "3"]);
+    let rounds = v.as_array().unwrap();
+    assert_eq!(rounds.len(), 3);
+    for r in rounds {
+        let options = r["options"].as_array().unwrap();
+        assert_eq!(options.len(), 4);
+        assert_eq!(options[r["answer"].as_u64().unwrap() as usize], r["name"]);
+    }
+    assert_eq!(v, json(&["guess", "--rounds", "3"]));
+}
+
+#[test]
+fn mash_json_names_both_corners_and_a_winner() {
+    let v = json(&["mash", "krampus", "yule cat"]);
+    assert_eq!(v["a"]["id"], "krampus");
+    assert_eq!(v["b"]["id"], "yule-cat");
+    assert_eq!(v["rounds"].as_array().unwrap().len(), 3);
+    let winner = v["winner"].as_str().unwrap();
+    assert!(winner == "krampus" || winner == "yule-cat");
+    assert!(v["rounds"][0]["rollA"].is_u64() && v["rounds"][0]["move"].is_string());
+    assert!(v["finale"].as_str().unwrap().contains("trudged off"));
+    assert_eq!(v, json(&["mash", "krampus", "yule cat"]));
+    // One name, or none: the other corner is filled, never with the same creature.
+    let v = json(&["mash", "tomte"]);
+    assert_eq!(v["a"]["id"], "tomte");
+    assert_ne!(v["b"]["id"], "tomte");
+}
+
+#[test]
+fn piped_mash_is_plain_and_does_not_pause() {
+    let started = std::time::Instant::now();
+    tinsel()
+        .args(["mash", "marley", "gryla"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("THE SNOWBALL SHOWDOWN"))
+        .stdout(predicate::str::contains("WINNER:"))
+        .stdout(predicate::str::contains("\u{1b}[").not())
+        .stdout(predicate::str::contains("🥊").not());
+    assert!(started.elapsed().as_secs() < 3, "a pipe should not wait");
+}
+
+#[test]
+fn the_games_refuse_to_run_without_a_terminal() {
+    for (args, name) in [
+        (vec!["quiz"], "the Christmas Cracker Quiz"),
+        (vec!["guess"], "Guess the Guest"),
+    ] {
+        tinsel()
+            .args(&args)
+            .assert()
+            .failure()
+            .stdout(predicate::str::is_empty())
+            .stderr(predicate::str::contains(format!("{name} needs a terminal")))
+            .stderr(predicate::str::contains("hint: use --json"));
+    }
+}
+
+#[test]
+fn a_bad_seed_warns_and_is_ignored() {
+    tinsel()
+        .env("TERMINAL_OF_TINSEL_SEED", "tinsel")
+        .args(["mash", "--fast"])
+        .assert()
+        .success()
+        .stderr(predicate::str::contains(
+            "warning: ignoring TERMINAL_OF_TINSEL_SEED",
+        ));
+}
+
+#[test]
 fn daily_fact_is_repeatable_and_follows_advent() {
     let a = json(&["random", "--daily", "--date", "2026-12-05"]);
     let b = json(&["random", "--daily", "--date", "2026-12-05"]);
@@ -184,6 +287,24 @@ fn errors_have_stable_codes() {
         json_error(&["list", "--sparkle"])["error"]["code"],
         "bad-flag"
     );
+    assert_eq!(
+        json_error(&["quiz", "-n", "0"])["error"]["code"],
+        "bad-flag"
+    );
+    assert_eq!(
+        json_error(&["guess", "--rounds", "0"])["error"]["code"],
+        "bad-flag"
+    );
+    assert_eq!(
+        json_error(&["quiz", "rudolph"])["error"]["code"],
+        "unknown-creature"
+    );
+    for args in [
+        vec!["mash", "krampus", "krampus"],
+        vec!["guess", "--pack", "dickens"],
+    ] {
+        assert_eq!(json_error(&args)["error"]["code"], "usage", "{args:?}");
+    }
 }
 
 #[test]

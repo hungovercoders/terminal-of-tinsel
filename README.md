@@ -55,6 +55,7 @@ terminal-of-tinsel                   # Auntie Aerial says hello
 terminal-of-tinsel creature          # tune in to the Midwinter Special
 terminal-of-tinsel list              # meet tonight's guests
 terminal-of-tinsel creature krampus  # read a creature's page
+terminal-of-tinsel quiz              # pull a cracker: the Christmas Cracker Quiz
 terminal-of-tinsel random --daily    # the Fact of the Night
 terminal-of-tinsel countdown         # sleeps until Christmas
 terminal-of-tinsel advent            # open the advent calendar
@@ -123,6 +124,42 @@ terminal-of-tinsel creature krampus --reveal # show the Myth or Fact? verdicts
 
 A near miss gets a suggestion: `creature krampas` asks whether you meant Krampus.
 
+## 🎲 Games
+
+### The Christmas Cracker Quiz
+
+Questions built from the creature data: facts, lines from the page, first appearances, film credits and myth checks. Every answer explains itself, so you learn as you play. Finish with a rank from **Stocking Filler** to **Star of the Tree**.
+
+```bash
+terminal-of-tinsel quiz
+terminal-of-tinsel quiz -n 5
+terminal-of-tinsel quiz yule cat        # only about one creature
+terminal-of-tinsel quiz --pack nordic
+```
+
+Answer with `1`-`4` or `a`-`d`, or move with `↑` `↓` and press `enter`.
+
+### Guess the Guest
+
+A portrait is hidden behind a frosted window. Press `space` to clear a little more frost (clues appear as it goes), but every clearing costs points: 100 through the thickest frost, down to 20 once the window is clear.
+
+```bash
+terminal-of-tinsel guess
+terminal-of-tinsel guess --rounds 8
+```
+
+### The Snowball Showdown
+
+Three rounds, no rules, no refunds. Two creatures settle it over strength, speed, cunning and dread, decided by their stat cards and the roll of a die.
+
+```bash
+terminal-of-tinsel mash
+terminal-of-tinsel mash krampus
+terminal-of-tinsel mash "yule cat" gryla --fast   # skip the dramatic pauses
+```
+
+The quiz and Guess the Guest need a terminal. With `--json` all three print their data instead: the questions with their answers, the rounds, or the whole showdown.
+
 ## 📅 The advent calendar
 
 `advent` shows all 24 doors, opening as December goes on, with tonight's guest in full. `countdown` draws the tree and the sleeps until Christmas, tonight's door, and notes for the special nights: Krampusnacht, St Nicholas Day, the arrival of each Yule Lad, the anniversary of *A Christmas Carol*, the Twelve Days and Twelfth Night.
@@ -152,9 +189,11 @@ terminal-of-tinsel countdown --json | jq .sleepsUntilChristmas
 terminal-of-tinsel creature marley --json | jq '.quotes[].text'
 terminal-of-tinsel creature --json | jq -r '.[].name'      # no name: every creature
 terminal-of-tinsel creature tomte --json | jq -r .ascii    # the portrait
+terminal-of-tinsel quiz -n 5 --json | jq '.[].prompt'
+terminal-of-tinsel mash krampus gryla --json | jq -r .winner
 ```
 
-Output is plain (no colour, no emoji, ASCII borders) when piped, with `--no-color`, or when `NO_COLOR` is set. Set `TERMINAL_OF_TINSEL_SEED` to a number to make `random`, the host's lines and the explorer's snow repeatable.
+Output is plain (no colour, no emoji, ASCII borders) when piped, with `--no-color`, or when `NO_COLOR` is set. Set `TERMINAL_OF_TINSEL_SEED` to a number to make every random choice repeatable: the questions, the portraits, the showdowns, `random` and the host's lines.
 
 **Tab completion:** `source <(terminal-of-tinsel completions zsh)` (also `bash`, `fish`, `powershell` and `elvish`).
 
