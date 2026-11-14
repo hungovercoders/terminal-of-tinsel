@@ -559,3 +559,122 @@ fn dump_screens() {
         println!("── {id}, narrow ──\n{}\n", screen(&mut page, 70, 24));
     }
 }
+
+#[test]
+fn reveal_stays_on_from_page_to_page() {
+    let vault = Vault::load();
+    let mut m = Model::new(
+        &vault,
+        Options {
+            show_all: true,
+            no_intro: true,
+            reveal: true,
+            ..options()
+        },
+    );
+    press(&mut m, KeyCode::Enter);
+    assert!(
+        m.revealed,
+        "--reveal survives opening a page from the gallery"
+    );
+    press(&mut m, KeyCode::Right);
+    assert!(m.revealed, "and moving to the next guest");
+    press(&mut m, KeyCode::Char('r'));
+    press(&mut m, KeyCode::Right);
+    assert!(
+        m.revealed,
+        "r hides them only for the page it was pressed on"
+    );
+}
+
+#[test]
+fn a_name_with_all_opens_the_gallery_on_that_creature() {
+    let vault = Vault::load();
+    let mut m = Model::new(
+        &vault,
+        Options {
+            show_all: true,
+            start_id: Some("tomte".into()),
+            ..options()
+        },
+    );
+    assert_eq!(m.screen, Screen::Gallery);
+    assert_eq!(vault.creatures[m.cursor].id, "tomte");
+    assert!(screen(&mut m, 80, 60).contains("▶ 🥣 The Tomte"));
+}
+
+#[test]
+fn the_preview_box_stays_square_for_the_widest_portrait() {
+    use unicode_width::UnicodeWidthStr;
+    let vault = Vault::load();
+    for width in [100, 101, 104, 120] {
+        let mut m = Model::new(
+            &vault,
+            Options {
+                show_all: true,
+                no_intro: true,
+                ..options()
+            },
+        );
+        for _ in 0..vault.creatures.len() {
+            let text = screen(&mut m, width, 60);
+            let edges: Vec<usize> = text
+                .lines()
+                .filter(|l| l.contains('│') || l.contains('╭') || l.contains('╰'))
+                .map(|l| l.width())
+                .collect();
+            assert!(
+                edges.windows(2).all(|w| w[0] == w[1]),
+                "{width} columns, {}: a ragged box {edges:?}",
+                vault.creatures[m.cursor].id
+            );
+            press(&mut m, KeyCode::Down);
+        }
+    }
+}
+
+#[test]
+fn the_selected_search_hit_is_never_hidden_by_a_marker() {
+    let vault = Vault::load();
+    let mut m = on_page(&vault, "krampus");
+    press(&mut m, KeyCode::Char('/'));
+    type_text(&mut m, "the");
+    let hits = m.hits.len();
+    assert!(hits > 4);
+    for height in [10, 11, 12, 13, 16] {
+        m.hit_cursor = 0;
+        for _ in 0..hits {
+            let name = vault.creatures[m.hits[m.hit_cursor].index].name.clone();
+            let text = screen(&mut m, 80, height);
+            if view::body_height(&m) >= 4 {
+                assert!(
+                    text.contains(&format!(
+                        "▶ {} {name}",
+                        vault.creatures[m.hits[m.hit_cursor].index].emoji
+                    )),
+                    "{height} rows: {name} is hidden\n{text}"
+                );
+            }
+            press(&mut m, KeyCode::Down);
+        }
+    }
+}
+
+#[test]
+fn plain_mode_keeps_emoji_out_of_tonights_notes() {
+    use unicode_width::UnicodeWidthStr;
+    let vault = Vault::load();
+    let mut m = Model::new(
+        &vault,
+        Options {
+            colour: false,
+            today: date(2026, 12, 24),
+            ..options()
+        },
+    );
+    press(&mut m, KeyCode::Enter);
+    let text = screen(&mut m, 100, 30);
+    assert!(text.contains("13 Yule Lads are in town."), "{text}");
+    assert!(text.chars().all(|c| c.to_string().width() < 2), "{text}");
+    assert!(screen(&mut m, 100, 30).contains("Press any key"));
+}

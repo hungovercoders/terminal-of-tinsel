@@ -264,7 +264,14 @@ fn preview(m: &Model, c: &Creature, width: usize) -> Lines {
         fg(m, rgb(GREEN)).add_modifier(Modifier::ITALIC),
     ));
     lines.push(Line::default());
-    lines.extend(portrait(m, c, &p, false));
+    // The box is as wide as the room beside the list, which can be narrower
+    // than the widest portraits: those are cut rather than left to push the
+    // border out.
+    lines.extend(
+        c.ascii
+            .lines()
+            .map(|row| Line::styled(row.chars().take(inner).collect::<String>(), p.primary)),
+    );
     boxed(lines, inner, 1, 0, p.accent)
 }
 
@@ -605,7 +612,12 @@ fn search_results(m: &Model, width: usize, height: usize) -> Lines {
             dim(m),
         ));
     }
-    let offset = (m.hit_cursor * 2 + 3).saturating_sub(height);
+    // Keep the selected name and its snippet above the "more below" marker,
+    // but never under the "more above" one.
+    let cursor_line = m.hit_cursor * 2;
+    let offset = (cursor_line + 3)
+        .saturating_sub(height)
+        .min(cursor_line.saturating_sub(1));
     viewport(m, lines, offset, height)
 }
 

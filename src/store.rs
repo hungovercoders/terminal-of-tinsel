@@ -15,6 +15,9 @@ pub const HOME_ENV: &str = "TERMINAL_OF_TINSEL_HOME";
 
 const FILE: &str = "stocking.json";
 
+/// The format this release reads and writes.
+const VERSION: u32 = 1;
+
 /// Everything we remember about a player.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
@@ -72,7 +75,20 @@ pub fn load(dir: &Path) -> Result<Progress> {
         Err(e) if e.kind() == io::ErrorKind::NotFound => Progress::default(),
         Err(e) => return Err(store_error(&path, "read", e)),
     };
-    progress.version = 1;
+    // A file from a later release may hold things this one would drop on
+    // saving, so it is left alone rather than rewritten as version 1.
+    if progress.version > VERSION {
+        return Err(TinselError::new(
+            Code::Store,
+            format!(
+                "your progress in {} was saved by a newer terminal-of-tinsel (format {})",
+                path.display(),
+                progress.version
+            ),
+        )
+        .with_hint("upgrade terminal-of-tinsel to use it"));
+    }
+    progress.version = VERSION;
     Ok(progress)
 }
 
@@ -206,6 +222,19 @@ mod tests {
         let e = load(&scratch.0).unwrap_err();
         assert_eq!(e.code, Code::Store);
         assert!(e.hint.unwrap().contains("stocking reset"));
+    }
+
+    #[test]
+    fn a_save_from_a_newer_release_is_refused_and_left_alone() {
+        let scratch = Scratch::new("newer");
+        fs::create_dir_all(&scratch.0).unwrap();
+        let newer = r#"{"version": 2, "mashesPlayed": 3, "somethingNew": {"kept": true}}"#;
+        fs::write(path_in(&scratch.0), newer).unwrap();
+        let e = load(&scratch.0).unwrap_err();
+        assert_eq!(e.code, Code::Store);
+        assert!(e.message.contains("newer"), "{}", e.message);
+        assert!(e.hint.unwrap().contains("upgrade"));
+        assert_eq!(fs::read_to_string(path_in(&scratch.0)).unwrap(), newer);
     }
 
     #[test]

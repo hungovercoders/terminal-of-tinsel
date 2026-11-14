@@ -14,8 +14,12 @@ fn scratch(name: &str) -> PathBuf {
     dir
 }
 
+/// The scratch home the tests share when they don't care what's saved. It
+/// is made once: clearing it on every call would pull it out from under a
+/// command another test is running.
 fn tinsel() -> Command {
-    tinsel_at(&scratch("shared"))
+    static SHARED: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+    tinsel_at(SHARED.get_or_init(|| scratch("shared")))
 }
 
 fn tinsel_at(home: &Path) -> Command {
@@ -353,7 +357,9 @@ fn a_broken_save_file_stops_the_stocking_but_not_a_game() {
         .stdout(predicate::str::contains("WINNER:"))
         .stderr(predicate::str::contains(
             "warning: this session wasn't saved",
-        ));
+        ))
+        // The warning says how to mend it.
+        .stderr(predicate::str::contains("stocking reset"));
     // The broken file is left for its owner to mend.
     assert_eq!(
         std::fs::read_to_string(home.join("stocking.json")).unwrap(),
