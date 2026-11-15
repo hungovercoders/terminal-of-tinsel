@@ -15,6 +15,10 @@
   Cross-Origin-Opener-Policy: same-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
+# The recordings, embeddable by other sites' link previews.
+/assets/*
+  Cross-Origin-Resource-Policy: cross-origin
+
 # Font files never change in place: a new version gets a new file name.
 /static/fonts/*
   Cache-Control: public, max-age=31536000, immutable

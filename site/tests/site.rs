@@ -62,6 +62,7 @@ fn there_is_a_page_for_everything() {
         "static/site.js",
         "static/themes.css",
         "static/fonts/fonts.css",
+        "assets/hero.gif",
     ] {
         assert!(out.join(path).is_file(), "{path} is missing");
     }

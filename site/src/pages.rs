@@ -165,6 +165,10 @@ pub fn home(vault: &Vault) -> Page {
   <p class="cta-row"><a class="btn" href="#install">Unwrap it</a> <a class="btn ghost" href="creatures/index.html">Meet the {count} guests</a></p>
 </section>
 
+<figure class="screen">
+  <img src="assets/hero.gif" width="1148" height="748" alt="A recording of the program: Channel 25 tunes in through falling snow, then the explorer pages through Krampus, the Yule Cat and the Tomte, searches for porridge and signs off.">
+</figure>
+
 <section class="prose">
   <p>St Nicholas has grim companions. Iceland has a cat that eats anyone without new clothes, and thirteen lads who come down from the mountains one by one. In Wales a horse's skull knocks at the door and wants a rhyme. Terminal of Tinsel tells their real stories, with what the folklore says and what it doesn't, presented by your host, {host}.</p>
   <p>It is the Christmas sister of <a href="https://github.com/hungovercoders/terminal-of-terror">Terminal of Terror</a>. Terror is written in Go and Tinsel in Rust, to see how the two compare.</p>

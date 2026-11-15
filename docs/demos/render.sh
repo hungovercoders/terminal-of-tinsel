@@ -4,23 +4,23 @@
 #   docs/demos/render.sh            # everything
 #   docs/demos/render.sh hero quiz  # just these
 #
-# Needs: cargo, vhs (https://github.com/charmbracelet/vhs), ffmpeg, ttyd 1.7.7
-# or newer, and Linux with Noto Color Emoji (fonts-noto-color-emoji) as
-# fontconfig's emoji font.
-# Set TTYD=/path/to/ttyd to pick a specific ttyd binary.
+# Needs: cargo, python3, node with Playwright and its Chromium, ffmpeg, the
+# JetBrains Mono font, and Linux with Noto Color Emoji
+# (fonts-noto-color-emoji) as fontconfig's emoji font. The first run installs
+# xterm.js from the repository's package.json.
+#
+# The tapes are written in the language of VHS (https://github.com/charmbracelet/vhs),
+# but they are not played by it. VHS draws through ttyd, and ttyd older than
+# 1.7.7 draws emoji one cell wide, which knocks every box border out of line.
+# So pty_record.py plays a tape into a real shell and notes down the output,
+# and record.cjs replays that into xterm.js with current Unicode widths and takes
+# the frames. Only the commands the tapes use are understood.
 #
 # Recordings use a fixed TERMINAL_OF_TINSEL_SEED (DEMO_SEED, default 25), the
 # tapes that take a date pass one, and every tape starts from the same saved
 # stocking, so re-recording gives the same questions, portraits and showdowns.
 # Two things still follow the real clock: the hero tape's intro (its
 # greeting and notes), and any badge a game earns for the night it's played.
-#
-# Two workarounds live here rather than in the tapes:
-#  - ttyd's browser terminal defaults to Unicode 6 widths, which draws emoji
-#    one cell wide and knocks every box border out of line. A small ttyd
-#    wrapper turns on Unicode 11.
-#  - vhs writes raw frames and we encode them with ffmpeg ourselves, which
-#    also keeps the GIFs small (15fps, diffed palette).
 set -euo pipefail
 
 root=$(cd "$(dirname "$0")/../.." && pwd)
@@ -28,25 +28,15 @@ cd "$root"
 demos=docs/demos
 assets=docs/assets
 work=$(mktemp -d)
-# vhs writes its frames under docs/demos/.frames; clear them however this ends.
+# Frames are written under docs/demos/.frames; clear them however this ends.
 trap 'rm -rf "$work" "$root/$demos/.frames"' EXIT
 
 # Stills keep only their final frame, as a PNG.
 stills=" list random countdown tonight advent stocking "
-bg="#0b1410"
 
-for tool in cargo vhs ffmpeg fc-match; do
+for tool in cargo python3 node npm ffmpeg fc-match; do
   command -v "$tool" > /dev/null || { echo "missing $tool" >&2; exit 1; }
 done
-real_ttyd=${TTYD:-$(command -v ttyd || true)}
-[ -n "$real_ttyd" ] || { echo "missing ttyd (1.7.7+)" >&2; exit 1; }
-# Older ttyd draws emoji one cell wide however it is started, and every
-# border after one lands a column out. Refuse rather than record that.
-ttyd_version=$("$real_ttyd" --version | awk '{ print $3 }' | cut -d- -f1)
-if [ "$(printf '%s\n' 1.7.7 "$ttyd_version" | sort -V | head -1)" != 1.7.7 ]; then
-  echo "ttyd $ttyd_version is too old: 1.7.7 or newer is needed for emoji to line up" >&2
-  exit 1
-fi
 # The recordings draw emoji with the system's font. Noto's licence (OFL 1.1)
 # lets its glyphs ship in the GIFs; Apple's and Microsoft's emoji don't. On
 # Linux the browser picks emoji through fontconfig, so ask it which font it
@@ -57,17 +47,17 @@ emoji_font=$(fc-match -f '%{family}' 'emoji:charset=1f384')
   echo "emoji would be drawn with '$emoji_font': install fonts-noto-color-emoji and make it the preferred emoji font" >&2
   exit 1
 }
+[ -n "$(fc-list 'JetBrains Mono')" ] || { echo "missing the JetBrains Mono font" >&2; exit 1; }
+# xterm.js, the terminal the frames are drawn with. Playwright isn't in
+# package.json: it comes with a browser, so use the one already installed.
+[ -d node_modules/@xterm/xterm ] || npm install --no-audit --no-fund --silent
+node -e 'require("playwright")' 2> /dev/null || { echo "missing Playwright: npm install -g playwright && npx playwright install chromium" >&2; exit 1; }
 
 # The recorded shell gets a fake home, so saved paths read ~/.config/...
 config="$work/home/.config/terminal-of-tinsel"
 mkdir -p "$work/bin" "$config"
-cat > "$work/bin/ttyd" <<WRAP
-#!/bin/sh
-exec "$real_ttyd" -t unicodeVersion=11 "\$@"
-WRAP
-chmod +x "$work/bin/ttyd"
 
-# ttyd starts "bash" from PATH; this one swaps vhs's plain prompt for a tree.
+# The recorder starts "bash" from PATH; this one has a tree for a prompt.
 real_bash=$(command -v bash)
 printf '%s\n' "PS1='\\[\\e[38;2;82;183;136m\\]🎄 \\[\\e[0m\\]'" \
   "export HOME='$work/home' TERMINAL_OF_TINSEL_HOME='$config'" \
@@ -110,17 +100,8 @@ cat > "$config/stocking.json" <<'JSON'
 JSON
 }
 
-# vhs moves its frames into place with a plain rename, which fails silently
-# across filesystems or into a missing directory, so keep its temp files
-# next to the output.
-mkdir -p "$demos/.frames/tmp" "$assets"
-export TMPDIR="$root/$demos/.frames/tmp"
-
+mkdir -p "$assets"
 export PATH="$work/bin:$PATH"
-export VHS_NO_SANDBOX=${VHS_NO_SANDBOX:-true}
-
-# One line of JSON, ready to drop into each tape.
-theme=$(tr -d '\n' < "$demos/theme.json" | tr -s ' ')
 
 names=("$@")
 if [ ${#names[@]} -eq 0 ]; then
@@ -132,28 +113,22 @@ for name in "${names[@]}"; do
   seed_stocking
   frames="$demos/.frames/$name"
   rm -rf "$frames"
-  # Fill in the shared theme, so theme.json is the only place it lives.
-  awk -v theme="$theme" '$0 == "Set Theme @theme.json" { print "Set Theme " theme; next } { print }' \
-    "$demos/$name.tape" > "$work/$name.tape"
-  vhs "$work/$name.tape" > "$work/$name.log" 2>&1 || { cat "$work/$name.log"; exit 1; }
-  [ -e "$frames/frame-text-00001.png" ] || { cat "$work/$name.log"; echo "no frames for $name" >&2; exit 1; }
-
-  # Read the frames back at the rate they were captured.
-  fps=$(awk '$1 == "Set" && $2 == "Framerate" { print $3 }' "$demos/$name.tape")
-  fps=${fps:-50}
-  inputs=(-framerate "$fps" -start_number 1 -i "$frames/frame-text-%05d.png"
-          -framerate "$fps" -start_number 1 -i "$frames/frame-cursor-%05d.png")
-  pad="pad=iw+48:ih+48:24:24:color=$bg"
+  node "$demos/record.cjs" "$demos/$name.tape" "$frames"
+  [ -e "$frames/frame-00001.png" ] || { echo "no frames for $name" >&2; exit 1; }
   if [[ "$stills" == *" $name "* ]]; then
-    last=$(find "$frames" -name 'frame-text-*.png' | sort | tail -1)
-    ffmpeg -loglevel error -y -i "$last" -vf "$pad" "$assets/$name.png"
+    last=$(find "$frames" -name 'frame-*.png' | sort | tail -1)
+    # Keep the part of the screen the output reached.
+    ffmpeg -loglevel error -y -i "$last" -vf "crop=$(cat "$frames/crop.txt")" "$assets/$name.png"
     echo "   → $assets/$name.png"
   else
-    ffmpeg -loglevel error -y "${inputs[@]}" -filter_complex \
-      "[0][1]overlay,$pad,fps=15,split[a][b];[a]palettegen=max_colors=192:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" \
+    # record.cjs draws 15 frames a second. The palette is built from whole
+    # frames and nothing is dithered: a palette built only from what changes
+    # between frames loses the colours of text that sits still, and dither
+    # speckles flat terminal colours.
+    ffmpeg -loglevel error -y -framerate 15 -start_number 1 -i "$frames/frame-%05d.png" -filter_complex \
+      "split[a][b];[a]palettegen=max_colors=256:stats_mode=full[p];[b][p]paletteuse=dither=none:diff_mode=rectangle" \
       "$assets/$name.gif"
     echo "   → $assets/$name.gif ($(du -h "$assets/$name.gif" | cut -f1))"
   fi
   rm -rf "$frames"
 done
-rm -rf "$demos/.frames"

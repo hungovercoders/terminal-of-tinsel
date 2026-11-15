@@ -14,7 +14,7 @@ deployed. [website.md](website.md) says how to change it.
 | [x] | no inline styles or scripts; CSP in `public/_headers`; per-monster colours as generated CSS classes | the same, and stricter: nothing is loaded from another site |
 | [x] | self-hosted fonts with their licences | Playfair Display, IBM Plex Sans and IBM Plex Mono, with their OFL texts |
 | [x] | README install, games and rituals copy repeated on the landing page | the same; the command table is generated from clap |
-| [ ] | hero GIF and screenshots from `docs/assets`; a social card | waits for the demo recordings; the pages carry no `og:image` until then |
+| [ ] | hero GIF and screenshots from `docs/assets`; a social card | the hero GIF is on the home page and `docs/assets/` is copied to the site; there is no social card yet, so pages carry no `og:image` |
 | [x] | `go test ./site` builds the site and checks every internal link | `cargo test -p tinsel-site`: links, the CSP, colour contrast, the sitemap and llms.txt |
 | [ ] | `wrangler.jsonc`, Workers Builds deploys `main` | `wrangler.jsonc` is written but nothing is connected: it needs a Cloudflare project, a domain, and a check that Workers Builds can run `cargo` (if not, build in GitHub Actions and deploy with wrangler) |
 | [ ] | slopstopper profile `ui`: smoke, e2e, accessibility, SEO, links, web vitals, DAST | switch the profile and set the production URL once the site is live |
