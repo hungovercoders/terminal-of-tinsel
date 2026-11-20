@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### For contributors
+
+- A workflow that builds the website and deploys it to Cloudflare on every push to `main`. It is
+  skipped until the repository has a `SITE_URL` variable and its Cloudflare secrets.
+
 ## [0.2.0] - 2026-11-20
 
 The Midwinter Special goes interactive: an explorer, three games, a stocking to fill, community packs

@@ -1,0 +1,52 @@
+name: Website
+
+# Builds the website from the repository and deploys it to Cloudflare as
+# static assets. It does nothing until the repository has:
+#   - a variable SITE_URL, the address the site is served from
+#     (for example https://example.com/), and
+#   - secrets CLOUDFLARE_API_TOKEN (permission: Workers Scripts, Edit) and
+#     CLOUDFLARE_ACCOUNT_ID.
+# docs/website.md says how to set them.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  # wrangler would otherwise report anonymous usage to Cloudflare.
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  deploy:
+    name: Build and deploy
+    if: vars.SITE_URL != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build the site
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: cargo run --locked --release -p tinsel-site -- --out dist --base-url "$SITE_URL"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      # wrangler is pinned by package-lock.json. Scripts are skipped: the
+      # other tools in package.json aren't needed here.
+      - run: npm ci --ignore-scripts
+      - name: Deploy to Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy
