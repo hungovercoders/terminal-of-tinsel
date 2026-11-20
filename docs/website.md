@@ -18,6 +18,7 @@ cargo test -p tinsel-site
 site/src/lib.rs      build(): writes every page, the static files, themes.css, sitemap.xml, robots.txt, llms.txt
 site/src/html.rs     The shell every page shares (head, navigation, footer) and esc()
 site/src/pages.rs    A function per page: home, roster, creature, advent, privacy, not_found
+site/src/course.rs   Renders course/*.md into night-school/, rewriting links between lessons and into the repository
 site/src/colour.rs   Lightens a creature's colours until they can be read on the background
 site/static/         style.css, site.js and the fonts, copied as they are
 site/tests/site.rs   Builds the site into a scratch directory and checks it
@@ -41,6 +42,8 @@ wrangler.jsonc       Cloudflare's configuration: serve dist/ as static assets
 - **Links are relative**, with `.html` names, so the site works from a folder as well as a server.
   `Page::root()` gives the way back to the top. The 404 page alone links from `/`, because it is served
   at any address.
+- **Lessons are Markdown.** Raw HTML in a lesson is shown as text, not passed through, and a table with
+  aligned columns would need an inline style, so lessons don't align columns.
 - **Fonts** are self-hosted from the `@fontsource` packages, each with its OFL text beside it. A new
   font needs its licence file and an entry in `static/fonts/fonts.css`.
 - The house rules still hold: British English, no em dashes, and no copyrighted characters or quotes.

@@ -9,7 +9,7 @@ deployed. [website.md](website.md) says how to change it.
 | [x] | `site/` Go program reading `internal/monsters` | `site/` is a second crate in a Cargo workspace (`tinsel-site`), reading the program's own library (`src/lib.rs`); cargo-dist still ships only the CLI |
 | [x] | `html/template` files, one per page kind plus a base | plain Rust: `site/src/html.rs` is the shell and `site/src/pages.rs` a function per page, with no template dependency |
 | [x] | pages: home, roster, one per monster, privacy, 404 | home, roster, one per creature with its portrait and colours, the advent calendar (a Tinsel extra), privacy, 404 |
-| [ ] | course pages rendered from `course/` | only if the Night School stretch goal goes ahead |
+| [x] | course pages rendered from `course/` | `site/src/course.rs` renders each lesson with pulldown-cmark into `night-school/`; no code highlighter, so nothing is loaded from another site |
 | [x] | `sitemap.xml`, `robots.txt`, `llms.txt` generated | the same |
 | [x] | no inline styles or scripts; CSP in `public/_headers`; per-monster colours as generated CSS classes | the same, and stricter: nothing is loaded from another site |
 | [x] | self-hosted fonts with their licences | Playfair Display, IBM Plex Sans and IBM Plex Mono, with their OFL texts |

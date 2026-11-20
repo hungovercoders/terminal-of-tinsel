@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Auntie Aerial's Night School**, in `course/`: 24 lessons that teach Rust by building Terminal of
+  Tinsel from an empty folder, one for each night of advent. The website renders them.
+
 ### For contributors
 
 - The README's demo GIFs and screenshots are recorded, in `docs/assets/`, and the website's home page
