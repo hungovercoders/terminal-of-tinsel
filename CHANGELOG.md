@@ -6,6 +6,8 @@
 
 - A workflow that builds the website and deploys it to Cloudflare on every push to `main`. It is
   skipped until the repository has a `SITE_URL` variable and its Cloudflare secrets.
+- The website is dressed for Christmas: fairy lights, heavier snow, a gold-foil title, the recording
+  in a television set, gift-wrapped cards, advent doors in red and green and a snowy treeline.
 
 ## [0.2.0] - 2026-11-20
 
