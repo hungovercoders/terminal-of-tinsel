@@ -1,17 +1,20 @@
-              /\
-             /  \
-            /    \
-           /      \
-          /        \
-         /          \
-        /            \
-       /______________\
-      (_______  _______)
-       \\\\\\ () //////
-        \\\\\\\///////
-         \\\\\\//////
-          \\\\\/////
-        ___\\\\////___
-       (___ \\\///____)
-        \  ~~~~~~~~  /
-         '----------'
+                    xxxx
+                   xxxxxx
+                  xxxxxxxx
+                 xxxxxxxxxx
+               xxxxxxxxxxxxxx
+              xxxxxxxxxxxxxxxx
+             xxxxxxxxxxxxxxxxxx
+           xxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxx
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+       xxxxxxxxxxx xxxxxx xxxxxxxxxxx
+  xxxxx xxxxxxxxx  xxxxxx  xxxxxxxxx xxxxx
+  xxxxx  xxxxx xxxxxxxxxxxxxx xxxxx  xxxxx
+  xxxxx  xxxx  xxx xxxxxx xxx  xxxx  xxxxx
+          xxx xxxx xxxxxx xxxx xxx
+          xx  xxxx xxxxxx xxxx  xx
+             xxxx xxxxxxxx xxxx
+               xx xxxxxxxx xx
+                  xxxxxxxx

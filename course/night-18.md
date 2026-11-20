@@ -223,19 +223,19 @@ The test uses seed 25. After two presses of space, the top of the screen is:
 ```
  🔍 GUESS THE GUEST                                                   Round 1 of 3 · 0 pts
 
-╭────────────────────────────────╮   Who's at the window?
-│    ▒*░|\ * ░ ▒ ░   */|░    ░▒  │   Frost cleared: 50% · worth 60 pts
-│  ░  ▒ ░ ░_*░__▒__░░/ ░     ░ ▒ │
-│ ▒*  ░ *      ░    ░░ * ░░      │   ▶ 1. The Ghost of Christmas Past
-│ ░▒*░░░   ░░ *░░░ *_   *  ░▒*   │     2. The Mari Lwyd
-│ ░░ *| ░ *░░\ *░ / *░   *░░ ▒*░ │     3. The Yule Cat
-│  ░ ▒|░░░\*)░░ *░\░)* ░░| ░ ░▒  │     4. La Befana
-│   ░  \░ ░  ░ /▒*░ ░▒ ░░      ▒ │
-│ ▒  ░--\░░   ░░/▒* ░░▒*░-░ *░ ░ │   Clue: The legend: recorded in the 1800s, made famous
-│ ░▒ -░░▒*░  \_/░░▒*░ ░--░░░   ░ │   by a poem of 1932
+╭───────────────────────────────────────────╮   Who's at the window?
+│ ░░░▒*xx░▒ ░░  *░ ░▒*░ ░▒ ░░ ▒ ░ ░ *░xx▒*░ │   Frost cleared: 50% · worth 60 pts
+│ *░  ▒*x░xx ░    ░ ░  ░  ▒*░░░▒    x*░xxx  │
+│  *░░x▒*░xxx* ░░ *░   *░ ░ *░ ░▒  ░░▒x░░░  │   ▶ 1. The Ghost of Christmas Past
+│ ░▒  ░░▒* x░▒*░ ░x*░░xx*xxxx*░ ░ *xx░▒ ░x  │     2. The Mari Lwyd
+│  ░▒ x░    ░xx*x░░xxxx░▒*xxxx*xxx▒* ░░▒*x░ │     3. The Yule Cat
+│ ░░  *░░xxxxx░xx░░░▒*xx░x*xxxx*x░x▒xxxx▒x░ │     4. La Befana
+│ *   ▒xx░░▒*xx░▒*x░   ░ ░  ░x░x*░░xxxxxxx* │
+│    ░░▒*░x░▒x░░   ░ ░▒  ░    ░░▒xxxx▒*░xx  │   Clue: The legend: recorded in the 1800s,
+│ ░▒    ▒*░x░▒ ░x░▒x░░░  ░ ░▒*░░░▒*░xx▒   ░ │   made famous by a poem of 1932
 ```
 
-Two pointed ears, and a legend made famous by a poem of 1932. `guess --json` prints the rounds with their answers through a small `RoundJson` struct that leaves the grid and the order out.
+Half the window is still frosted, but two ears are showing at the top corners, and the clue is a legend made famous by a poem of 1932. `guess --json` prints the rounds with their answers through a small `RoundJson` struct that leaves the grid and the order out.
 
 ## Try it
 

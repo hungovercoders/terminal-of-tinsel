@@ -61,7 +61,7 @@ There are now `Serialize` derives, and some new attributes. We'll come back to b
 
 ## The portrait
 
-Beside every `krampus.json` there's a `krampus.txt`: an ASCII drawing, at most 46 columns by 20 lines. In `Vault::load`, add the lines between `c.pack = pack.id.clone();` and `creatures.push(c);`:
+Beside every `krampus.json` there's a `krampus.txt`: a portrait stamped out of the letter `x`, in the same style as Terminal of Terror's, at most 46 columns by 20 lines. In `Vault::load`, add the lines between `c.pack = pack.id.clone();` and `creatures.push(c);`:
 
 ```rust
                 c.pack = pack.id.clone();
@@ -452,7 +452,7 @@ fn json_output_is_the_data() {
     let cat = json(&["creature", "yule", "cat"]);
     assert_eq!(cat["id"], "yule-cat");
     assert_eq!(cat["pack"], "nordic");
-    assert!(cat["ascii"].as_str().unwrap().contains('|'));
+    assert!(cat["ascii"].as_str().unwrap().contains("xxx"));
     assert_eq!(json(&["random"])["id"], json(&["random"])["id"]);
     assert_eq!(json(&[])["host"], "Auntie Aerial");
 }
@@ -487,22 +487,26 @@ rewards the good
 Alpine folklore of Austria, Bavaria and their neighbours · pack: St Nicholas's
 Companions
 
-      /\                /\
-     /  \              /  \
-    | /\ \            / /\ |
-    | \ \ \__________/ / / |
-     \ \_/            \_/ /
-      \   .--.    .--.   /
-      |  ( o  )  (  o )  |
-      |   '--'    '--'   |
-      |       /  \       |
-       \     '----'     /
-        \   \VVVVVV/   /
-         \   |    |   /
-          '-.| () |.-'
-     o=o=o=o | () | o=o=o=o
-              \  /
-               \/
+ xxxx                                  xxxx
+  xxxxx                              xxxxx
+   xxxxx                            xxxxx
+    xxxxx                          xxxxx
+    xxxxxx       xxxxxxxxxx       xxxxxx
+     xxxxxx   xxxxxx    xxxxxx   xxxxxx
+      xxxxxxxxxx            xxxxxxxxxx
+       xxxxxxxxxxx        xxxxxxxxxxx
+          xxx xxxxxx    xxxxxx xxx
+         xxxx  xxxx      xxxx  xxxx
+         xxxx  x  x      x  x  xxxx
+         xxxx  xxxx      xxxx  xxxx
+         xxxx      xxxxxx      xxxx
+         xxxx       xxxx       xxxx
+         xxxxxxx x x xx x x xxxxxxx
+          xxxxx     xxxx     xxxxx
+           xxxx     xxxx     xxxx
+            xxxxxx  xxxx  xxxxxx
+        x x x xxxx  xxxx  xxxx x x x
+         x   x   x  xxxx  x   x   x
 
 Auntie Aerial: “First guest of the season, and he's brought his own chains. He's
 on a list of his own, and he's checking yours twice.”
