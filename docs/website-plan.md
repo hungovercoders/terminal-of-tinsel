@@ -16,7 +16,7 @@ deployed. [website.md](website.md) says how to change it.
 | [x] | README install, games and rituals copy repeated on the landing page | the same; the command table is generated from clap |
 | [ ] | hero GIF and screenshots from `docs/assets`; a social card | the hero GIF is on the home page and `docs/assets/` is copied to the site; there is no social card yet, so pages carry no `og:image` |
 | [x] | `go test ./site` builds the site and checks every internal link | `cargo test -p tinsel-site`: links, the CSP, colour contrast, the sitemap and llms.txt |
-| [ ] | `wrangler.jsonc`, Workers Builds deploys `main` | `wrangler.jsonc` is written but nothing is connected: it needs a Cloudflare project, a domain, and a check that Workers Builds can run `cargo` (if not, build in GitHub Actions and deploy with wrangler) |
+| [ ] | `wrangler.jsonc`, Workers Builds deploys `main` | `.github/workflows/site.yml` builds in GitHub Actions and deploys with wrangler; it is skipped until the `SITE_URL` variable and the two Cloudflare secrets are set, and has never run |
 | [ ] | slopstopper profile `ui`: smoke, e2e, accessibility, SEO, links, web vitals, DAST | switch the profile and set the production URL once the site is live |
 | [x] | a doc on changing the website | [website.md](website.md) |
 

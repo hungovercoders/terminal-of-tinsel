@@ -1,8 +1,8 @@
 // The website, served by Cloudflare as static assets with no Worker script.
-// The build command is `cargo run --release -p tinsel-site -- --out dist`
-// and the deploy command is `npx wrangler deploy`. Response headers come from
-// public/_headers. Nothing is deployed until a Cloudflare project is
-// connected to the repository: see docs/website.md.
+// .github/workflows/site.yml builds the site into dist/ and runs
+// `npx wrangler deploy`. Response headers come from public/_headers. Nothing
+// is deployed until the repository has its Cloudflare secrets: see
+// docs/website.md.
 {
   "name": "terminal-of-tinsel",
   "compatibility_date": "2026-10-10",

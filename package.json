@@ -5,7 +5,8 @@
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/addon-unicode-graphemes": "^0.4.0",
     "@xterm/xterm": "^6.0.0",
-    "markdownlint-cli": "^0.47.0"
+    "markdownlint-cli": "^0.47.0",
+    "wrangler": "^4.166.0"
   },
-  "description": "Tooling: slopstopper's checks and the demo recorder (docs/demos)"
+  "description": "Tooling: slopstopper's checks, the demo recorder (docs/demos) and the website's deploy"
 }

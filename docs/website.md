@@ -63,5 +63,20 @@ and the advent calendar, at a phone's width and a desktop's.
 
 ## Deploying
 
-Not set up yet. [website-plan.md](website-plan.md) lists what is left: a Cloudflare project, a domain
-and the slopstopper `ui` profile.
+`.github/workflows/site.yml` builds the site on every push to `main` and deploys it to Cloudflare with
+`wrangler deploy`, as static assets with no Worker script. The site is built in GitHub Actions, not by
+Cloudflare's own builds, because the build needs `cargo`. The workflow is skipped until the repository
+has what it needs, under Settings, Secrets and variables, Actions:
+
+- a **variable** `SITE_URL`: the address the site is served from, with a trailing slash. The canonical
+  links, the sitemap and llms.txt are built from it.
+- a **secret** `CLOUDFLARE_API_TOKEN`: a Cloudflare API token with the "Workers Scripts: Edit"
+  permission for the account.
+- a **secret** `CLOUDFLARE_ACCOUNT_ID`: the account's id, from the Cloudflare dashboard.
+
+The first deploy creates a Worker called `terminal-of-tinsel` and serves it on a `workers.dev` address,
+which is what `SITE_URL` should be until there is a domain. For a custom domain, add the route that is
+commented out in `wrangler.jsonc`, change `SITE_URL` to match, and push. wrangler is pinned in
+`package-lock.json`; dependabot proposes its updates.
+
+Nothing has been deployed yet. [website-plan.md](website-plan.md) lists what is left.

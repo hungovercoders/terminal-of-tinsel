@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### For contributors
+
+- A workflow that builds the website and deploys it to Cloudflare on every push to `main`. It is
+  skipped until the repository has a `SITE_URL` variable and its Cloudflare secrets.
+
 ### Added
 
 - **Auntie Aerial's Night School**, in `course/`: 24 lessons that teach Rust by building Terminal of
