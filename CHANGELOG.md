@@ -7,19 +7,7 @@
 - A workflow that builds the website and deploys it to Cloudflare on every push to `main`. It is
   skipped until the repository has a `SITE_URL` variable and its Cloudflare secrets.
 
-### Added
-
-- **Auntie Aerial's Night School**, in `course/`: 24 lessons that teach Rust by building Terminal of
-  Tinsel from an empty folder, one for each night of advent. The website renders them.
-
-### For contributors
-
-- The README's demo GIFs and screenshots are recorded, in `docs/assets/`, and the website's home page
-  shows the first of them.
-- The demos are recorded with a small recorder of our own (`docs/demos/record.cjs` and
-  `pty_record.py`) in place of VHS, so that emoji are drawn two cells wide.
-
-## [0.2.0] - 2026-11-14
+## [0.2.0] - 2026-11-20
 
 The Midwinter Special goes interactive: an explorer, three games, a stocking to fill, community packs
 and eight new guests.
@@ -77,6 +65,8 @@ and eight new guests.
 - The advent calendar has ten new doors, so that only the Yule Cat and the Yule Lads appear twice.
   Lussi has the 13th, her own night, and the Wild Hunt the 21st, the longest.
 - Auntie Aerial has sign-off lines, and a special greeting on Christmas Eve and Christmas Day.
+- **Auntie Aerial's Night School**, in `course/`: 24 lessons that teach Rust by building Terminal of
+  Tinsel from an empty folder, one for each night of advent. The website renders them.
 
 ### For contributors
 
@@ -84,10 +74,14 @@ and eight new guests.
 - slopstopper's hygiene and security checks, with its pre-push hook and `task ss:*` tasks.
 - git-cliff for the changelog, dependabot for Cargo, npm and GitHub Actions, `.editorconfig` and
   `.gitattributes`.
-- VHS tapes and a render script for the README demos, in `docs/demos/`.
+- Tapes and a render script for the README demos, in `docs/demos/`.
 - A website generator in `site/`: a home page, the roster, a page per creature and the advent calendar,
   built from the same pack data as the program. It isn't deployed yet.
 - The program's modules are now a library (`src/lib.rs`) as well as a binary, so the website can use them.
+- The README's demo GIFs and screenshots are recorded, in `docs/assets/`, and the website's home page
+  shows the first of them.
+- The demos are recorded with a small recorder of our own (`docs/demos/record.cjs` and
+  `pty_record.py`) in place of VHS, so that emoji are drawn two cells wide.
 
 ### Changed
 
