@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Auntie Aerial's Night School**, in `course/`: 24 lessons that teach Rust by building Terminal of
+  Tinsel from an empty folder, one for each night of advent. The website renders them.
+
 ## [0.2.0] - 2026-11-14
 
 The Midwinter Special goes interactive: an explorer, three games, a stocking to fill, community packs

@@ -62,6 +62,7 @@ fn there_is_a_page_for_everything() {
         "static/site.js",
         "static/themes.css",
         "static/fonts/fonts.css",
+        "night-school/index.html",
     ] {
         assert!(out.join(path).is_file(), "{path} is missing");
     }
@@ -70,7 +71,12 @@ fn there_is_a_page_for_everything() {
         assert!(page.contains(&tinsel_site::esc(&c.name)), "{}", c.id);
         assert!(page.contains("<h2>The legend</h2>"), "{}", c.id);
     }
-    assert_eq!(html_files(&out).len(), vault.creatures.len() + 5);
+    // Five fixed pages, a page per creature, the course's index and 24 nights.
+    assert_eq!(html_files(&out).len(), vault.creatures.len() + 5 + 25);
+    for night in 1..=24 {
+        let path = format!("night-school/night-{night:02}.html");
+        assert!(out.join(&path).is_file(), "{path} is missing");
+    }
 }
 
 #[test]

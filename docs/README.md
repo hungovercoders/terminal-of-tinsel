@@ -10,6 +10,7 @@ come here when your task is not covered there. Read only the doc whose trigger m
 | changing the explorer, a game or any full-screen page | Read [ui.md](ui.md) for the files, the screen tests and plain mode |
 | adding a feature Terminal of Terror already has  | Read [parity.md](parity.md) for the checklist of what Terror has, the Christmas equivalent and the decisions taken |
 | picking up the next phase, or wondering why something was decided | Read [roadmap.md](roadmap.md) for the decisions taken with the maintainer, the dependencies vetted and the phases |
+| writing or correcting a Night School lesson      | Read [course/README.md](../course/README.md) for the programme; a lesson's format is the one every night follows, and the site renders it (see website.md) |
 | changing the website                             | Read [website.md](website.md) for how the site is built, tested and styled |
 | deploying the website, or adding what it still lacks | Read [website-plan.md](website-plan.md) for the checklist against Terror's site and what is left |
 | writing about the port, or wondering why a thing is done the Rust way | Read [go-to-rust.md](go-to-rust.md) for the stack, the shared ideas and what phases 1 to 4 taught about Go compared with Rust |

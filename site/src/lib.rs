@@ -10,6 +10,7 @@
 //! ```
 
 mod colour;
+mod course;
 mod html;
 mod pages;
 
@@ -20,6 +21,7 @@ use std::path::{Path, PathBuf};
 use terminal_of_tinsel::creatures::{Creature, Vault};
 
 pub use colour::{BACKGROUND, PANEL, contrast, readable};
+pub use course::Course;
 pub use html::esc;
 
 /// Where the site will live. The canonical links, the sitemap and llms.txt
@@ -66,7 +68,7 @@ impl Page {
 }
 
 /// Every page of the site, in the order they are written.
-pub fn pages(vault: &Vault) -> Vec<Page> {
+pub fn pages(vault: &Vault, course: &Course) -> Vec<Page> {
     let mut all = vec![
         pages::home(vault),
         pages::roster(vault),
@@ -75,6 +77,7 @@ pub fn pages(vault: &Vault) -> Vec<Page> {
         pages::not_found(),
     ];
     all.extend((0..vault.creatures.len()).map(|i| pages::creature(vault, i)));
+    all.extend(course.pages());
     all
 }
 
@@ -82,7 +85,8 @@ pub fn pages(vault: &Vault) -> Vec<Page> {
 pub fn build(cfg: &Config) -> io::Result<usize> {
     let vault = Vault::load();
     let base = with_slash(&cfg.base_url);
-    let pages = pages(&vault);
+    let course = Course::load(&manifest("../course"))?;
+    let pages = pages(&vault, &course);
     for page in &pages {
         write(&cfg.out.join(&page.path), &html::shell(page, &base))?;
     }
@@ -94,7 +98,10 @@ pub fn build(cfg: &Config) -> io::Result<usize> {
     fs::copy(manifest("../public/_headers"), cfg.out.join("_headers"))?;
     write(&cfg.out.join("sitemap.xml"), &sitemap(&pages, &base))?;
     write(&cfg.out.join("robots.txt"), &robots(&base))?;
-    write(&cfg.out.join("llms.txt"), &llms_txt(&vault, &base))?;
+    write(
+        &cfg.out.join("llms.txt"),
+        &(llms_txt(&vault, &base) + &course.llms_txt(&base)),
+    )?;
     Ok(pages.len())
 }
 

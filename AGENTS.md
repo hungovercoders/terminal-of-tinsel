@@ -36,6 +36,7 @@ src/rng.rs         SplitMix64, pinned so daily facts never change between releas
 src/error.rs       TinselError and its stable codes
 packs/             Built-in data: <pack>/pack.json, <pack>/<id>.json, <pack>/<id>.txt (portrait), advent.json
 man/ completions/  Generated man pages and completion scripts, shipped in the release archives
+course/            Auntie Aerial's Night School: 24 lessons that build the program, rendered by site/
 site/              The website generator, a second crate: pages built from the same packs (docs/website.md)
 tests/cli.rs       End-to-end tests of the binary
 ```

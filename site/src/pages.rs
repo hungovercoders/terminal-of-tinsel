@@ -193,6 +193,11 @@ pub fn home(vault: &Vault) -> Page {
 </section>
 
 <section class="prose">
+  <h2>Night School</h2>
+  <p>Want to know how the picture gets made? <a href="night-school/index.html">Auntie Aerial's Night School</a> is a free course that teaches Rust by building this program from an empty folder, one lesson for each night of advent.</p>
+</section>
+
+<section class="prose">
   <h2>Every command</h2>
   <table class="commands">
     <thead><tr><th scope="col">Command</th><th scope="col">What it does</th></tr></thead>
