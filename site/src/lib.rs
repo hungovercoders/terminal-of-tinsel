@@ -95,6 +95,8 @@ pub fn build(cfg: &Config) -> io::Result<usize> {
         &cfg.out.join("static/themes.css"),
         &themes_css(&vault.creatures),
     )?;
+    // The README's recordings, for the home page.
+    copy_dir(&manifest("../docs/assets"), &cfg.out.join("assets"))?;
     fs::copy(manifest("../public/_headers"), cfg.out.join("_headers"))?;
     write(&cfg.out.join("sitemap.xml"), &sitemap(&pages, &base))?;
     write(&cfg.out.join("robots.txt"), &robots(&base))?;

@@ -1,14 +1,10 @@
-# Recorded by docs/demos/render.sh, which fills in the theme from theme.json.
-# Do not run vhs on this file directly.
-Output docs/demos/.frames/mash/
-Set Shell bash
+# Played by docs/demos/render.sh, which draws it with the theme in theme.json.
+# Written in the language of VHS, but not played by it: see render.sh.
 Set FontSize 15
 Set Width 1000
-Set Height 760
+Set Height 820
 Set Padding 24
 Set TypingSpeed 60ms
-Set Theme @theme.json
-Set Framerate 50
 
 Sleep 400ms
 Type 'terminal-of-tinsel mash krampus "yule cat"'

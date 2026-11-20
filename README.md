@@ -50,6 +50,8 @@ cargo install --locked --git https://github.com/hungovercoders/terminal-of-tinse
 
 ## 🌟 Your first night
 
+![The Midwinter Special: Channel 25 tunes in, then the explorer pages through the guests](docs/assets/hero.gif)
+
 ```bash
 terminal-of-tinsel                   # Auntie Aerial says hello
 terminal-of-tinsel creature          # tune in to the Midwinter Special
@@ -129,6 +131,8 @@ A near miss gets a suggestion: `creature krampas` asks whether you meant Krampus
 
 ### The Christmas Cracker Quiz
 
+![Three quiz questions answered, one of them wrongly](docs/assets/quiz.gif)
+
 Questions built from the creature data: facts, lines from the page, first appearances, film credits and myth checks. Every answer explains itself, so you learn as you play. Finish with a rank from **Stocking Filler** to **Star of the Tree**.
 
 ```bash
@@ -142,6 +146,8 @@ Answer with `1`-`4` or `a`-`d`, or move with `↑` `↓` and press `enter`.
 
 ### Guess the Guest
 
+![A portrait appearing as the frost clears, then a correct guess](docs/assets/guess.gif)
+
 A portrait is hidden behind a frosted window. Press `space` to clear a little more frost (clues appear as it goes), but every clearing costs points: 100 through the thickest frost, down to 20 once the window is clear.
 
 ```bash
@@ -150,6 +156,8 @@ terminal-of-tinsel guess --rounds 8
 ```
 
 ### The Snowball Showdown
+
+![Krampus against the Yule Cat over three rounds](docs/assets/mash.gif)
 
 Three rounds, no rules, no refunds. Two creatures settle it over strength, speed, cunning and dread, decided by their stat cards and the roll of a die.
 
@@ -162,6 +170,8 @@ terminal-of-tinsel mash "yule cat" gryla --fast   # skip the dramatic pauses
 The quiz and Guess the Guest need a terminal. With `--json` all three print their data instead: the questions with their answers, the rounds, or the whole showdown.
 
 ## 🧦 The Stocking
+
+![The stocking: four creatures caught, six badges earned](docs/assets/stocking.png)
 
 Answer three questions about a creature correctly, in the quiz or Guess the Guest, and it goes in your **stocking**. The stocking keeps your collection, your badges and your records.
 
@@ -203,6 +213,8 @@ Everything here is worked out offline: the moon, the feasts, the film anniversar
 
 ### 🎟️ Tonight's double bill
 
+![A cinema ticket for the night's two features](docs/assets/tonight.png)
+
 A cinema ticket for tonight's Channel 25 double bill. The line-up changes every night, and from 1 to 24 December the guest behind that night's advent door tops the bill.
 
 ```bash
@@ -213,6 +225,8 @@ terminal-of-tinsel tonight --date 2026-12-24   # what's on for Christmas Eve?
 
 ### 🎄 The countdown
 
+![Twelve sleeps until Christmas in big digits, with the moon and the next special night](docs/assets/countdown.png)
+
 `countdown` draws the tree and the sleeps until Christmas, tonight's advent door, tonight's moon and the next special night in the diary, with notes for the nights that matter: Krampusnacht, St Nicholas Day, the arrival of each Yule Lad, the anniversary of *A Christmas Carol*, the winter solstice, a full moon, the Twelve Days and Twelfth Night.
 
 ```bash
@@ -221,6 +235,8 @@ terminal-of-tinsel countdown --date 2026-12-24
 ```
 
 ### 📅 The advent calendar
+
+![The advent calendar on 13 December, with door 13 open](docs/assets/advent.png)
 
 `advent` shows all 24 doors, opening as December goes on, with tonight's guest in full. The same guest tells the Fact of the Night and tops tonight's bill, so every ritual agrees on who's at the door.
 
@@ -231,6 +247,8 @@ terminal-of-tinsel advent --date 2026-12-12      # pretend it's another day
 
 ### ✨ The Fact of the Night
 
+![The Fact of the Night for 19 December](docs/assets/random.png)
+
 The same fact for everyone all day, and a new one tomorrow. It notices the special nights too: on 31 October it'll remind you that *Scrooge* opened in 1951.
 
 ```bash
@@ -240,6 +258,8 @@ terminal-of-tinsel random                      # or just any old fact
 ```
 
 ## 📜 The roster
+
+![The list of all 22 creatures, by pack](docs/assets/list.png)
 
 | Pack | Creatures |
 |------|-----------|

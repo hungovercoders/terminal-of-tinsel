@@ -102,14 +102,14 @@ This creates a pack in your config directory (`$TERMINAL_OF_TINSEL_HOME/packs` i
 
 ## Recording the demos
 
-The README's GIFs and screenshots are recorded from scripts in [`docs/demos/`](docs/demos): one [VHS](https://github.com/charmbracelet/vhs) `.tape` file per demo, and `docs/demos/render.sh` to run them.
+The README's GIFs and screenshots are recorded from scripts in [`docs/demos/`](docs/demos): one `.tape` file per demo, written in the language of [VHS](https://github.com/charmbracelet/vhs), and `docs/demos/render.sh` to play them. VHS itself isn't used: `pty_record.py` plays a tape into a real shell, and `record.cjs` draws the frames with xterm.js in a headless browser, which gets emoji widths right where older terminals don't.
 
 ```bash
 docs/demos/render.sh              # everything
 docs/demos/render.sh hero quiz    # just some
 ```
 
-You'll need `cargo`, `vhs`, `ffmpeg`, **ttyd 1.7.7 or newer** and **Noto Color Emoji**. Older ttyd builds draw emoji one cell wide, which knocks every box border out of line. Record on Linux: the recordings draw emoji with the system's font, and Noto's licence lets its glyphs ship in the GIFs while Apple's and Microsoft's don't. The script builds the program, uses a scratch home directory, sets `TERMINAL_OF_TINSEL_SEED` to 25 so the keys a tape presses always get the same result, and writes to `docs/assets/`. Look at the results before committing them.
+You'll need `cargo`, `python3`, `node` with [Playwright](https://playwright.dev) and its Chromium, `ffmpeg`, the **JetBrains Mono** font and **Noto Color Emoji**. Record on Linux: the recordings draw emoji with the system's font, and Noto's licence lets its glyphs ship in the GIFs while Apple's and Microsoft's don't. The script builds the program, uses a scratch home directory, sets `TERMINAL_OF_TINSEL_SEED` to 25 so the keys a tape presses always get the same result, and writes to `docs/assets/`. Look at the results before committing them: the quiz tape's answers move when the roster changes. The recorder understands only the tape commands the demos use (`Type`, `Enter`, `Tab`, `Space`, the arrows, `Sleep` and the size settings).
 
 If you change the seed or the creature data, check that each tape still shows what it should.
 
