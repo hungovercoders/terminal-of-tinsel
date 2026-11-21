@@ -38,7 +38,7 @@ jobs:
         env:
           SITE_URL: ${{ vars.SITE_URL }}
         run: cargo run --locked --release -p tinsel-site -- --out dist --base-url "$SITE_URL"
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
