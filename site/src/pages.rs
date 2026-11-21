@@ -72,44 +72,52 @@ terminal-of-tinsel tonight           # tonight's Christmas double bill
 terminal-of-tinsel countdown         # sleeps until Christmas
 terminal-of-tinsel advent            # open the advent calendar";
 
-/// What's on: a title, the command that starts it and what it is.
-const PROGRAMMES: [(&str, &str, &str); 8] = [
+/// What's on: an emoji, a title, the command that starts it and what it is.
+const PROGRAMMES: [(&str, &str, &str, &str); 8] = [
     (
+        "📺",
         "The Midwinter Special",
         "creature",
         "Channel 25 tunes in through static and snow, then a gallery of every guest and a page each: the legend, an original portrait, Myth or Fact?, powers, quotations and their night at the pictures. Arrow keys or h and l to change guest, / to search.",
     ),
     (
+        "🎉",
         "The Christmas Cracker Quiz",
         "quiz",
         "Multiple-choice questions made from the creature data, with every answer explained, and a rank at the end from Stocking Filler to Star of the Tree.",
     ),
     (
+        "🔍",
         "Guess the Guest",
         "guess",
         "A portrait behind a frosted window. Clear more frost for more clues, at the cost of points.",
     ),
     (
+        "🥊",
         "The Snowball Showdown",
         "mash",
         "Three rounds between any two creatures, decided by their stats and a die. The Yule Cat against Krampus has been settled several ways.",
     ),
     (
+        "🧦",
         "The Stocking",
         "stocking",
         "Three right answers about a creature put it in your stocking. There are badges to earn and records to beat, saved in a file on your own machine.",
     ),
     (
+        "🎟",
         "Tonight's double bill",
         "tonight",
         "A cinema ticket for the night's two features, the same all day and different tomorrow.",
     ),
     (
+        "🎄",
         "The countdown",
         "countdown",
         "The sleeps until Christmas in big digits, with tonight's moon and the next special night of the season.",
     ),
     (
+        "🎁",
         "Packs",
         "packs",
         "The roster comes in packs, and you can write your own: a folder of JSON files in your config directory joins every command.",
@@ -124,9 +132,9 @@ pub fn home(vault: &Vault) -> Page {
         .collect();
     let programmes: String = PROGRAMMES
         .iter()
-        .map(|(title, command, text)| {
+        .map(|(emoji, title, command, text)| {
             format!(
-                "<li class=\"programme\"><h3>{}</h3><p>{}</p><p class=\"run\"><code>terminal-of-tinsel {}</code></p></li>",
+                "<li class=\"programme\"><h3><span class=\"icon\" aria-hidden=\"true\">{emoji}</span> {}</h3><p>{}</p><p class=\"run\"><code>terminal-of-tinsel {}</code></p></li>",
                 esc(title),
                 esc(text),
                 esc(command)
@@ -158,6 +166,7 @@ pub fn home(vault: &Vault) -> Page {
         .collect();
     let body = format!(
         r##"<section class="hero">
+  <p class="star" aria-hidden="true">★</p>
   <p class="kicker">{channel} · The Midwinter Special</p>
   <h1>Terminal of Tinsel</h1>
   <p class="tagline">The creatures of Christmas folklore, live in your terminal.</p>
@@ -165,8 +174,9 @@ pub fn home(vault: &Vault) -> Page {
   <p class="cta-row"><a class="btn" href="#install">Unwrap it</a> <a class="btn ghost" href="creatures/index.html">Meet the {count} guests</a></p>
 </section>
 
-<figure class="screen">
+<figure class="screen tv">
   <img src="assets/hero.gif" width="1148" height="848" alt="A recording of the program: Channel 25 tunes in through falling snow, then the explorer pages through Krampus, the Yule Cat and the Tomte, searches for porridge and signs off.">
+  <figcaption><span class="tv-dot"></span>{channel} · live from the top of the tree</figcaption>
 </figure>
 
 <section class="prose">
