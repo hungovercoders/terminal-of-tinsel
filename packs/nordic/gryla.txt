@@ -1,16 +1,19 @@
-          .-"""""""-.
-        .'  /\   /\  '.
-       /   /  \_/  \   \
-      |   ( o )  ( o )  |
-      |       /  \      |
-      |      (    )     |
-       \    .-----.    /
-     .--'.  \v v v/  .'--.
-    /     '-._____.-'     \
-   /   .---.       .---.   \
-  (   /  x  \     /     \   )
-   \  \ x x /     \_   _/  /
-    '. '---'    .---'-'---.
-      \         | ~ ~ ~ ~ |
-       '.       \  o  o  /
-         '-------'------'
+      xxx                          xxx
+       xxx  x  x  x      x  x  x  xxx
+       xxxx  x  x  x    x  x  x  xxxx
+        xxxx   xxxxxxxxxxxxxx   xxxx
+        xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxx
+         xxxxxxxxx        xxxxxxxxx
+        xxxxxxx              xxxxxxx
+       xxxxxxxxxxx        xxxxxxxxxxx
+       xxxxxxxx xx xxxxxx xx xxxxxxxx
+       xxxxxx xxx  xxxxxx  xxx xxxxxx
+       xxxxx       xxxxxx       xxxxx
+       xxxxxx x   xxxxxxxx   x xxxxxx
+       xxxxxx     xxxxxxxx     xxxxxx
+        xxxxxx                xxxxxx
+         xxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxx xx  xx xxxxxxxx
+  x x x x x xxxxxxxxxxxxxxxxxxxx x x x x x
+   x   x   x   xxxxxxxxxxxxxx   x   x   x

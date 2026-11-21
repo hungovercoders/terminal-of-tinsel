@@ -175,7 +175,7 @@ pub fn home(vault: &Vault) -> Page {
 </section>
 
 <figure class="screen tv">
-  <img src="assets/hero.gif" width="1148" height="748" alt="A recording of the program: Channel 25 tunes in through falling snow, then the explorer pages through Krampus, the Yule Cat and the Tomte, searches for porridge and signs off.">
+  <img src="assets/hero.gif" width="1148" height="848" alt="A recording of the program: Channel 25 tunes in through falling snow, then the explorer pages through Krampus, the Yule Cat and the Tomte, searches for porridge and signs off.">
   <figcaption><span class="tv-dot"></span>{channel} · live from the top of the tree</figcaption>
 </figure>
 

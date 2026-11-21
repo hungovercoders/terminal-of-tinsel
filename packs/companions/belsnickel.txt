@@ -1,16 +1,19 @@
-          ________
-        _/ ' ' ' '\_
-       /_'_'_'_'_'_'\
-       |  _      _  |
-       | (o)    (o) |
-       |     /\     |          \|/
-      /|   '----'   |\          |/
-     //\ \\\\\///// /\\        \|
-    ///  \\\\\\////  \\\        |/
-         /\\\\///\     \\__     |
-        / /      \ \    \__)====|
-       / /  o  o  \ \
-      (_/   o  o   \_)
-        |    ..    |
-        |__________|
-         (__)  (__)
+              xxxxxxxxxxxxxxxx
+            xxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxx
+         xxxxxxxxxxxxxxxxxxxxxxxxxx
+    x    xxxxxxxxxxxxxxxxxxxxxxxxxx    x
+  x x    xxxxxxxxxxxxxxxxxxxxxxxxxx    x x
+  x x     xxxxxxxxxxxxxxxxxxxxxxxx     x x
+x xxx   x x                      x x   xxx x
+ x x x  xxx   xxxx        xxxx   xxx  x x x
+ xxx x  xxx    xx          xx    xxx  x xxx
+  xx x  xxx        xxxxxx        xxx  x xx
+  xx x  xxx        xxxxxx        xxx  x xx
+   xx   xxxxxxxxxxxxxxxxxxxxxxxxxxxx   xx
+    x     xxxxxxx          xxxxxxx     x
+    x     xxxx xxxxxxxxxxxxxx xxxx     x
+    x       xx xxx xxxxxx xxx xx       x
+    xx        xxxx xxxxxx xxxx        xx
+     x         xxx xxxxxx xxx         x
+     x          xx xxxxxx xx          x

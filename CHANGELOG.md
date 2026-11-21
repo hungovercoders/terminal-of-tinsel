@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Every portrait is redrawn** in the style of Terminal of Terror's: bold pictures stamped out of the
+  letter `x`, in place of the thin line drawings.
+
 ### For contributors
 
 - A workflow that builds the website and deploys it to Cloudflare on every push to `main`. It is

@@ -1,11 +1,19 @@
-         *            *
-        /_\    *     /_\
-       (o o)  /_\   (o o)     *
-   *    \-/  (o o)   \~/     /_\
-  /_\  _/|\_  \o/  _/|\_    (o o)
- (o o)  | |  _/|\_  | |      \-/
-  \_/  _| |_  | |  _| |_   _/|\_
- _/|\_      _/   \_          | |
-___|_|_____________________._| |_
-   '  .    '    .   '   .    '
- .    '  .    '   .    '   .
+                     xx
+                    xxxx
+                   xxxxxx
+        x         xxxxxxxx          x
+       xxx      xxxxxxxxxxxxx      xxx
+      xxxxx                       xxxxx
+     xxxxxxx        x   x        xxxxxxx
+   xxxxxxxxxxx       xxx       xxxxxxxxxxx
+                 xxxxxxxxxxx
+      x   x       xxxxxxxxxx      x   x
+       xxx         xxxxxxxx        xxx
+    xxxxxxxxx       xxxxxx      xxxxxxxxx
+     xxxxxxx        xxxxx        xxxxxxx
+      xxxxx          xxx          xxxxx
+       xxx            x            xxx
+        x                           x
+   xx xx xx                     xx xx xx
+   xxxxxxxx                     xxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

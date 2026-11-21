@@ -1,12 +1,20 @@
-        /\                     ####
-   |\  /  \  /|              ########
-   | \/ .. \/ |             ##########
-   |  ( oo )  |              ########
-    \  \vv/  /                 ||||
-     '-.__.-'   /|/|/|/|/|/|/|/||||
-     /|    |\==<_______________||||
-    / |    | \                 ||||
-   (  |____|  )                ||||
-      /    \                   ||||
-     /  /\  \                  ||||
-   _/__/  \__\_          ______||||______
+             xx              xx
+             xxx            xxx
+             xxx            xxx
+ xx               xxxxxxxx               xx
+ xxxx          xxxxxxxxxxxxxx          xxxx
+  xx xxx     xxxxxx      xxxxxx     xxx xx
+  xxx  xxx  xxxx            xxxx  xxx  xxx
+   xxx  xx xxxxxxx        xxxxxxx xx  xxx
+   xxxx xxxxxxx xx        xx xxxxxxx xxxx
+      xxxxxxxxxxxx        xxxxxxxxxxxx
+        xxxxx                  xxxxx
+          xxx       xxxx       xxx
+          xxxx                xxxx
+           xxxxxxxxxxxxxxxxxxxxxx
+            xxxx x x xx x x xxxx
+             xxxxxxxxxxxxxxxxxx
+               xxxxxxxxxxxxxx
+                  xxxxxxxx
+              x x x x  x x x x
+              xxxxxxxxxxxxxxxx

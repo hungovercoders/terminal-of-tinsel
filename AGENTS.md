@@ -49,7 +49,8 @@ tests/cli.rs       End-to-end tests of the binary
 - Avoid emoji that need a variation selector: terminals disagree on their width and break boxes. The tests
   check every creature's emoji is two columns wide.
 - Portraits are original ASCII art in printable ASCII only, at most 46 columns by 20 lines, with no
-  trailing spaces. The tests check it: a double-width character would misalign the portrait.
+  trailing spaces. Built-in ones match Terror's style: `x` and spaces only, on a 44-column grid. The
+  tests check it: a double-width character would misalign the portrait.
 - Explorer keys stay consistent with Terror's (h/l and arrows, j/k, tab and 1-7, r, /, g, ?, q). Screens
   that take over the terminal call `require_terminal` first, and fail with the `no-terminal` code.
 - Every random choice goes through `Rng` (`src/rng.rs`), seeded by `TERMINAL_OF_TINSEL_SEED`, so a run
@@ -82,7 +83,7 @@ DUMP=1 cargo test dump_ -- --nocapture   # print sample explorer and game screen
 ## Common tasks
 
 - **Adding a creature:** add `packs/<pack>/<id>.json` with every field (`film` only where there's a
-  classic screen outing, with a `releaseDate` you have checked), 5+ accurate facts and 3+ myths, draw `packs/<pack>/<id>.txt`, add the id to
+  classic screen outing, with a `releaseDate` you have checked), 5+ accurate facts and 3+ myths, draw `packs/<pack>/<id>.txt` in the x-stamp style, add the id to
   `order` in that pack's `pack.json`, then `cargo test`. Update the roster table and badge count in the README.
 - **Adding a pack:** create `packs/<pack>/pack.json` and add the id to `PACK_ORDER` in `src/creatures.rs`.
 - **Changing the explorer:** state and keys go in `src/explorer/model.rs`, drawing in `view.rs`. Pages

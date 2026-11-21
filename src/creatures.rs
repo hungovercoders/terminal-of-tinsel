@@ -828,7 +828,18 @@ mod tests {
                     .all(|ch| ch == '\n' || (' '..='~').contains(&ch)),
                 "{id}: portraits use printable ASCII only"
             );
+            // The built-in portraits share a style with Terminal of Terror's:
+            // stamped out of the letter x on a 44-column grid. A community
+            // pack may draw with any printable ASCII.
+            assert!(
+                c.ascii.chars().all(|ch| matches!(ch, 'x' | ' ' | '\n')),
+                "{id}: built-in portraits are drawn with x and spaces only"
+            );
             let lines: Vec<&str> = c.ascii.lines().collect();
+            assert!(
+                lines.iter().all(|l| l.len() <= 44),
+                "{id}: built-in portraits are at most 44 columns"
+            );
             assert!(lines.len() <= ART_LINES, "{id}: portrait is over 20 lines");
             assert!(is_slug(id), "{id}: ids are lowercase slugs");
             assert!(

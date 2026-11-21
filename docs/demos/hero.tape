@@ -2,7 +2,7 @@
 # Written in the language of VHS, but not played by it: see render.sh.
 Set FontSize 15
 Set Width 1100
-Set Height 700
+Set Height 800
 Set Padding 24
 Set TypingSpeed 60ms
 

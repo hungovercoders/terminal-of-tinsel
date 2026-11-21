@@ -36,7 +36,7 @@ Creatures live in **packs** under `packs/<pack-id>/`. The built-in packs are `co
 
 - `pack.json`: the pack's `id`, `name`, `description` and the display `order` of creature ids
 - `<creature-id>.json`: one file per creature
-- `<creature-id>.txt`: the creature's ASCII portrait
+- `<creature-id>.txt`: the creature's portrait. The built-in ones share a style with Terminal of Terror's: a bold picture stamped out of the letter `x` (and spaces), at most 44 columns by 20 lines, usually a face or figure seen from the front. A community pack may use any printable ASCII
 
 A creature file looks like this (see `packs/dickens/marley.json` for a full example):
 
