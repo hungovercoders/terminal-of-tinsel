@@ -91,9 +91,11 @@ pub fn shell(page: &Page, base: &str) -> String {
     <a href="{REPO}" rel="noopener">GitHub</a>
   </nav>
 </header>
+<div class="lights" aria-hidden="true"></div>
 <main id="main">
 {body}
 </main>
+<div class="treeline" aria-hidden="true"></div>
 <footer class="signoff">
   <p class="host-line">📺 <em>"{sign_off}"</em></p>
   <p class="small">{NAME} is free software, dedicated to the public domain under CC0. <a href="{REPO}">Source on GitHub</a> · <a href="{REPO}/releases/latest">Releases</a> · <a href="{REPO}/blob/main/CONTRIBUTING.md">Contribute a creature</a> · <a href="{root}privacy.html">Privacy</a><br>No cookies, no tracking scripts, no per-request logs.<br>{host} and {channel} are fictional. The creatures are folklore, and the quotations are from books long out of copyright.</p>

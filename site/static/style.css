@@ -412,3 +412,295 @@ body.engraving, .card.engraving { --primary: #D9B98A; --accent: #B89B74; }
   text-align: center;
 }
 .signoff .small { max-width: 44rem; margin: 1rem auto 0; }
+
+/* ------------------------------------------------------------------------
+   Christmas dress. Everything below is decoration laid over the layout
+   above: lights, snow, foil, ribbons and a treeline. None of it carries
+   meaning, and all of the movement stops for prefers-reduced-motion.
+   ------------------------------------------------------------------------ */
+
+:root {
+  --berry: #B3121F;
+  --cream: #FFF6E5;
+  --pine: #1B4D3E;
+}
+
+/* A warm glow from the top of the tree, and firelight low on the left. */
+body {
+  background:
+    radial-gradient(ellipse 70% 40% at 50% -5%, rgba(233, 196, 106, 0.16), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 0% 35%, rgba(230, 57, 70, 0.10), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 100% 60%, rgba(82, 183, 136, 0.10), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+/* Proper snow: three depths of flake, falling at three speeds and drifting. */
+.snow {
+  opacity: 0.85;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.8) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 0 1px, transparent 2px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.4) 0 1px, transparent 2px);
+  background-size: 310px 310px, 220px 220px, 130px 130px, 90px 90px;
+  background-position: 40px 0, 120px 80px, 20px 40px, 60px 10px;
+  animation: snowfall 28s linear infinite;
+}
+@keyframes snowfall {
+  to { background-position: 100px 620px, 60px 740px, 80px 560px, 30px 550px; }
+}
+
+/* A string of fairy lights under the top bar: a wire, bulbs in four colours,
+   and a second set that glows in turn. */
+.lights {
+  position: relative;
+  height: 30px;
+  margin-bottom: -8px;
+  background-image:
+    radial-gradient(ellipse 5px 7px at 20px 15px, #E63946 99%, transparent),
+    radial-gradient(ellipse 5px 7px at 60px 20px, #E9C46A 99%, transparent),
+    radial-gradient(ellipse 5px 7px at 100px 15px, #52B788 99%, transparent),
+    radial-gradient(ellipse 5px 7px at 140px 20px, #8ECAE6 99%, transparent),
+    radial-gradient(ellipse 80px 16px at 40px 0, transparent 97%, #3A5A50 98% 100%, transparent 101%),
+    radial-gradient(ellipse 80px 16px at 120px 0, transparent 97%, #3A5A50 98% 100%, transparent 101%);
+  background-size: 160px 30px;
+  background-repeat: repeat-x;
+}
+.lights::before, .lights::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-size: 160px 30px;
+  background-repeat: repeat-x;
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+.lights::before {
+  background-image:
+    radial-gradient(circle 14px at 20px 15px, rgba(230, 57, 70, 0.55), transparent),
+    radial-gradient(circle 14px at 100px 15px, rgba(82, 183, 136, 0.55), transparent);
+}
+.lights::after {
+  background-image:
+    radial-gradient(circle 14px at 60px 20px, rgba(233, 196, 106, 0.6), transparent),
+    radial-gradient(circle 14px at 140px 20px, rgba(142, 202, 230, 0.55), transparent);
+  animation-delay: 1.3s;
+}
+@keyframes twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 1; } }
+
+/* The top bar picks up a candy-cane edge. */
+.topbar {
+  border-bottom: 0;
+  background: rgba(10, 22, 19, 0.94);
+  box-shadow: 0 4px 0 0 var(--berry), 0 8px 0 0 var(--cream), 0 12px 0 0 var(--berry);
+  position: relative;
+  z-index: 1;
+}
+.lights { margin-top: 12px; }
+.brand-name { color: var(--cream); }
+
+/* The hero: a star on top, a title in gold foil, a ribbon underneath. */
+.hero { padding-top: 1rem; }
+.star {
+  margin: 0;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--gold);
+  text-shadow: 0 0 18px rgba(233, 196, 106, 0.9), 0 0 44px rgba(233, 196, 106, 0.5);
+  animation: glow 3s ease-in-out infinite;
+}
+@keyframes glow { 50% { text-shadow: 0 0 26px rgba(233, 196, 106, 1), 0 0 70px rgba(233, 196, 106, 0.7); } }
+
+.hero h1 {
+  font-size: clamp(2.8rem, 9vw, 5.2rem);
+  color: var(--gold);
+  background: linear-gradient(180deg, #FFF3C4 0%, #F4D06F 38%, #C9973A 62%, #F7E3A1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.45));
+}
+.hero .tagline { color: var(--cream); }
+.hero .tagline::before, .hero .tagline::after { content: "❄"; color: #BFE3F2; font-style: normal; margin: 0 0.6em; font-size: 0.8em; }
+.hero .kicker { color: #F2A7AD; }
+
+.host-line {
+  border-left: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(27, 77, 62, 0.85), rgba(20, 40, 35, 0.95));
+  box-shadow: inset 0 0 0 1px rgba(233, 196, 106, 0.45), 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Buttons: berry red with a gold edge, like a wax seal. */
+.btn {
+  background: var(--berry);
+  border-color: var(--gold);
+  color: var(--cream);
+  border-radius: 999px;
+  padding: 0.7rem 1.5rem;
+  box-shadow: 0 6px 0 #6E0B13, 0 12px 22px rgba(0, 0, 0, 0.35);
+}
+.btn:hover { background: #D11A2A; border-color: var(--cream); color: var(--cream); }
+.btn.ghost { background: var(--pine); color: var(--cream); box-shadow: 0 6px 0 #0E2E25, 0 12px 22px rgba(0, 0, 0, 0.35); }
+.btn.ghost:hover { background: #24614E; color: var(--cream); }
+
+/* The recording sits in a television set, aerial and all. */
+.tv {
+  position: relative;
+  margin-top: 4.5rem;
+  padding: 1.1rem 1.1rem 0.4rem;
+  border-radius: 26px;
+  background: linear-gradient(160deg, #7A2A1B, #4A160E 60%, #2E0C07);
+  box-shadow: inset 0 0 0 2px rgba(233, 196, 106, 0.5), 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+.tv::before, .tv::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 4px;
+  height: 64px;
+  border-radius: 2px;
+  background: linear-gradient(#F4D06F, #8D6A22);
+  transform-origin: bottom center;
+}
+.tv::before { transform: rotate(-32deg); }
+.tv::after { transform: rotate(32deg); }
+.tv img { border: 3px solid #120806; border-radius: 16px; }
+.tv figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0 0.5rem;
+  color: #F7E3A1;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.tv-dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--red); box-shadow: 0 0 10px var(--red); animation: blink 2.4s ease-in-out infinite; }
+
+/* Section headings wear a star and a strand of tinsel. */
+h2 { position: relative; padding-bottom: 0.45rem; }
+h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 5.5rem;
+  height: 4px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(90deg, var(--red) 0 10px, var(--gold) 10px 20px, var(--green) 20px 30px);
+}
+main > section > h2::before, .prose > h2::before { content: "✦ "; color: var(--gold); }
+
+/* What's on: each programme is a parcel with a candy-cane ribbon. */
+.programme {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(233, 196, 106, 0.35);
+  border-top: 0;
+  padding-top: 1.5rem;
+  background: linear-gradient(180deg, #17332C, #122520);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease;
+}
+.programme::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 9px;
+  background: repeating-linear-gradient(135deg, var(--berry) 0 11px, var(--cream) 11px 22px);
+}
+.programme:hover { transform: translateY(-4px); }
+.programme .icon { font-size: 1.5rem; margin-right: 0.2rem; }
+.programme code { background: rgba(0, 0, 0, 0.35); color: #F7E3A1; }
+
+/* Creature cards: wrapped in their own colour, tied with a bow. */
+.card a {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 0;
+  border-top: 6px solid var(--primary);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #17302A, #112420);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card a::after {
+  content: "🎀";
+  position: absolute;
+  top: -1.05rem;
+  right: 0.9rem;
+  font-size: 1.4rem;
+}
+.card a:hover { transform: translateY(-4px) rotate(-0.4deg); box-shadow: 0 18px 34px rgba(0, 0, 0, 0.45); }
+.card-emoji { font-size: 2.2rem; }
+
+/* A creature's portrait hangs in a gold frame. */
+.portrait {
+  border: 0;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 2px #120806, 0 0 0 6px #B88A2E, 0 0 0 8px #6E4F12, 0 18px 40px rgba(0, 0, 0, 0.5);
+  margin: 2rem 0.6rem;
+}
+.myth { border-color: rgba(233, 196, 106, 0.3); }
+.myth summary::marker { color: var(--gold); }
+
+/* The advent calendar: doors in berry and pine, numbered in gold. */
+.doors { gap: 1.1rem; }
+.door {
+  border: 2px dashed rgba(247, 227, 161, 0.75);
+  border-radius: 10px;
+  background: linear-gradient(160deg, #A1121E, #6E0B13);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+  color: var(--cream);
+}
+.doors li:nth-child(even) .door { background: linear-gradient(160deg, #1F5C49, #123A2E); }
+.doors li:nth-child(3n) .door { transform: rotate(0.6deg); }
+.doors li:nth-child(4n + 1) .door { transform: rotate(-0.7deg); }
+.door-number {
+  color: #FBE7A6;
+  font-size: 2.8rem;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+.door a { color: #FBE7A6; }
+.door[open] { background: var(--panel); border-style: solid; }
+.doors li:nth-child(even) .door[open] { background: var(--panel); }
+.door[open] .door-number { font-size: 1.6rem; }
+.door.tonight { box-shadow: 0 0 0 4px var(--gold), 0 0 34px rgba(233, 196, 106, 0.7); }
+
+/* Terminal text keeps its glass, with a gold rim. */
+.code, .lesson pre { border-color: rgba(233, 196, 106, 0.3); box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3); }
+.commands tbody tr:hover { background: rgba(233, 196, 106, 0.06); }
+
+/* The foot of the page: pines on a snowy hill, then the sign-off. */
+.treeline {
+  height: 120px;
+  margin-top: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 120' preserveAspectRatio='none'%3E%3Cg fill='%23173F33'%3E%3Cpath d='M40 96 62 40 84 96z'/%3E%3Cpath d='M150 100 180 22 210 100z'/%3E%3Cpath d='M260 98 278 52 296 98z'/%3E%3Cpath d='M350 100 384 30 418 100z'/%3E%3C/g%3E%3Cg fill='%23F3F8F5'%3E%3Cpath d='M62 40 54 60 62 55 70 60z'/%3E%3Cpath d='M180 22 169 50 180 43 191 50z'/%3E%3Cpath d='M278 52 271 70 278 66 285 70z'/%3E%3Cpath d='M384 30 372 55 384 48 396 55z'/%3E%3C/g%3E%3Cpath fill='%23E8F1EC' d='M0 120V96c60-18 120-18 180-6s120 16 180 4 90-12 120-2v28z'/%3E%3C/svg%3E");
+  background-size: 480px 120px;
+  background-repeat: repeat-x;
+  background-position: bottom center;
+}
+.signoff {
+  border-top: 0;
+  background: #E8F1EC;
+  color: #17302A;
+  padding-top: 1.5rem;
+}
+.signoff .host-line { color: var(--cream); }
+.signoff .small { color: #2B4740; }
+.signoff a { color: #8E0E19; }
+.signoff a:hover { color: #17302A; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lights::before, .lights::after, .star, .tv-dot { animation: none; }
+  .programme, .card a { transition: none; }
+}
+@media (max-width: 40rem) {
+  .tv { padding: 0.6rem 0.6rem 0.2rem; border-radius: 16px; margin-top: 4rem; }
+  .tv::before, .tv::after { height: 48px; }
+  .card a::after { font-size: 1.2rem; }
+}
